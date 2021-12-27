@@ -1,0 +1,19 @@
+﻿是否开启:检测类别:检测项目:检测脚本:检测方式:检测阈值:检测脚本参数
+ENABLE:集群:存活的TiDB数量:alive_tidb_number.py:等于:5:
+ENABLE:集群:存活的TiKV数量:alive_tikv_number.py:等于:5:
+ENABLE:集群:存活的TiFlash数量:alive_tiflash_number.py:等于:18:
+ENABLE:集群:存活的PD数量:alive_pd_number.py:等于:5:
+ENABLE:网络:今天网卡流入流量(MB):network_in.py:小于等于:4096:
+ENABLE:网络:今天网卡流出流量(MB):network_out.py:小于等于:4096:
+ENABLE:运行状态:表没有创建TiFlash副本:no_tiflash_replica.sh:无数据:NA:
+ENABLE:运行状态:表没有主键:no_primary_key.sh:无数据:NA:
+ENABLE:运行状态:正在执行且超过5分钟的SQL:running_sql_5min.sh:无数据:NA:
+ENABLE:运行状态:走TiKV且超过5秒的SQL:sql_5s_no_tiflash.sh:无数据:NA:
+ENABLE:运行状态:执行超过1h的DDL:long_ddl_job.sh:无数据:NA:
+ENABLE:运行状态:TiKV Region数量:tikv_region_number.py:小于等于:30000:
+ENABLE:运行状态:TiFlash Region数量:tiflash_region_number.py:小于等于:30000:
+ENABLE:运行状态:goroutine数量:goroutine_number.py:小于等于:50000:
+ENABLE:运行状态:每个tidb的连接数:tidb_connections.py:小于等于:800:
+DISABLE:运行状态:今天成功的Query数:succeeded_query_number.py:大于等于:0:
+ENABLE:运行状态:今天失败Query的类型:failed_query_type.py:无数据:NA:
+ENABLE:运行状态:内存剩余绝对值(MB):available_memory.py:大于等于:10240:

@@ -130,3 +130,6 @@ dmypy.json
 
 # pyChamrm
 .idea/
+
+# macOS
+.DS_store
