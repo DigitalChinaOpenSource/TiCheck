@@ -7,10 +7,19 @@ import (
 
 func Register(engine *gin.Engine) {
 
-	authGroup := engine.Group("")
+	engine.Static("/assets","insight/views/assets")
+	engine.LoadHTMLGlob("insight/views/index.html")
+
+	viewGroup := engine.Group("/")
+	{
+		view := &handler.ViewHandler{}
+		viewGroup.GET("/", view.GetIndex)
+	}
+
+	authGroup := engine.Group("/auth")
 	{
 		auth := &handler.AuthorizerHandler{}
 		// 用户认证
-		authGroup.POST("/auth", auth.AuthenticatedUser)
+		authGroup.POST("/", auth.AuthenticatedUser)
 	}
 }
