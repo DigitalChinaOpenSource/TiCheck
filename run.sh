@@ -21,8 +21,8 @@ source "${BASE_PATH}"/config/load_variables.sh
 ##==============================================================================================
 
 if [[ $(whoami) != "${OS_USER}" ]]; then
-  echo -e "error!\tcurrent user is not ${OS_USER}!"
-  echo -e "\tplease use ${OS_USER} to run this script."
+  echo -e "error!\t current user is not ${OS_USER}!"
+  echo -e "\t please use ${OS_USER} to run this script."
   echo "failed to run!"
   exit 1;
 fi
@@ -37,7 +37,7 @@ export PATH=/usr/bin:$PATH
 ##==============================================================================================
 ## cleanup old files
 ##==============================================================================================
-sh "${BASE_PATH}"/cleanup.sh "${BASE_PATH}" || exit 1
+sh "${BASE_PATH}"/cleanup.sh "${BASE_PATH}" "${REPORT_CLEANING_INTERVAL}"|| exit 1
 
 ##==============================================================================================
 ## executing all check scripts formats print
