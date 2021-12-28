@@ -14,15 +14,48 @@ func Register(engine *gin.Engine) {
 	viewGroup := engine.Group("/")
 	{
 		view := &handler.ViewHandler{}
+
+		// 打开首页
 		viewGroup.GET("/", view.GetIndex)
 
+		// 打开登录界面
 		viewGroup.GET("/login", view.GetLogin)
 	}
 
-	authGroup := engine.Group("/auth")
+	sessionGroup := engine.Group("/session")
 	{
-		auth := &handler.AuthorizerHandler{}
+		session := &handler.SessionHandler{}
 		// 用户认证
-		authGroup.POST("/", auth.AuthenticatedUser)
+		sessionGroup.POST("/", session.AuthenticatedUser)
 	}
+
+	reportGroup := engine.Group("/report")
+
+	{
+		report := &handler.ReportHandler{}
+
+		// 获取历史巡检列表
+		reportGroup.GET("/catalog", report.GetCatalog)
+
+		// 通过id获得某次巡检结果
+		reportGroup.GET("/id/:id", report.GetReport)
+
+		// 获取最后一次巡检结果
+		reportGroup.GET("/last", report.GetLastReport)
+
+		// 获取巡检结果辕信息
+		reportGroup.GET("/meta", report.GetMeta)
+
+		// 执行一次巡检
+		reportGroup.POST("/", report.ExecuteCheck)
+
+		// 下载所有的巡检报告
+		reportGroup.GET("/download/all", report.DownloadAllReport)
+
+		// 下载指定的一次巡检报告
+		reportGroup.GET("/download/:id", report.DownloadReport)
+	}
+
 }
+
+

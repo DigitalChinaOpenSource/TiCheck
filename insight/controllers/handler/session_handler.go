@@ -7,9 +7,9 @@ import (
 	"net/http"
 )
 
-type AuthorizerHandler struct{}
+type SessionHandler struct{}
 
-func (a AuthorizerHandler)AuthenticatedUser(c *gin.Context){
+func (a SessionHandler)AuthenticatedUser(c *gin.Context){
 
 	data, _ := ioutil.ReadAll(c.Request.Body)
 	jsonStr := string(data)
@@ -25,18 +25,16 @@ func (a AuthorizerHandler)AuthenticatedUser(c *gin.Context){
 	user := jsonMap["user"]
 	password := jsonMap["password"]
 
-	if user == "root" && password == "password123" {
+	if user == "tidb" && password == "password123" {
 		c.JSON(http.StatusOK, gin.H{
-			"Data": "OK",
-			"Error": nil,
+			"token": "xxx",
 		})
 
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"Data": nil,
-		"Error": "the user name or password is wrong.",
+		"error": "the user name or password is wrong.",
 	})
 
 	return

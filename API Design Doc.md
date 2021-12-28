@@ -6,7 +6,7 @@ API Design
 | POST      | /session              | 登陆验证         |
 | DELETE    | /session              | 注销登陆         |
 | GET       | /report/catalog       | 获取所有巡检结果的文件名 |
-| GET       | /report/{id}          | 获取指定的某次结果    |
+| GET       | /report/id/{id}       | 获取指定的某次结果    |
 | GET       | /report/latest        | 获取最后一次巡检结果   |
 | GET       | /report/meta          | 获取巡检结果元信息    |
 | POST      | /report               | 执行一次巡检       | 
