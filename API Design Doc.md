@@ -42,7 +42,7 @@ API Design
 }
 ```
 
-### 获取最近巡检
+### 获取巡检历史记录
 
 `GET /report/catalog`
 
@@ -50,8 +50,8 @@ API Design
 
 ```json
 {
-  "page": 1,
-  "per_page": 3
+  "start": 1,
+  "length": 10
 }
 ```
 
@@ -59,11 +59,13 @@ Response Body:
 
 ```json
 {
-    "total_pages": 2,
-	"data_total": 3,
+	"draw": 1, //当前页码
+    "recordsFiltered": 2, //被filter后的行数，可以忽略
+	"recordsTotal": 3, //总行数
 	"data": [
 		{
 			"id": "20211228092830",
+			"starttime":"2021-12-28 09:28:03",
 			"duration": 30,
 			"success": 29,
 			"warning": 1,
@@ -71,6 +73,7 @@ Response Body:
 		},
 		{
 			"id": "20211229092830",
+			"starttime":"2021-12-28 09:28:03",
 			"duration": 25,
 			"success": 28,
 			"warning": 2,
