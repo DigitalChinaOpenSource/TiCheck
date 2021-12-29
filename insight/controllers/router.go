@@ -23,14 +23,15 @@ func Register(engine *gin.Engine) {
 	}
 
 	sessionGroup := engine.Group("/session")
+	session := &handler.SessionHandler{}
+
 	{
-		session := &handler.SessionHandler{}
 		// 用户认证
 		sessionGroup.POST("/", session.AuthenticatedUser)
 	}
 
 	reportGroup := engine.Group("/report")
-
+	reportGroup.Use(session.VerifyToken)
 	{
 		report := &handler.ReportHandler{}
 
@@ -43,7 +44,7 @@ func Register(engine *gin.Engine) {
 		// 获取最后一次巡检结果
 		reportGroup.GET("/last", report.GetLastReport)
 
-		// 获取巡检结果辕信息
+		// 获取巡检结果元信息
 		reportGroup.GET("/meta", report.GetMeta)
 
 		// 执行一次巡检

@@ -15,23 +15,23 @@ var upGrader = websocket.Upgrader{
 
 type ReportHandler struct{}
 
-func (r ReportHandler) GetCatalog(c *gin.Context) {
+func (r *ReportHandler) GetCatalog(c *gin.Context) {
 	return
 }
 
-func (r ReportHandler) GetReport(c *gin.Context) {
+func (r *ReportHandler) GetReport(c *gin.Context) {
 	return
 }
 
-func (r ReportHandler) GetLastReport(c *gin.Context) {
+func (r *ReportHandler) GetLastReport(c *gin.Context) {
 	return
 }
 
-func (r ReportHandler) GetMeta(c *gin.Context) {
+func (r *ReportHandler) GetMeta(c *gin.Context) {
 	return
 }
 
-func (r ReportHandler) ExecuteCheck(c *gin.Context) {
+func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 	ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
 	if err !=nil {
 		return
@@ -55,10 +55,10 @@ func (r ReportHandler) ExecuteCheck(c *gin.Context) {
 	return
 }
 
-func (r ReportHandler) DownloadAllReport(c *gin.Context) {
+func (r *ReportHandler) DownloadAllReport(c *gin.Context) {
 	return
 }
 
-func (r ReportHandler) DownloadReport(context *gin.Context) {
+func (r *ReportHandler) DownloadReport(context *gin.Context) {
 
 }
