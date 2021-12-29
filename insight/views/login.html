@@ -28,15 +28,17 @@
           </div>
           <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
             <div class="ad-auth-content">
-              <form>
+              <form onsubmit="do_login();return false">
                 <h2><span class="primary">Hello,</span>Welcome!</h2>
                 <p>Please Enter Your Details Below to Continue</p>
                 <div class="ad-auth-form">
                   <div class="ad-auth-feilds mb-30">
                     <input
                       type="text"
+                      name="username"
                       placeholder="Database Username"
                       class="ad-input"
+                      required="true"
                     />
                     <div class="ad-auth-icon">
                       <svg
@@ -63,8 +65,10 @@
                   <div class="ad-auth-feilds">
                     <input
                       type="password"
+                      name="password"
                       placeholder="Password"
                       class="ad-input"
+                      required="true"
                     />
                     <div class="ad-auth-icon">
                       <svg
@@ -102,11 +106,9 @@
                   </div>
                 </div>
                 <div class="ad-auth-btn">
-                  <a
-                    href="javascript:location.href='/';"
-                    class="ad-btn ad-login-member"
-                    >Login</a
-                  >
+                  <button type="submit" class="ad-btn ad-login-member">
+                    Login
+                  </button>
                 </div>
               </form>
             </div>
@@ -116,3 +118,24 @@
     </div>
   </body>
 </html>
+<script src="assets/js/jquery.min.js"></script>
+<script type="text/javascript">
+  function do_login() {
+    var form = $('form')[0]
+    $.ajax({
+      type: 'POST',
+      url: '/session/',
+      data: {
+        username: form.username.value,
+        password: form.password.value,
+      },
+      complete: function (result, status) {
+        if (result.status === 200) {
+          location.href = '/'
+        } else {
+          alert(result.responseJSON.error)
+        }
+      },
+    })
+  }
+</script>

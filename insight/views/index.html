@@ -20,6 +20,8 @@
       href="assets/css/font-awesome.min.css"
     />
     <link rel="stylesheet" type="text/css" href="assets/css/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/datatables.css" />
+
     <link rel="stylesheet" type="text/css" href="assets/css/style.css" />
     <style></style>
   </head>
@@ -265,9 +267,9 @@
                       <button
                         type="button"
                         class="squer-btn btn-outline danger-outline mt-2 mr-2"
-                        id="btn_execute"
+                        id="btn_launch"
                       >
-                        <i class="fas fa-rocket mr-2"></i> Execute
+                        <i class="fas fa-rocket mr-2"></i> Launch
                       </button>
                     </span>
                   </h4>
@@ -638,78 +640,25 @@
                 </div>
                 <div class="card-body pb-4">
                   <div class="chart-holder">
-                    <div class="table-responsive">
-                      <table class="table advance-table mb-0">
-                        <thead>
-                          <tr>
-                            <th>ID</th>
-                            <th>Start Time</th>
-                            <th>Duration</th>
-                            <th>Normal Items</th>
-                            <th>Warning Items</th>
-                            <th>Total Items</th>
-                            <th>Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>
-                              <a
-                                style="color: #007bff"
-                                href="javascript:view_report()"
-                                >Report_5234523453</a
-                              >
-                            </td>
-                            <td>
-                              <span class="ml-2">New Balance Arishi Sport</span>
-                            </td>
-                            <td>33s</td>
-                            <td>
-                              <label class="mb-0 badge badge-success">35</label>
-                            </td>
-                            <td>
-                              <label class="mb-0 badge badge-danger">469</label>
-                            </td>
-                            <td>888</td>
-                            <td>
-                              <a
-                                href="https://github.com/DigitalChinaOpenSource/TiCheck"
-                                >Download Report</a
-                              >
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                    <table class="table advance-table mb-0">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Start Time</th>
+                          <th>Duration</th>
+                          <th>Normal Items</th>
+                          <th>Warning Items</th>
+                          <th>Total Items</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody id="tb_history_show"></tbody>
+                    </table>
+                    <table
+                      style="display: none !important"
+                      id="tb_history"
+                    ></table>
                   </div>
-                </div>
-                <div class="card-footer text-right pt-0">
-                  <nav class="d-inline-block">
-                    <ul class="pagination mb-0">
-                      <li class="page-item disabled">
-                        <a
-                          class="page-link"
-                          href="javascript:void(0);"
-                          tabindex="-1"
-                          ><i class="fas fa-chevron-left"></i
-                        ></a>
-                      </li>
-                      <li class="page-item active">
-                        <a class="page-link" href="javascript:void(0); ">1</a>
-                      </li>
-                      <li class="page-item">
-                        <a class="page-link" href="javascript:void(0); ">2</a>
-                      </li>
-                      <li class="page-item">
-                        <a class="page-link" href="javascript:void(0); ">3</a>
-                      </li>
-                      <li class="page-item">
-                        <a class="page-link" href="javascript:void(0); "
-                          ><i class="fas fa-chevron-right"></i
-                        ></a>
-                      </li>
-                    </ul>
-                  </nav>
                 </div>
               </div>
             </div>
@@ -778,8 +727,8 @@
             >
               Close
             </button>
-            <button type="button" class="btn btn-primary" id="btn_launch">
-              Launch
+            <button type="button" class="btn btn-primary" id="btn_execute">
+              Execute
             </button>
           </div>
         </div>
@@ -790,20 +739,43 @@
     <script src="assets/js/bootstrap.min.js"></script>
     <script src="assets/js/apexcharts.min.js"></script>
     <script src="assets/js/apexchart/control-chart-apexcharts.js"></script>
-
+    <script src="assets/js/datatables.min.js"></script>
     <!-- Custom Script -->
     <script src="assets/js/custom.js"></script>
 
     <script type="text/javascript">
       $(function () {
-        $('#btn_execute').click(function () {
+        $('#tb_history').DataTable({
+          paging: true,
+          serverSide: true,
+          searching: false,
+          ordering: false,
+          lengthChange: false,
+          columns: [{ data: 'id' }],
+          ajax: {
+            url: './assets/data.json',
+            type: 'get',
+            dataType: 'json',
+            dataSrc: function (json) {
+              $('#tb_history_show').empty()
+              $.each(json.data, function (index, item) {
+                $('#tb_history_show').append(
+                  '<tr><td><a style="color: #007bff" href="javascript:view_report()" >Report_5234523453</a> </td> <td> <span class="ml-2">New Balance Arishi Sport</span> </td> <td>33s</td> <td> <label class="mb-0 badge badge-success">35</label> </td> <td> <label class="mb-0 badge badge-danger">469</label> </td> <td>888</td> <td> <a href="https://github.com/DigitalChinaOpenSource/TiCheck" ><i class="fas fa-download"></i> Download Report</a> </td> </tr>'
+                )
+              })
+
+              return json.data
+            },
+          },
+        })
+        $('#btn_launch').click(function () {
           $('#btn_launch').show()
           $('#md_detail').modal({ backdrop: 'static' })
         })
-        $('#btn_launch').click(function () {
+        $('#btn_execute').click(function () {
           $(this)
             .attr('disabled', true)
-            .html('<i class="fa fa-spin fa-spinner mr-2"></i> Launch')
+            .html('<i class="fa fa-spin fa-spinner mr-2"></i> Execute')
           $('#tb_details').empty()
           $('#ld_detail').show()
           for (let i = 0; i < 10; i++) {
@@ -814,7 +786,7 @@
             tr.fadeIn(500 * i)
           }
           $('#ld_detail').hide()
-          $(this).removeAttr('disabled').html('Launch')
+          $(this).removeAttr('disabled').html('Execute')
         })
       })
       function view_report() {

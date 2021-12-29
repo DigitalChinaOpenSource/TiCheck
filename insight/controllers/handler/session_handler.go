@@ -3,9 +3,7 @@ package handler
 import (
 	"bytes"
 	"crypto/rand"
-	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
 	"math/big"
 	"net/http"
 	"time"
@@ -20,25 +18,28 @@ type SessionHandler struct{
 
 
 func (s *SessionHandler)AuthenticatedUser(c *gin.Context){
-	cookie, _ := c.Cookie("TiCheckerToken")
-	if cookie != "" && cookie == s.token {
-		c.JSON(http.StatusOK, gin.H{
-			"token": s.token,
-		})
-	}
+	//cookie, _ := c.Cookie("TiCheckerToken")
+	//if cookie != "" && cookie == s.token {
+	//	c.JSON(http.StatusOK, gin.H{
+	//		"token": s.token,
+	//	})
+	//}
+	//
+	//data, _ := ioutil.ReadAll(c.Request.Body)
+	//jsonStr := string(data)
+	//var jsonMap map[string]interface{}
+	//
+	//if err := json.Unmarshal([]byte(jsonStr), &jsonMap); err != nil {
+	//	c.JSON(http.StatusOK, map[string]interface{}{
+	//		"error":           err.Error(),
+	//	})
+	//}
+	//
+	//s.user = jsonMap["user"].(string)
+	//s.password = jsonMap["password"].(string)
 
-	data, _ := ioutil.ReadAll(c.Request.Body)
-	jsonStr := string(data)
-	var jsonMap map[string]interface{}
-
-	if err := json.Unmarshal([]byte(jsonStr), &jsonMap); err != nil {
-		c.JSON(http.StatusOK, map[string]interface{}{
-			"error":           err.Error(),
-		})
-	}
-
-	s.user = jsonMap["user"].(string)
-	s.password = jsonMap["password"].(string)
+	s.user = c.PostForm("username")
+	s.password = c.PostForm("password")
 
 	if s.verifyDBUser() {
 		http.SetCookie(c.Writer, &http.Cookie{
@@ -52,7 +53,7 @@ func (s *SessionHandler)AuthenticatedUser(c *gin.Context){
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	c.JSON(http.StatusUnauthorized, gin.H{
 		"error": "the user name or password is wrong.",
 	})
 
