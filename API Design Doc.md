@@ -1,41 +1,44 @@
 API Design
 
-| REST verb | URI                   | Note         |
-|-----------|-----------------------|--------------|
-| GET       | /session/new          | 进入登陆页面       |
-| POST      | /session              | 登陆验证         |
-| DELETE    | /session              | 注销登陆         |
+| REST verb | URI                   | Note                     |
+| --------- | --------------------- | ------------------------ |
+| GET       | /login                | 进入登陆页面             |
+| POST      | /session              | 登陆验证                 |
+| DELETE    | /session              | 注销登陆                 |
 | GET       | /report/catalog       | 获取所有巡检结果的文件名 |
-| GET       | /report/id/{id}       | 获取指定的某次结果    |
-| GET       | /report/latest        | 获取最后一次巡检结果   |
-| GET       | /report/meta          | 获取巡检结果元信息    |
-| POST      | /report               | 执行一次巡检       | 
-| GET       | /report/download/all  | 下载所有巡检报告     |
-| GET       | /report/download/{id} | 下载指定的巡检报告    |
+| GET       | /report/id/{id}       | 获取指定的某次结果       |
+| GET       | /report/latest        | 获取最后一次巡检结果     |
+| GET       | /report/meta          | 获取巡检结果元信息       |
+| POST      | /report               | 执行一次巡检             |
+| GET       | /report/download/all  | 下载所有巡检报告         |
+| GET       | /report/download/{id} | 下载指定的巡检报告       |
 
 ### 登陆验证
 
 `POST /session`
 
-* Request Body:
+- Request Form Data:
+
 ```json
 {
-	 "username" : "tidb",
-	 "password" : "password"
+  "username": "tidb",
+  "password": "password"
 }
 ```
 
-* Response Body - 200
+- Response Body - 200
+
 ```json
 {
-	"token": "xxx"
+  "token": "xxx"
 }
 ```
-* Response Body - 400
-```json
 
+- Response Body - 401
+
+```json
 {
-	"error": "login failed"
+  "error": "login failed"
 }
 ```
 
@@ -43,15 +46,17 @@ API Design
 
 `GET /report/catalog`
 
-* Request Body:
+- Request Body:
+
 ```json
 {
-	"page" : 1,
-	"per_page" : 3
+  "page": 1,
+  "per_page": 3
 }
 ```
 
 Response Body:
+
 ```json
 {
     "total_pages": 2,
@@ -80,36 +85,39 @@ Response Body:
 
 `GET /report/{id}` `GET /report/last`
 
-* Response Body - 200:
+- Response Body - 200:
+
 ```json
 {
-	"total":2,
-	"id": "20211229092830",
-	"data": [
-		{
-		"check_class": "集群",
-		"check_name": "存活的TiDB数量",
-		"check_item": "TiDB节点数量",
-		"check_status": "正常",
-		"check_value": "3",
-		"threshold": "等于3"
-		},
-		{
-		"check_class": "集群",
-		"check_name": "存活的TiKV数量",
-		"check_item": "TiKV节点数量",
-		"check_status": "异常_新增",
-		"check_value": "4",
-		"threshold": "等于5"
-		}
-	]
+  "total": 2,
+  "id": "20211229092830",
+  "data": [
+    {
+      "check_class": "集群",
+      "check_name": "存活的TiDB数量",
+      "check_item": "TiDB节点数量",
+      "check_status": "正常",
+      "check_value": "3",
+      "threshold": "等于3"
+    },
+    {
+      "check_class": "集群",
+      "check_name": "存活的TiKV数量",
+      "check_item": "TiKV节点数量",
+      "check_status": "异常_新增",
+      "check_value": "4",
+      "threshold": "等于5"
+    }
+  ]
 }
 ```
-* Response Body - 400:
+
+- Response Body - 400:
+
 ```json
 {
-	"id" : "18881223083050",
-	"error": "file not found"
+  "id": "18881223083050",
+  "error": "file not found"
 }
 ```
 
@@ -117,7 +125,8 @@ Response Body:
 
 `GET /report/meta`
 
-* Response Body:
+- Response Body:
+
 ```json
 {
 	"cluster_status": {
@@ -181,31 +190,33 @@ Response Body:
 
 `POST /report`
 
-* Response Body (prior to last):
+- Response Body (prior to last):
+
 ```json
 {
-	"finished": false,
-	"total": 0,
-	"check_class": "集群",
-	"check_name": "存活的TiDB数量",
-	"check_item": "TiDB节点数",
-	"check_result": "正常",
-	"check_value": 5,
-	"check_threshold": "等于5",
-	"check_time": 20211221063030
+  "finished": false,
+  "total": 0,
+  "check_class": "集群",
+  "check_name": "存活的TiDB数量",
+  "check_item": "TiDB节点数",
+  "check_result": "正常",
+  "check_value": 5,
+  "check_threshold": "等于5",
+  "check_time": 20211221063030
 }
 ```
 
-* Response Body (last response):
+- Response Body (last response):
+
 ```json
 {
-	"finished": true,
-	"check_class": "集群",
-	"check_name": "存活的TiDB数量",
-	"check_item": "TiDB节点数",
-	"check_result": "正常",
-	"check_value": 5,
-	"check_threshold": "等于5",
-	"check_time": 20211221063030
+  "finished": true,
+  "check_class": "集群",
+  "check_name": "存活的TiDB数量",
+  "check_item": "TiDB节点数",
+  "check_result": "正常",
+  "check_value": 5,
+  "check_threshold": "等于5",
+  "check_time": 20211221063030
 }
 ```
