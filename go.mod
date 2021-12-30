@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/gin-gonic/gin v1.7.7
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/kr/text v0.2.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect

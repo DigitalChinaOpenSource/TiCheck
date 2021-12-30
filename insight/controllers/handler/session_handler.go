@@ -3,11 +3,14 @@ package handler
 import (
 	"bytes"
 	"crypto/rand"
+	"database/sql"
+	"fmt"
 	"math/big"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type SessionHandler struct {
@@ -33,20 +36,26 @@ func (s *SessionHandler) AuthenticatedUser(c *gin.Context) {
 		"error": "the user name or password is wrong.",
 	})
 
-	return
 }
 
 func (s *SessionHandler) verifyDBUser() bool {
-	// 用户密码 目前先写死，后期用TiDB用户做验证
-	if s.user == "tidb" && s.password == "password123" {
-		if s.token == "" {
-			s.UpdateToken()
-		}
-
-		return true
+	// 用ping做账号密码验证
+	conn := fmt.Sprintf("%s:%s@tcp(10.3.65.140:4000)/mysql", s.user, s.password)
+	db, err := sql.Open("mysql", conn)
+	if err != nil {
+		return false
+	}
+	err = db.Ping()
+	if err != nil {
+		return false
 	}
 
-	return false
+	defer db.Close()
+
+	if s.token == "" {
+		s.UpdateToken()
+	}
+	return true
 }
 
 // UpdateToken 更新验证Token, 之后每半小时自动更新一次
