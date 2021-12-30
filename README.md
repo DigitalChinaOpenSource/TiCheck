@@ -4,8 +4,11 @@ TiDB automated checklist for hackathon 2021.
 
 ## 团队
 
+项目成员都来自神州数码 TiDB 团队，TiDB For PostgreSQL 项目核心开发者。
+
 - [hoho](https://github.com/hey-hoho)
 - [david](https://github.com/AmoebaProtozoa)
+- [pupillord](https://github.com/pupillord)
 
 ## 项目介绍
 
@@ -31,13 +34,25 @@ TiCheck 是为 TiDB 设计的自动化，可扩展的检查工具，核心特点
 
 ## 设计
 
+架构设计
 ![QQ截图20211229174657.png](https://s2.loli.net/2021/12/29/uz6mrfDYxyAp921.png)
+
+功能原型
+![image.png](https://s2.loli.net/2021/12/30/BD6C8Yvy49RqWaG.png)
 
 ## 进度
 
-- [ ] 安装逻辑
-- [ ] 脚本运行逻辑
-- [ ] 可视化网页后端
-- [ ] 可视化网页前端
-- [ ] 通过网页前端的脚本配置
-- [ ] 通过网页前端的脚本扩展
+本期 Hackathon 计划完成的功能点：
+
+- [x] 安装逻辑
+- [x] 脚本运行逻辑
+- [x] 自定义巡检配置
+- [ ] 可视化 UI 后端
+- [x] 可视化 UI 前端
+- [ ] 巡检汇总统计
+- [x] 数据库用户联名登录
+
+后期规划功能点：
+
+- [ ] 通过 UI 做巡检配置
+- [ ] 通过 UI 做脚本扩展

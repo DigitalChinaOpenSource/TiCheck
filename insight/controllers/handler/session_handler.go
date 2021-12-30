@@ -3,6 +3,8 @@ package handler
 import (
 	"bytes"
 	"crypto/rand"
+	"database/sql"
+	"fmt"
 	"math/big"
 	"net/http"
 	"time"
@@ -23,35 +25,12 @@ type Session struct {
 }
 
 func (s *SessionHandler) AuthenticatedUser(c *gin.Context) {
-	//cookie, _ := c.Cookie("TiCheckerToken")
-	//if cookie != "" && cookie == s.token {
-	//	c.JSON(http.StatusOK, gin.H{
-	//		"token": s.token,
-	//	})
-	//}
-	//
-	//data, _ := ioutil.ReadAll(c.Request.Body)
-	//jsonStr := string(data)
-	//var jsonMap map[string]interface{}
-	//
-	//if err := json.Unmarshal([]byte(jsonStr), &jsonMap); err != nil {
-	//	c.JSON(http.StatusOK, map[string]interface{}{
-	//		"error":           err.Error(),
-	//	})
-	//}
-	//
-	//s.user = jsonMap["user"].(string)
-	//s.password = jsonMap["password"].(string)
 
 	s.user = c.PostForm("username")
 	s.password = c.PostForm("password")
 
 	if s.verifyDBUser() {
-		http.SetCookie(c.Writer, &http.Cookie{
-			Name:  "TiCheckerToken",
-			Value: s.token,
-		})
-
+		c.SetCookie("TiCheckerToken", s.token, 3600, "/", "", false, true)
 		c.JSON(http.StatusOK, gin.H{
 			"token": s.token,
 		})
@@ -62,20 +41,26 @@ func (s *SessionHandler) AuthenticatedUser(c *gin.Context) {
 		"error": "the user name or password is wrong.",
 	})
 
-	return
 }
 
 func (s *SessionHandler) verifyDBUser() bool {
-	// 用户密码 目前先写死，后期用TiDB用户做验证
-	if s.user == "tidb" && s.password == "password123" {
-		if s.token == "" {
-			s.UpdateToken()
-		}
-
-		return true
+	// 用ping做账号密码验证
+	conn := fmt.Sprintf("%s:%s@tcp(10.3.65.140:4000)/mysql", s.user, s.password)
+	db, err := sql.Open("mysql", conn)
+	if err != nil {
+		return false
+	}
+	err = db.Ping()
+	if err != nil {
+		return false
 	}
 
-	return false
+	defer db.Close()
+
+	if s.token == "" {
+		s.UpdateToken()
+	}
+	return true
 }
 
 // UpdateToken 更新验证Token, 之后每半小时自动更新一次
@@ -107,6 +92,7 @@ func (s *SessionHandler) VerifyToken(c *gin.Context) {
 	token, err := c.Cookie("TiCheckerToken")
 
 	if err == nil && token == s.token {
+		c.Next()
 		return
 	}
 
