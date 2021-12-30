@@ -19,7 +19,29 @@ type ReportHandler struct{
 	con *sql.DB
 }
 
+type CheckDara struct {
+	CheckTime string	`json:"check_time"`
+	CheckClass string	`json:"check_class"`
+	CheckName string	`json:"check_name"`
+	Operator string		`json:"operator"`
+	Threshold float64   `json:"threshold"`
+	Duration int		`json:"duration"`
+	CheckItem string	`json:"check_item"`
+	CheckValue float64	`json:"check_value"`
+	CheckStatus string	`json:"check_status"`
+
+}
+
 func (r *ReportHandler) GetCatalog(c *gin.Context) {
+	conn, err := ConnectDB()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":err.Error(),
+		})
+	}
+
+	_ = conn.Ping()
+
 	return
 }
 
@@ -41,11 +63,12 @@ func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 		return
 	}
 
+
 	defer ws.Close()
 
 	for {
 
-		err = ws.WriteJSON(nil)
+		err = ws.WriteJSON("{}")
 
 		if err != nil {
 			break
@@ -68,7 +91,7 @@ func (r *ReportHandler) DownloadReport(c *gin.Context) {
 }
 
 func ConnectDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "/report/result.db")
+	db, err := sql.Open("sqlite3", "/report/report.db")
 	if err != nil {
 		return nil, err
 	}
