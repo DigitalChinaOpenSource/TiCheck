@@ -769,28 +769,60 @@
           },
         })
         $('#btn_launch').click(function () {
-          $('#btn_launch').show()
+          $('#btn_execute').show()
           $('#md_detail').modal({ backdrop: 'static' })
         })
         $('#btn_execute').click(function () {
-          $(this)
-            .attr('disabled', true)
-            .html('<i class="fa fa-spin fa-spinner mr-2"></i> Execute')
-          $('#tb_details').empty()
-          $('#ld_detail').show()
-          for (let i = 0; i < 10; i++) {
+          var ws = new WebSocket('ws://localhost:8081/report/')
+          //连接打开时触发
+          ws.onopen = function (evt) {
+            console.log('Connection open ...')
+            $('#btn_execute')
+              .attr('disabled', true)
+              .html('<i class="fa fa-spin fa-spinner mr-2"></i> Executing')
+            $('#tb_details').empty()
+            $('#ld_detail').show()
+          }
+          //接收到消息时触发
+          ws.onmessage = function (evt) {
+            console.log(evt.data)
+            var data = JSON.parse(evt.data)
             var tr = $(
-              '<tr style="display:none"><td>#JH2033</td><td>22/06/2021</td><td>$600</td><td><label class="mb-0 badge badge-danger">234</label></td><td>xxxx</td><td><i class="fas fa-check success"></i><label class="mb-0 badge icon-badge badge-danger"><i class="fas fa-times-circle"></i></label></td></tr>'
+              '<tr style="display:none"><td>' +
+                data.check_class +
+                '</td><td>' +
+                data.check_name +
+                '</td><td>' +
+                data.check_item +
+                '</td><td>' +
+                (data.check_result == '正常'
+                  ? data.check_value
+                  : '<label class="mb-0 badge badge-danger">' +
+                    data.check_value +
+                    '</label>') +
+                '</td><td>' +
+                data.check_threshold +
+                '</td><td>' +
+                (data.check_result == '正常'
+                  ? '<i class="fas fa-check success"></i>'
+                  : '<label class="mb-0 badge icon-badge badge-danger"><i class="fas fa-times-circle"></i></label> ' +
+                    data.check_result) +
+                '</td></tr>'
             )
             $('#tb_details').append(tr)
-            tr.fadeIn(500 * i)
+            tr.fadeIn(500)
           }
-          $('#ld_detail').hide()
-          $(this).removeAttr('disabled').html('Execute')
+          //连接关闭时触发
+          ws.onclose = function (evt) {
+            console.log('Connection closed.')
+
+            $('#ld_detail').hide()
+            $('#btn_execute').removeAttr('disabled').html('Execute')
+          }
         })
       })
       function view_report() {
-        $('#btn_launch').hide()
+        $('#btn_execute').hide()
         $('#tb_details').empty()
         $('#md_detail').modal({ backdrop: 'static' })
       }
