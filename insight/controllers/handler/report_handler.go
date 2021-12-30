@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"database/sql"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	_ "github.com/mattn/go-sqlite3"
 	"net/http"
 	"time"
 )
@@ -13,7 +15,9 @@ var upGrader = websocket.Upgrader{
 	},
 }
 
-type ReportHandler struct{}
+type ReportHandler struct{
+	con *sql.DB
+}
 
 func (r *ReportHandler) GetCatalog(c *gin.Context) {
 	return
@@ -59,6 +63,15 @@ func (r *ReportHandler) DownloadAllReport(c *gin.Context) {
 	return
 }
 
-func (r *ReportHandler) DownloadReport(context *gin.Context) {
+func (r *ReportHandler) DownloadReport(c *gin.Context) {
 
+}
+
+func ConnectDB() (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", "/report/result.db")
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }

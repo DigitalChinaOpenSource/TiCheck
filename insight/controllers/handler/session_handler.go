@@ -16,6 +16,12 @@ type SessionHandler struct {
 	token    string
 }
 
+type Session struct {
+	user     string
+	password string
+	token    string
+}
+
 func (s *SessionHandler) AuthenticatedUser(c *gin.Context) {
 	//cookie, _ := c.Cookie("TiCheckerToken")
 	//if cookie != "" && cookie == s.token {
@@ -101,7 +107,7 @@ func (s *SessionHandler) VerifyToken(c *gin.Context) {
 	token, err := c.Cookie("TiCheckerToken")
 
 	if err == nil && token == s.token {
-		c.Next()
+		return
 	}
 
 	c.Abort()
