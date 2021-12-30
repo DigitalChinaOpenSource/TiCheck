@@ -751,16 +751,28 @@
           searching: false,
           ordering: false,
           lengthChange: false,
-          columns: [{ data: 'id' }],
+          columns: [{ data: 'check_time' }],
           ajax: {
-            url: './assets/data.json',
+            url: '/report/catalog',
             type: 'get',
             dataType: 'json',
             dataSrc: function (json) {
               $('#tb_history_show').empty()
               $.each(json.data, function (index, item) {
                 $('#tb_history_show').append(
-                  '<tr><td><a style="color: #007bff" href="javascript:view_report()" >Report_5234523453</a> </td> <td> <span class="ml-2">New Balance Arishi Sport</span> </td> <td>33s</td> <td> <label class="mb-0 badge badge-success">35</label> </td> <td> <label class="mb-0 badge badge-danger">469</label> </td> <td>888</td> <td> <a href="https://github.com/DigitalChinaOpenSource/TiCheck" ><i class="fas fa-download"></i> Download Report</a> </td> </tr>'
+                  '<tr><td><a style="color: #007bff" href="javascript:view_report()" >#' +
+                    item.check_time +
+                    '</a> </td> <td> <span class="ml-2">' +
+                    item.check_time +
+                    '</span> </td> <td>' +
+                    item.duration +
+                    's</td> <td> <label class="mb-0 badge badge-success">' +
+                    item.normal_items +
+                    '</label> </td> <td> <label class="mb-0 badge badge-danger">' +
+                    item.warning_items +
+                    '</label> </td> <td>' +
+                    item.total_items +
+                    '</td> <td> <a href="https://github.com/DigitalChinaOpenSource/TiCheck" ><i class="fas fa-download"></i> Download Report</a> </td> </tr>'
                 )
               })
 

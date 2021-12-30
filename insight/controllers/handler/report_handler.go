@@ -1,14 +1,19 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"database/sql"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+var DBInstance *sql.DB
 
 var upGrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -16,34 +21,61 @@ var upGrader = websocket.Upgrader{
 	},
 }
 
-type ReportHandler struct{
+type ReportHandler struct {
 	con *sql.DB
 }
 
-type CheckDara struct {
-	CheckTime string	`json:"check_time"`
-	CheckClass string	`json:"check_class"`
-	CheckName string	`json:"check_name"`
-	Operator string		`json:"operator"`
-	Threshold float64   `json:"threshold"`
-	Duration int		`json:"duration"`
-	CheckItem string	`json:"check_item"`
-	CheckValue float64	`json:"check_value"`
-	CheckStatus string	`json:"check_status"`
+type CheckHistory struct {
+	CheckTime    int `json:"check_time"`
+	NormalItems  int `json:"normal_items"`
+	WarningItems int `json:"warning_items"`
+	TotalItems   int `json:"total_items"`
+	Duration     int `json:"duration"`
+}
 
+type CheckDara struct {
+	CheckTime   string  `json:"check_time"`
+	CheckClass  string  `json:"check_class"`
+	CheckName   string  `json:"check_name"`
+	Operator    string  `json:"operator"`
+	Threshold   float64 `json:"threshold"`
+	Duration    int     `json:"duration"`
+	CheckItem   string  `json:"check_item"`
+	CheckValue  float64 `json:"check_value"`
+	CheckStatus string  `json:"check_status"`
 }
 
 func (r *ReportHandler) GetCatalog(c *gin.Context) {
-	conn, err := ConnectDB()
+
+	length, _ := strconv.Atoi(c.Query("length"))
+	start, _ := strconv.Atoi(c.Query("start"))
+
+	err := ConnectDB()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":err.Error(),
+			"error": err.Error(),
 		})
 	}
 
-	_ = conn.Ping()
+	var total int
+	count := DBInstance.QueryRow("select count(*) from check_history")
+	count.Scan(&total)
 
-	return
+	var result = []CheckHistory{}
+	rows, _ := DBInstance.Query(fmt.Sprintf("select * from check_history order by check_time desc limit %v offset %v", length, start))
+	for rows.Next() {
+		r := CheckHistory{}
+		rows.Scan(&r.CheckTime, &r.NormalItems, &r.WarningItems, &r.TotalItems, &r.Duration)
+		result = append(result, r)
+	}
+	rows.Close()
+
+	c.JSON(http.StatusOK, gin.H{
+		"draw":            (start % length) + 1,
+		"recordsFiltered": total,
+		"recordsTotal":    total,
+		"data":            result,
+	})
 }
 
 func (r *ReportHandler) GetReport(c *gin.Context) {
@@ -64,11 +96,9 @@ func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 		return
 	}
 
-
 	defer ws.Close()
 	i := 0
 	for {
-
 
 		err = ws.WriteJSON(map[string]interface{}{
 			"finished":        true,
@@ -99,11 +129,18 @@ func (r *ReportHandler) DownloadReport(c *gin.Context) {
 
 }
 
-func ConnectDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "/report/report.db")
-	if err != nil {
-		return nil, err
+func ConnectDB() error {
+	if DBInstance == nil {
+		db, err := sql.Open("sqlite3", "../report/report.db")
+		if err != nil {
+			return err
+		}
+		err = db.Ping()
+		if err != nil {
+			return err
+		}
+		DBInstance = db
 	}
 
-	return db, nil
+	return nil
 }
