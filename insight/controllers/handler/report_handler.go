@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -33,7 +34,7 @@ type CheckHistory struct {
 	Duration     int `json:"duration"`
 }
 
-type CheckDara struct {
+type CheckData struct {
 	CheckTime   string  `json:"check_time"`
 	CheckClass  string  `json:"check_class"`
 	CheckName   string  `json:"check_name"`
@@ -125,8 +126,22 @@ func (r *ReportHandler) DownloadAllReport(c *gin.Context) {
 	return
 }
 
+// DownloadReport 下载指定报告
 func (r *ReportHandler) DownloadReport(c *gin.Context) {
+	reportId := c.Param("id")
+	fileName := reportId + ".csv"
 
+	_, err := os.Open("../report/"+fileName)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "the report is not found",
+		})
+	}
+
+	c.Header("Content-Type", "application/x-xls")
+	c.Header("Content-Disposition", "attachment; filename=\""+ fileName +"\"")
+	c.File("../report/"+fileName)
 }
 
 func ConnectDB() error {
