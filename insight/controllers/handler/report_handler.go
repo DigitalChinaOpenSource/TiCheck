@@ -34,6 +34,7 @@ type CheckHistory struct {
 }
 
 type CheckDara struct {
+	ID          string  `json:"id"`
 	CheckTime   string  `json:"check_time"`
 	CheckClass  string  `json:"check_class"`
 	CheckName   string  `json:"check_name"`
@@ -79,7 +80,28 @@ func (r *ReportHandler) GetCatalog(c *gin.Context) {
 }
 
 func (r *ReportHandler) GetReport(c *gin.Context) {
-	return
+	id := c.Param("id")
+	err := ConnectDB()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+	var result = []CheckDara{}
+	rows, _ := DBInstance.Query(fmt.Sprintf("select * from check_data where check_time=%v order by id", id))
+	for rows.Next() {
+		r := CheckDara{}
+		rows.Scan(&r.ID, &r.CheckTime, &r.CheckClass, &r.CheckName, &r.Operator, &r.Threshold, &r.Duration, &r.CheckItem, &r.CheckValue, &r.CheckStatus)
+		result = append(result, r)
+	}
+	rows.Close()
+
+	c.JSON(http.StatusOK, gin.H{
+		"total": len(result),
+		"id":    id,
+		"data":  result,
+	})
+
 }
 
 func (r *ReportHandler) GetLastReport(c *gin.Context) {

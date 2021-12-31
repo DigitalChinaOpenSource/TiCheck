@@ -705,8 +705,8 @@
                 <thead>
                   <tr>
                     <th>Class</th>
+                    <th>Name</th>
                     <th>Item</th>
-                    <th>Target</th>
                     <th>Value</th>
                     <th>Threshold</th>
                     <th>Result</th>
@@ -760,7 +760,9 @@
               $('#tb_history_show').empty()
               $.each(json.data, function (index, item) {
                 $('#tb_history_show').append(
-                  '<tr><td><a style="color: #007bff" href="javascript:view_report()" >#' +
+                  '<tr><td><a style="color: #007bff" href="javascript:view_report(' +
+                    item.check_time +
+                    ')" >#' +
                     item.check_time +
                     '</a> </td> <td> <span class="ml-2">' +
                     item.check_time +
@@ -772,7 +774,9 @@
                     item.warning_items +
                     '</label> </td> <td>' +
                     item.total_items +
-                    '</td> <td> <a href="https://github.com/DigitalChinaOpenSource/TiCheck" ><i class="fas fa-download"></i> Download Report</a> </td> </tr>'
+                    '</td> <td> <a target="_blank" href="/report/download/' +
+                    item.check_time +
+                    '" ><i class="fas fa-download"></i> Download Report</a> </td> </tr>'
                 )
               })
 
@@ -833,10 +837,36 @@
           }
         })
       })
-      function view_report() {
+      function view_report(id) {
         $('#btn_execute').hide()
-        $('#tb_details').empty()
         $('#md_detail').modal({ backdrop: 'static' })
+        $('#tb_details').empty()
+        $.getJSON('/report/id/' + id, {}, function (res) {
+          $.each(res.data, function (index, item) {
+            $('#tb_details').append(
+              '<tr><td>' +
+                item.check_class +
+                '</td><td>' +
+                item.check_name +
+                '</td><td>' +
+                item.check_item +
+                '</td><td>' +
+                (item.check_result == '正常'
+                  ? item.check_value
+                  : '<label class="mb-0 badge badge-danger">' +
+                    item.check_value +
+                    '</label>') +
+                '</td><td>' +
+                item.threshold +
+                '</td><td>' +
+                (item.check_status == '正常'
+                  ? '<i class="fas fa-check success"></i>'
+                  : '<label class="mb-0 badge icon-badge badge-danger"><i class="fas fa-times-circle"></i></label> ' +
+                    item.check_status) +
+                '</td></tr>'
+            )
+          })
+        })
       }
     </script>
   </body>
