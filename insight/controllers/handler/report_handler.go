@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"time"
 
@@ -14,8 +15,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var DBInstance *sql.DB
-
 var upGrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
@@ -23,7 +22,7 @@ var upGrader = websocket.Upgrader{
 }
 
 type ReportHandler struct {
-	con *sql.DB
+	Conn *sql.DB
 }
 
 type CheckHistory struct {
@@ -35,6 +34,7 @@ type CheckHistory struct {
 }
 
 type CheckData struct {
+	Id			int     `json:"id"`
 	CheckTime   string  `json:"check_time"`
 	CheckClass  string  `json:"check_class"`
 	CheckName   string  `json:"check_name"`
@@ -51,19 +51,20 @@ func (r *ReportHandler) GetCatalog(c *gin.Context) {
 	length, _ := strconv.Atoi(c.Query("length"))
 	start, _ := strconv.Atoi(c.Query("start"))
 
-	err := ConnectDB()
+	err := r.ConnectDB()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	var total int
-	count := DBInstance.QueryRow("select count(*) from check_history")
+	count := r.Conn.QueryRow("select count(*) from check_history")
 	count.Scan(&total)
 
 	var result = []CheckHistory{}
-	rows, _ := DBInstance.Query(fmt.Sprintf("select * from check_history order by check_time desc limit %v offset %v", length, start))
+	rows, _ := r.Conn.Query(fmt.Sprintf("select * from check_history order by check_time desc limit %v offset %v", length, start))
 	for rows.Next() {
 		r := CheckHistory{}
 		rows.Scan(&r.CheckTime, &r.NormalItems, &r.WarningItems, &r.TotalItems, &r.Duration)
@@ -94,29 +95,54 @@ func (r *ReportHandler) GetMeta(c *gin.Context) {
 func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 	ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
 
 	defer ws.Close()
-	i := 0
-	for {
 
-		err = ws.WriteJSON(map[string]interface{}{
-			"finished":        true,
-			"check_class":     "集群",
-			"check_name":      "存活的TiDB数量",
-			"check_item":      "TiDB节点数",
-			"check_result":    "正常",
-			"check_value":     5,
-			"check_threshold": "等于5",
-			"check_time":      20211221063030,
+	err = r.ConnectDB()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
-		i++
-		if err != nil || i >= 10 {
-			break
-		}
+		return
+	}
 
-		time.Sleep(time.Second * 3)
+	// 获取一个执行时间戳，作为执行时间，同时将其传给执行脚本
+	executeTime := time.Now().Unix()
+
+	// 监听脚本是否完成
+	done := make(chan bool)
+	go r.executeScript(executeTime, done)
+
+	// 从数据库中获取实时结果
+	resultCh := make(chan *CheckData, 10)
+	go r.getResult(executeTime, resultCh, done)
+
+	// 设置一分钟的超时时间
+	ticker := time.NewTicker(time.Minute)
+
+	select {
+	case result := <- resultCh :
+		err = ws.WriteJSON(result)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+		}
+	case <- done:
+		c.JSON(http.StatusOK, gin.H{
+			"finish": true,
+		})
+		return
+	case <-ticker.C:
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "execute check time out",
+		})
+		return
 	}
 
 	return
@@ -137,6 +163,8 @@ func (r *ReportHandler) DownloadReport(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "the report is not found",
 		})
+
+		return
 	}
 
 	c.Header("Content-Type", "application/x-xls")
@@ -144,8 +172,8 @@ func (r *ReportHandler) DownloadReport(c *gin.Context) {
 	c.File("../report/"+fileName)
 }
 
-func ConnectDB() error {
-	if DBInstance == nil {
+func (r *ReportHandler) ConnectDB() error {
+	if r.Conn == nil {
 		db, err := sql.Open("sqlite3", "../report/report.db")
 		if err != nil {
 			return err
@@ -154,8 +182,50 @@ func ConnectDB() error {
 		if err != nil {
 			return err
 		}
-		DBInstance = db
+		r.Conn = db
 	}
 
 	return nil
+}
+
+func (r *ReportHandler) executeScript(executeTime int64, done chan bool) {
+	cmd := exec.Command("../run/run.sh", string(executeTime))
+	cmd.Run()
+	done <- true
+}
+
+
+func (r *ReportHandler) getResult(executeTime int64, ch chan *CheckData, done chan bool) {
+	// 记录每一次查询到的最新数据，下一轮查询从这里开始
+	var index int
+
+	result := &CheckData{}
+
+	select {
+	case <-done:
+		return
+	default:
+		querySQL := fmt.Sprintf("select * from check_data where check_time == %d and index > %d", executeTime, index)
+		row, err := r.Conn.Query(querySQL)
+		if err != nil {
+			return
+		}
+
+		for row.Next() {
+			//row.Scan(result)
+
+			row.Scan(&result.Id, &result.CheckTime, &result.CheckClass, &result.CheckName,
+				&result.Operator, &result.Threshold, &result.Duration, &result.CheckItem,
+				&result.CheckValue, &result.CheckStatus)
+
+			if index <= result.Id {
+				index = result.Id
+			}
+
+			ch <- result
+		}
+
+		time.Sleep(time.Second * 1)
+	}
+	return
 }
