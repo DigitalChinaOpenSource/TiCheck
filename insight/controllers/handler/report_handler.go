@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -33,7 +34,7 @@ type CheckHistory struct {
 	Duration     int `json:"duration"`
 }
 
-type CheckDara struct {
+type CheckData struct {
 	ID          string  `json:"id"`
 	CheckTime   string  `json:"check_time"`
 	CheckClass  string  `json:"check_class"`
@@ -87,10 +88,10 @@ func (r *ReportHandler) GetReport(c *gin.Context) {
 			"error": err.Error(),
 		})
 	}
-	var result = []CheckDara{}
+	var result = []CheckData{}
 	rows, _ := DBInstance.Query(fmt.Sprintf("select * from check_data where check_time=%v order by id", id))
 	for rows.Next() {
-		r := CheckDara{}
+		r := CheckData{}
 		rows.Scan(&r.ID, &r.CheckTime, &r.CheckClass, &r.CheckName, &r.Operator, &r.Threshold, &r.Duration, &r.CheckItem, &r.CheckValue, &r.CheckStatus)
 		result = append(result, r)
 	}
@@ -147,8 +148,22 @@ func (r *ReportHandler) DownloadAllReport(c *gin.Context) {
 	return
 }
 
+// DownloadReport 下载指定报告
 func (r *ReportHandler) DownloadReport(c *gin.Context) {
+	reportId := c.Param("id")
+	fileName := reportId + ".csv"
 
+	_, err := os.Open("../report/" + fileName)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "the report is not found",
+		})
+	}
+
+	c.Header("Content-Type", "application/x-xls")
+	c.Header("Content-Disposition", "attachment; filename=\""+fileName+"\"")
+	c.File("../report/" + fileName)
 }
 
 func ConnectDB() error {
