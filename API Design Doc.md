@@ -138,14 +138,14 @@ Response Body:
 			"last_execution": "20211228092830",
 			"cluster_health": 88
 		},
-	"recent_warnings_total_check": 4,
+	"recent_warnings_total_check": 10,
 	"recent_warnings": [
 		{
-			"check_name": "存活的TiDB数量",
+			"check_time": "20211228092830",
 			"warning_count": 4
 		},
 		{
-			"check_name": "存活的TiKV数量",
+			"check_name": "20211228092829",
 			"warning_count": 2
 		},
         ...
@@ -154,10 +154,12 @@ Response Body:
 	"normal_week": [
 		{
 			"check_name": "存活的TiDB数量",
+			"check_item": "TiDB节点数量",
 			"count": 30
 		},
 		{
 			"check_name": "存活的TiKV数量",
+			"check_item": "TiKV节点数量",
 			"count": 30
 		},
 		...
@@ -166,10 +168,12 @@ Response Body:
 	"normal_month": [
 		{
 			"check_name": "存活的TiDB数量",
+			"check_item": "TiDB节点数量",
 			"count": 120
 		},
 		{
 			"check_name": "存活的TiKV数量",
+			"check_item": "TiKV节点数量",
 			"count": 120
 		},
 		...
@@ -178,10 +182,12 @@ Response Body:
 	"normal_year": [
 		{
 			"check_name": "存活的TiDB数量",
+			"check_item": "TiDB节点数量",
 			"count": 1440
 		},
 		{
 			"check_name": "存活的TiKV数量",
+			"check_item": "TiKV节点数量",
 			"count": 1440
 		},
 		...

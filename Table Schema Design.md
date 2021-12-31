@@ -18,6 +18,7 @@
 
 | column name  | data type | explanation          | nullable                     | other notes                           |
 | ------------ | --------- | -------------------- | ---------------------------- | ------------------------------------- |
+| id           | INTEGER   | 自增主键             | 不可为空                     |                                       |
 | check_time   | INTEGER   | 巡检开始时间         | 不可为空                     | 精确到秒                              |
 | check_class  | TEXT      | 检查类别             | 不可为空                     |                                       |
 | check_name   | TEXT      | 检查项目             | 不可为空                     |                                       |
