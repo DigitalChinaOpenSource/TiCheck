@@ -34,7 +34,7 @@ type CheckHistory struct {
 }
 
 type CheckData struct {
-	Id			int     `json:"id"`
+	ID			int     `json:"id"`
 	CheckTime   string  `json:"check_time"`
 	CheckClass  string  `json:"check_class"`
 	CheckName   string  `json:"check_name"`
@@ -81,7 +81,28 @@ func (r *ReportHandler) GetCatalog(c *gin.Context) {
 }
 
 func (r *ReportHandler) GetReport(c *gin.Context) {
-	return
+	id := c.Param("id")
+	err := r.ConnectDB()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+	var result = []CheckData{}
+	rows, _ := r.Conn.Query(fmt.Sprintf("select * from check_data where check_time=%v order by id", id))
+	for rows.Next() {
+		r := CheckData{}
+		rows.Scan(&r.ID, &r.CheckTime, &r.CheckClass, &r.CheckName, &r.Operator, &r.Threshold, &r.Duration, &r.CheckItem, &r.CheckValue, &r.CheckStatus)
+		result = append(result, r)
+	}
+	rows.Close()
+
+	c.JSON(http.StatusOK, gin.H{
+		"total": len(result),
+		"id":    id,
+		"data":  result,
+	})
+
 }
 
 func (r *ReportHandler) GetLastReport(c *gin.Context) {
@@ -157,7 +178,7 @@ func (r *ReportHandler) DownloadReport(c *gin.Context) {
 	reportId := c.Param("id")
 	fileName := reportId + ".csv"
 
-	_, err := os.Open("../report/"+fileName)
+	_, err := os.Open("../report/" + fileName)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -168,8 +189,8 @@ func (r *ReportHandler) DownloadReport(c *gin.Context) {
 	}
 
 	c.Header("Content-Type", "application/x-xls")
-	c.Header("Content-Disposition", "attachment; filename=\""+ fileName +"\"")
-	c.File("../report/"+fileName)
+	c.Header("Content-Disposition", "attachment; filename=\""+fileName+"\"")
+	c.File("../report/" + fileName)
 }
 
 func (r *ReportHandler) ConnectDB() error {
@@ -206,20 +227,20 @@ func (r *ReportHandler) getResult(executeTime int64, ch chan *CheckData, done ch
 		return
 	default:
 		querySQL := fmt.Sprintf("select * from check_data where check_time == %d and index > %d", executeTime, index)
-		row, err := r.Conn.Query(querySQL)
+		rows, err := r.Conn.Query(querySQL)
 		if err != nil {
 			return
 		}
 
-		for row.Next() {
+		for rows.Next() {
 			//row.Scan(result)
 
-			row.Scan(&result.Id, &result.CheckTime, &result.CheckClass, &result.CheckName,
+			rows.Scan(&result.ID, &result.CheckTime, &result.CheckClass, &result.CheckName,
 				&result.Operator, &result.Threshold, &result.Duration, &result.CheckItem,
 				&result.CheckValue, &result.CheckStatus)
 
-			if index <= result.Id {
-				index = result.Id
+			if index <= result.ID {
+				index = result.ID
 			}
 
 			ch <- result
