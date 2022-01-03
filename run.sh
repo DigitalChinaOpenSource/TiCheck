@@ -4,6 +4,8 @@
 ## load run-time variables
 ##==============================================================================================
 
+CHECK_TIME=$1
+
 # load current path as base path
 BASE_PATH=$(cd "$(dirname "$0")" || exit 1; pwd)
 
@@ -30,7 +32,7 @@ fi
 ## executing all check scripts formats print
 ## this will also generate report in /report and error report in err_report/
 ##==============================================================================================
-if python "${BASE_PATH}"/generate_report.py "$BASE_PATH" "$MYSQL_LOGIN_PATH" "$PROMETHEUS_ADDRESSES"
+if python "${BASE_PATH}"/generate_report.py "$BASE_PATH" "$MYSQL_LOGIN_PATH" "$PROMETHEUS_ADDRESSES" "$CHECK_TIME"
 then
   echo "[run.sh] success!"
 else
