@@ -18,11 +18,11 @@ base_path = sys.argv[1]
 mysql_login_path = sys.argv[2]
 prometheus_address = sys.argv[3]
 check_time = sys.argv[4]
-current_time = os.popen('date +%s').read().strip('\n')  # current time as unix time
+
 config_file = base_path + "/config/execution_config.csv"
 script_dir = base_path + "/script"
 target_db = base_path + "report/report.db"
-target_file = base_path + "report/" + check_time + ".csv"
+target_file = base_path + "/report/" + check_time + ".csv"
 
 
 # write one line to log file
