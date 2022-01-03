@@ -58,6 +58,34 @@ def write_check_history(conn, data):
     conn.commit()
 
 
+# initialize both check_data and check_history
+# it should be idempotent
+def initialize_db(conn):
+    cursor = conn.cursor()
+    create_check_data = "CREATE TABLE IF NOT EXISTS check_data (" \
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT," \
+                        "check_time INTEGER NOT NULL," \
+                        "check_class TEXT NOT NULL," \
+                        "check_name TEXT NOT NULL," \
+                        "operator TEXT NOT NULL," \
+                        "threshold REAL NOT NULL," \
+                        "duration INTEGER NOT NULL," \
+                        "check_item TEXT NOT NULL," \
+                        "check_value REAL," \
+                        "check_status TEXT NOT NULL) "
+    create_check_history = "CREATE TABLE IF NOT EXISTS check_history (" \
+                           "check_time INTEGER NOT NULL," \
+                           "normal_items INTEGER NOT NULL," \
+                           "warning_items INTEGER NOT NULL," \
+                           "total_items INTEGER NOT NULL," \
+                           "duration INTEGER NOT NULL) "
+
+    cursor.execute(create_check_data)
+    cursor.execute(create_check_history)
+    cursor.close()
+    conn.commit()
+
+
 # read config file into a 2d array
 def read_config():
     return_list = []
@@ -151,7 +179,7 @@ def run_all():
     total_items = 0
     total_duration = 0
 
-    conn = sqlite3.connect()
+    conn = sqlite3.connect(target_db)
     past_abnormality = read_baseline(conn.cursor())
     # read config file
     check_list = read_config()
