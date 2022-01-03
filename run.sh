@@ -10,7 +10,7 @@ CHECK_TIME=$1
 BASE_PATH=$(cd "$(dirname "$0")" || exit 1; pwd)
 
 # check if run-time variable exist
-if [ ! -d "${BASE_PATH}"/config ] || [ ! -f "${BASE_PATH}"/config/load_vars.sh ]; then
+if [ ! -d "${BASE_PATH}"/config ] || [ ! -f "${BASE_PATH}"/config/load_variables.sh ]; then
     echo "[run.sh] error! fail to load runtime variables"
     echo "[run.sh] failed to run!"
     exit 1
@@ -32,7 +32,7 @@ fi
 ## executing all check scripts formats print
 ## this will also generate report in /report and error report in err_report/
 ##==============================================================================================
-if python "${BASE_PATH}"/generate_report.py "$BASE_PATH" "$MYSQL_LOGIN_PATH" "$PROMETHEUS_ADDRESSES" "$CHECK_TIME"
+if python "${BASE_PATH}"/run/generate_report.py "$BASE_PATH" "$MYSQL_LOGIN_PATH" "$PROMETHEUS_ADDRESSES" "$CHECK_TIME"
 then
   echo "[run.sh] success!"
 else

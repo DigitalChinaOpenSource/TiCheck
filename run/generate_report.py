@@ -21,14 +21,14 @@ check_time = sys.argv[4]
 
 config_file = base_path + "/config/execution_config.csv"
 script_dir = base_path + "/script"
-target_db = base_path + "report/report.db"
+target_db = base_path + "/report/test.db"
 target_file = base_path + "/report/" + check_time + ".csv"
 
 
 # write one line to log file
 def write_check_data_csv(check_data_list):
     with open(target_file, 'a') as log:
-        text = "{0[0]}||{0[1]}||{0[2]}||{0[3]}||{0[4]}||{0[5]}||{0[6]}||{0[7]}||{0[8]}".format(check_data_list)
+        text = "{0[0]}||{0[1]}||{0[2]}||{0[3]}||{0[4]}||{0[5]}||{0[6]}||{0[7]}||{0[8]}\n".format(check_data_list)
         log.write(text)
 
 
@@ -108,13 +108,14 @@ def read_config():
 def read_baseline(cursor):
     return_dict = {}
     result = cursor.execute("SELECT check_time FROM check_history DESC LIMIT 1")
-    if len(result) == 0:
+    result_list = list(result)
+    if len(result_list) == 0:
         return return_dict
-    last_check_time = result[0][0]
+    last_check_time = result_list[0][0]
     result = cursor.execute("SELECT check_name, check_item "
                             "FROM check_data " +
-                            "WHERE check_time =" + last_check_time +
-                            "AND check_status != '正常'")
+                            "WHERE check_time =" + str(last_check_time) +
+                            " AND check_status != '正常'")
     for row in result:
         return_dict.update({row[0] + row[1]: None})
     return return_dict
@@ -180,6 +181,8 @@ def run_all():
     total_duration = 0
 
     conn = sqlite3.connect(target_db)
+    conn.text_factory = str
+    initialize_db(conn)
     past_abnormality = read_baseline(conn.cursor())
     # read config file
     check_list = read_config()
@@ -266,7 +269,7 @@ def run_all():
             write_check_data(conn, data_to_write)
             index += 2
 
-    write_check_history_db(conn, [check_time,
+    write_check_history(conn, [check_time,
                                   normal_items,
                                   warning_items,
                                   total_items,
