@@ -32,7 +32,7 @@ fi
 ## executing all check scripts formats print
 ## this will also generate report in /report and error report in err_report/
 ##==============================================================================================
-if python "${BASE_PATH}"/run/generate_report.py "$BASE_PATH" "$MYSQL_LOGIN_PATH" "$PROMETHEUS_ADDRESSES" "$CHECK_TIME"
+if python "${BASE_PATH}"/run/generate_report.py "$BASE_PATH" "$MYSQL_LOGIN_PATH" "$PROMETHEUS_ADDRESS" "$CHECK_TIME"
 then
   echo "[run.sh] success!"
 else

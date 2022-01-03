@@ -1,4 +1,4 @@
-﻿是否开启:检测类别:检测项目:检测脚本:检测方式:检测阈值:检测脚本参数
+是否开启:检测类别:检测项目:检测脚本:检测方式:检测阈值:检测脚本参数
 ENABLE:集群:存活的TiDB数量:alive_tidb_number.py:等于:5:
 ENABLE:集群:存活的TiKV数量:alive_tikv_number.py:等于:5:
 ENABLE:集群:存活的TiFlash数量:alive_tiflash_number.py:等于:18:

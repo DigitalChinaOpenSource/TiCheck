@@ -270,10 +270,10 @@ def run_all():
             index += 2
 
     write_check_history(conn, [check_time,
-                                  normal_items,
-                                  warning_items,
-                                  total_items,
-                                  total_duration])
+                               normal_items,
+                               warning_items,
+                               total_items,
+                               total_duration])
     conn.close()
 
 
