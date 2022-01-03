@@ -21,7 +21,7 @@ check_time = sys.argv[4]
 
 config_file = base_path + "/config/execution_config.csv"
 script_dir = base_path + "/script"
-target_db = base_path + "/report/test.db"
+target_db = base_path + "/report/report.db"
 target_file = base_path + "/report/" + check_time + ".csv"
 
 

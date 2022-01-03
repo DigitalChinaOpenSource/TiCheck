@@ -7,7 +7,7 @@ base_path = sys.argv[1]
 mysql_login_path = sys.argv[2]
 prometheus_address = sys.argv[3]
 
-check_args = sys.argv[3:] if len(sys.argv) > 3 else ""
+check_args = sys.argv[4:] if len(sys.argv) > 3 else ""
 
 pql = 'max_over_time( ( irate( node_network_transmit_bytes_total{device!="lo"}[5m] ) )[1d:5m] ) / 1024 / 1024'
 
