@@ -842,7 +842,7 @@
                 '</td><td>' +
                 data.check_item +
                 '</td><td>' +
-                (data.check_Status == '正常'
+                (data.check_status == '正常'
                   ? data.check_value
                   : '<label class="mb-0 badge badge-danger">' +
                     data.check_value +
@@ -850,10 +850,10 @@
                 '</td><td>' +
                 data.threshold +
                 '</td><td>' +
-                (data.check_Status == '正常'
+                (data.check_status == '正常'
                   ? '<i class="fas fa-check success"></i>'
                   : '<label class="mb-0 badge icon-badge badge-danger"><i class="fas fa-times-circle"></i></label> ' +
-                    data.check_Status) +
+                    data.check_status) +
                 '</td></tr>'
             )
             $('#tb_details').append(tr)

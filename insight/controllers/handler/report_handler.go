@@ -130,6 +130,7 @@ func (r *ReportHandler) GetMeta(c *gin.Context) {
 		rows.Scan(&r.CheckTime, &r.WarningItems)
 		recent_warnings = append(recent_warnings, r)
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"cluster_status":              gin.H{"total_execution_count": total_his, "total_checked_item": total_items, "last_execution": last_checktime, "cluster_health": healthy},
 		"recent_warnings_total_check": len(recent_warnings),
