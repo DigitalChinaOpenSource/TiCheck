@@ -34,7 +34,7 @@ type CheckHistory struct {
 }
 
 type CheckData struct {
-	ID			int     `json:"id"`
+	ID          int     `json:"id"`
 	CheckTime   string  `json:"check_time"`
 	CheckClass  string  `json:"check_class"`
 	CheckName   string  `json:"check_name"`
@@ -147,14 +147,14 @@ func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 	ticker := time.NewTicker(time.Minute)
 
 	select {
-	case result := <- resultCh :
+	case result := <-resultCh:
 		err = ws.WriteJSON(result)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
 			})
 		}
-	case <- done:
+	case <-done:
 		c.JSON(http.StatusOK, gin.H{
 			"finish": true,
 		})
@@ -214,7 +214,6 @@ func (r *ReportHandler) executeScript(executeTime int64, done chan bool) {
 	cmd.Run()
 	done <- true
 }
-
 
 func (r *ReportHandler) getResult(executeTime int64, ch chan *CheckData, done chan bool) {
 	// 记录每一次查询到的最新数据，下一轮查询从这里开始
