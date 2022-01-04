@@ -150,17 +150,17 @@ func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 	case result := <-resultCh:
 		err = ws.WriteJSON(result)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
+			ws.WriteJSON(gin.H{
 				"error": err.Error(),
 			})
 		}
 	case <-done:
-		c.JSON(http.StatusOK, gin.H{
+		ws.WriteJSON(gin.H{
 			"finish": true,
 		})
 		return
 	case <-ticker.C:
-		c.JSON(http.StatusBadRequest, gin.H{
+		ws.WriteJSON(gin.H{
 			"error": "execute check time out",
 		})
 		return
