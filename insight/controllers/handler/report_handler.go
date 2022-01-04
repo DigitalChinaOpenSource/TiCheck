@@ -161,12 +161,15 @@ func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 	executeTime := time.Now().Unix()
 
 	// 监听脚本是否完成
-	done := make(chan bool)
-	go r.executeScript(executeTime, done)
+	executionFinished := make(chan bool)
+
+	// 监听结果获取是否完成
+	getResultFinished := make(chan bool)
+	go r.executeScript(executeTime, executionFinished)
 
 	// 从数据库中获取实时结果
 	resultCh := make(chan *CheckData, 10)
-	go r.getResult(executeTime, resultCh, done)
+	go r.getResult(executeTime, resultCh, executionFinished, getResultFinished)
 
 	// 设置一分钟的超时时间
 	ticker := time.NewTicker(time.Minute)
@@ -180,7 +183,7 @@ func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 					"error": err.Error(),
 				})
 			}
-		case <-done:
+		case <-getResultFinished:
 			ws.WriteJSON(gin.H{
 				"finish": true,
 			})
@@ -234,7 +237,7 @@ func (r *ReportHandler) ConnectDB() error {
 	return nil
 }
 
-func (r *ReportHandler) executeScript(executeTime int64, done chan bool) {
+func (r *ReportHandler) executeScript(executeTime int64, executionFinished chan bool) {
 	cmd := exec.Command("../run.sh", strconv.FormatInt(executeTime, 10))
 	err := cmd.Run()
 	if err != nil {
@@ -243,10 +246,10 @@ func (r *ReportHandler) executeScript(executeTime int64, done chan bool) {
 
 	// sleep for 10 seconds before sending done signal
 	time.Sleep(time.Second * 10)
-	done <- true
+	executionFinished <- true
 }
 
-func (r *ReportHandler) getResult(executeTime int64, ch chan *CheckData, done chan bool) {
+func (r *ReportHandler) getResult(executeTime int64, ch chan *CheckData, executionFinished chan bool, getResultFinished chan bool) {
 	// 记录每一次查询到的最新数据，下一轮查询从这里开始
 	var index int
 
@@ -254,11 +257,11 @@ func (r *ReportHandler) getResult(executeTime int64, ch chan *CheckData, done ch
 
 	for {
 		select {
-		case <-done:
+		case <-executionFinished:
+			getResultFinished <- true
 			return
 		default:
 			querySQL := fmt.Sprintf("select * from check_data where check_time == %d and id > %d", executeTime, index)
-			fmt.Println(querySQL)
 			rows, err := r.Conn.Query(querySQL)
 			if err != nil {
 				return
@@ -274,7 +277,6 @@ func (r *ReportHandler) getResult(executeTime int64, ch chan *CheckData, done ch
 				if index <= result.ID {
 					index = result.ID
 				}
-				fmt.Println(result)
 				ch <- result
 			}
 			time.Sleep(time.Second * 1)
