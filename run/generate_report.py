@@ -195,6 +195,9 @@ def run_all():
         # this result should be a list with even index as check_item and odd index as check_value
         duration, script_result = run_script(script_name, check_args)
 
+        # calculate total duration here to avoid repetition in check_history
+        total_duration += duration
+
         # skip to next item if some error occurs
         if script_result is None:
             continue
@@ -218,8 +221,6 @@ def run_all():
                 warning_items += 1
 
             total_items += 1
-            total_duration += duration
-
             data_to_write = [check_time,
                              check_class,
                              check_name,
@@ -256,7 +257,6 @@ def run_all():
                 check_status = "operator error"
 
             total_items += 1
-            total_duration += duration
             data_to_write = [check_time,
                              check_class,
                              check_name,
