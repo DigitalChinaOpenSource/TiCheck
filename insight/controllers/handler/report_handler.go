@@ -191,37 +191,40 @@ func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 	executeTime := time.Now().Unix()
 
 	// 监听脚本是否完成
-	done := make(chan bool)
-	go r.executeScript(executeTime, done)
+	executionFinished := make(chan bool)
+
+	// 监听结果获取是否完成
+	getResultFinished := make(chan bool)
+	go r.executeScript(executeTime, executionFinished)
 
 	// 从数据库中获取实时结果
 	resultCh := make(chan *CheckData, 10)
-	go r.getResult(executeTime, resultCh, done)
+	go r.getResult(executeTime, resultCh, executionFinished, getResultFinished)
 
 	// 设置一分钟的超时时间
 	ticker := time.NewTicker(time.Minute)
 
-	select {
-	case result := <-resultCh:
-		err = ws.WriteJSON(result)
-		if err != nil {
+	for {
+		select {
+		case result := <-resultCh:
+			err = ws.WriteJSON(result)
+			if err != nil {
+				ws.WriteJSON(gin.H{
+					"error": err.Error(),
+				})
+			}
+		case <-getResultFinished:
 			ws.WriteJSON(gin.H{
-				"error": err.Error(),
+				"finish": true,
 			})
+			return
+		case <-ticker.C:
+			ws.WriteJSON(gin.H{
+				"error": "execute check time out",
+			})
+			return
 		}
-	case <-done:
-		ws.WriteJSON(gin.H{
-			"finish": true,
-		})
-		return
-	case <-ticker.C:
-		ws.WriteJSON(gin.H{
-			"error": "execute check time out",
-		})
-		return
 	}
-
-	return
 }
 
 func (r *ReportHandler) DownloadAllReport(c *gin.Context) {
@@ -264,43 +267,49 @@ func (r *ReportHandler) ConnectDB() error {
 	return nil
 }
 
-func (r *ReportHandler) executeScript(executeTime int64, done chan bool) {
-	cmd := exec.Command("../run/run.sh", string(executeTime))
-	cmd.Run()
-	done <- true
+func (r *ReportHandler) executeScript(executeTime int64, executionFinished chan bool) {
+	cmd := exec.Command("../run.sh", strconv.FormatInt(executeTime, 10))
+	err := cmd.Run()
+	if err != nil {
+		print(err)
+	}
+
+	// sleep for 10 seconds before sending done signal
+	time.Sleep(time.Second * 10)
+	executionFinished <- true
 }
 
-func (r *ReportHandler) getResult(executeTime int64, ch chan *CheckData, done chan bool) {
+func (r *ReportHandler) getResult(executeTime int64, ch chan *CheckData, executionFinished chan bool, getResultFinished chan bool) {
 	// 记录每一次查询到的最新数据，下一轮查询从这里开始
 	var index int
 
 	result := &CheckData{}
 
-	select {
-	case <-done:
-		return
-	default:
-		querySQL := fmt.Sprintf("select * from check_data where check_time == %d and index > %d", executeTime, index)
-		rows, err := r.Conn.Query(querySQL)
-		if err != nil {
+	for {
+		select {
+		case <-executionFinished:
+			getResultFinished <- true
 			return
-		}
-
-		for rows.Next() {
-			//row.Scan(result)
-
-			rows.Scan(&result.ID, &result.CheckTime, &result.CheckClass, &result.CheckName,
-				&result.Operator, &result.Threshold, &result.Duration, &result.CheckItem,
-				&result.CheckValue, &result.CheckStatus)
-
-			if index <= result.ID {
-				index = result.ID
+		default:
+			querySQL := fmt.Sprintf("select * from check_data where check_time == %d and id > %d", executeTime, index)
+			rows, err := r.Conn.Query(querySQL)
+			if err != nil {
+				return
 			}
 
-			ch <- result
-		}
+			for rows.Next() {
+				//row.Scan(result)
 
-		time.Sleep(time.Second * 1)
+				rows.Scan(&result.ID, &result.CheckTime, &result.CheckClass, &result.CheckName,
+					&result.Operator, &result.Threshold, &result.Duration, &result.CheckItem,
+					&result.CheckValue, &result.CheckStatus)
+
+				if index <= result.ID {
+					index = result.ID
+				}
+				ch <- result
+			}
+			time.Sleep(time.Second * 1)
+		}
 	}
-	return
 }
