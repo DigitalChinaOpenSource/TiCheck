@@ -269,7 +269,7 @@ func (r *ReportHandler) ConnectDB() error {
 
 func (r *ReportHandler) EditConfig(c *gin.Context) {
 	script := c.Param("script")
-	cmd := exec.Command("sh ../run/" + script + ".sh")
+	cmd := exec.Command("../run/" + script + ".sh")
 	err := cmd.Run()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
