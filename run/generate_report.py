@@ -8,7 +8,7 @@
 # writes result into two tables in sqlite3 database at report/report.db
 # check_history and check_data
 # for more details, read doc/table_schema_design.md
-
+import codecs
 import os
 import sys
 import sqlite3
@@ -28,7 +28,7 @@ target_file = base_path + "/report/" + check_time + ".csv"
 # write one line to log file
 def write_check_data_csv(check_data_list):
     with open(target_file, 'a') as log:
-        text = "{0[0]}||{0[1]}||{0[2]}||{0[3]}||{0[4]}||{0[5]}||{0[6]}||{0[7]}||{0[8]}\n".format(check_data_list)
+        text = "{0[0]},{0[1]},{0[2]},{0[3]},{0[4]},{0[5]},{0[6]},{0[7]},{0[8]}\n".format(check_data_list)
         log.write(text)
 
 
@@ -188,6 +188,8 @@ def run_all():
     check_list = read_config()
 
     # csv header
+    with open(target_file, 'wb') as csv_output:
+        csv_output.write(codecs.BOM_UTF8)
     write_check_data_csv(["开始时间", "检查类别", "检查项", "比较方式", "阈值", "巡检用时", "检查指标", "指标数值", "检查结果"])
 
     for check_class, check_name, script_name, operator, threshold, check_args in check_list:
