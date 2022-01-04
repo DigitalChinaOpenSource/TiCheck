@@ -52,7 +52,11 @@
                       </script>
                     </li>
                     <li class="breadcrumb-link active">
-                      <a href="javascript:location.href='/login';">Logout</a>
+                      <a
+                        href="javascript:location.href='/login';"
+                        onclick="$.post('/session/logout',{},null)"
+                        >Logout</a
+                      >
                     </li>
                     <li>
                       <div class="notification-wrapper" style="height: 25px">
