@@ -34,16 +34,16 @@ type CheckHistory struct {
 }
 
 type CheckData struct {
-	ID          int     `json:"id"`
-	CheckTime   string  `json:"check_time"`
-	CheckClass  string  `json:"check_class"`
-	CheckName   string  `json:"check_name"`
-	Operator    string  `json:"operator"`
-	Threshold   float64 `json:"threshold"`
-	Duration    int     `json:"duration"`
-	CheckItem   string  `json:"check_item"`
-	CheckValue  float64 `json:"check_value"`
-	CheckStatus string  `json:"check_status"`
+	ID          int    `json:"id"`
+	CheckTime   string `json:"check_time"`
+	CheckClass  string `json:"check_class"`
+	CheckName   string `json:"check_name"`
+	Operator    string `json:"operator"`
+	Threshold   string `json:"threshold"`
+	Duration    int    `json:"duration"`
+	CheckItem   string `json:"check_item"`
+	CheckValue  string `json:"check_value"`
+	CheckStatus string `json:"check_status"`
 }
 
 func (r *ReportHandler) GetCatalog(c *gin.Context) {
@@ -131,10 +131,40 @@ func (r *ReportHandler) GetMeta(c *gin.Context) {
 		recent_warnings = append(recent_warnings, r)
 	}
 
+	var weekly = []gin.H{}
+	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime','-7 days')> date('now','-7 days') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
+	rows, _ = r.Conn.Query(querySQL)
+	for rows.Next() {
+		var name, item, cnt string
+		rows.Scan(&name, &item, &cnt)
+		weekly = append(weekly, gin.H{"check_name": name, "check_item": item, "count": cnt})
+	}
+
+	var monthly = []gin.H{}
+	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime','-1 months')> date('now','-1 months') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
+	rows, _ = r.Conn.Query(querySQL)
+	for rows.Next() {
+		var name, item, cnt string
+		rows.Scan(&name, &item, &cnt)
+		monthly = append(monthly, gin.H{"check_name": name, "check_item": item, "count": cnt})
+	}
+
+	var yearly = []gin.H{}
+	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime','-1 years')> date('now','-1 years') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
+	rows, _ = r.Conn.Query(querySQL)
+	for rows.Next() {
+		var name, item, cnt string
+		rows.Scan(&name, &item, &cnt)
+		yearly = append(yearly, gin.H{"check_name": name, "check_item": item, "count": cnt})
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"cluster_status":              gin.H{"total_execution_count": total_his, "total_checked_item": total_items, "last_execution": last_checktime, "cluster_health": healthy},
 		"recent_warnings_total_check": len(recent_warnings),
 		"recent_warnings":             recent_warnings,
+		"normal_week":                 weekly,
+		"normal_month":                monthly,
+		"normal_year":                 yearly,
 	})
 }
 

@@ -32,6 +32,8 @@ func (s *SessionHandler) AuthenticatedUser(c *gin.Context) {
 
 	if s.verifyDBUser() {
 		c.SetCookie("TiCheckerToken", s.token, 3600, "/", "", false, true)
+		c.SetCookie("TiCheckerUser", s.user, 3600, "/", "", false, false)
+
 		c.JSON(http.StatusOK, gin.H{
 			"token": s.token,
 		})

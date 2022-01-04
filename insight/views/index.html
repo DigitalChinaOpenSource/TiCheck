@@ -44,7 +44,12 @@
                 <div class="breadcrumb-list">
                   <ul>
                     <li class="breadcrumb-link">
-                      <i class="fas fa-user mr-2"></i>root
+                      <i class="fas fa-user mr-2"></i>
+                      <script>
+                        document.write(
+                          document.cookie.split('TiCheckerUser=')[1]
+                        )
+                      </script>
                     </li>
                     <li class="breadcrumb-link active">
                       <a href="javascript:location.href='/login';">Logout</a>
@@ -208,7 +213,7 @@
                   </div>
                   <div class="icon-info-text">
                     <h5 class="ad-title">Last Check At</h5>
-                    <h4 class="ad-card-title" id="lb_last_check"></h4>
+                    <h4 class="ad-card-title time" id="lb_last_check"></h4>
                   </div>
                 </div>
               </div>
@@ -334,94 +339,7 @@
                           >
                             <div class="revenue-info-wrap">
                               <table>
-                                <tbody>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="far fa-chart-bar mr-2 icon-only"
-                                      ></i
-                                      >Total Sales
-                                    </td>
-                                    <td>
-                                      5995<sup class="medium ml-2 txt-green"
-                                        >+15%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="
-                                          fas
-                                          fa-user-friends
-                                          mr-2
-                                          icon-only
-                                        "
-                                      ></i
-                                      >Total Customers
-                                    </td>
-                                    <td>
-                                      5894<sup class="medium ml-2 txt-green"
-                                        >+15%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="
-                                          fas
-                                          fa-hand-holding-usd
-                                          mr-2
-                                          icon-only
-                                        "
-                                      ></i
-                                      >Total Income
-                                    </td>
-                                    <td>
-                                      4453<sup class="medium ml-2 txt-green"
-                                        >+25%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="fas fa-signal mr-2 icon-only"
-                                      ></i
-                                      >Total Expense
-                                    </td>
-                                    <td>
-                                      7454<sup class="medium ml-2 txt-red"
-                                        >+2%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i class="far fa-heart mr-2 icon-only"></i
-                                      >Total Likes
-                                    </td>
-                                    <td>
-                                      14454<sup class="medium ml-2 txt-red"
-                                        >+5%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="far fa-frown-open mr-2 icon-only"
-                                      ></i
-                                      >Tax Paid
-                                    </td>
-                                    <td>
-                                      786<sup class="medium ml-2 txt-green"
-                                        >+5%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                </tbody>
+                                <tbody id="tab_weekly"></tbody>
                               </table>
                             </div>
                           </div>
@@ -433,94 +351,7 @@
                           >
                             <div class="revenue-info-wrap">
                               <table>
-                                <tbody>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="far fa-chart-bar mr-2 icon-only"
-                                      ></i
-                                      >Total Sales
-                                    </td>
-                                    <td>
-                                      5995<sup class="medium ml-2 txt-green"
-                                        >+15%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="
-                                          fas
-                                          fa-user-friends
-                                          mr-2
-                                          icon-only
-                                        "
-                                      ></i
-                                      >Total Customers
-                                    </td>
-                                    <td>
-                                      5894<sup class="medium ml-2 txt-green"
-                                        >+15%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="
-                                          fas
-                                          fa-hand-holding-usd
-                                          mr-2
-                                          icon-only
-                                        "
-                                      ></i
-                                      >Total Income
-                                    </td>
-                                    <td>
-                                      4453<sup class="medium ml-2 txt-green"
-                                        >+25%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="fas fa-signal mr-2 icon-only"
-                                      ></i
-                                      >Total Expense
-                                    </td>
-                                    <td>
-                                      7454<sup class="medium ml-2 txt-red"
-                                        >+2%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i class="far fa-heart mr-2 icon-only"></i
-                                      >Total Likes
-                                    </td>
-                                    <td>
-                                      14454<sup class="medium ml-2 txt-red"
-                                        >+5%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="far fa-frown-open mr-2 icon-only"
-                                      ></i
-                                      >Tax Paid
-                                    </td>
-                                    <td>
-                                      786<sup class="medium ml-2 txt-green"
-                                        >+5%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                </tbody>
+                                <tbody id="tab_monthly"></tbody>
                               </table>
                             </div>
                           </div>
@@ -532,94 +363,7 @@
                           >
                             <div class="revenue-info-wrap">
                               <table>
-                                <tbody>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="far fa-chart-bar mr-2 icon-only"
-                                      ></i
-                                      >Total Sales
-                                    </td>
-                                    <td>
-                                      5995<sup class="medium ml-2 txt-green"
-                                        >+15%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="
-                                          fas
-                                          fa-user-friends
-                                          mr-2
-                                          icon-only
-                                        "
-                                      ></i
-                                      >Total Customers
-                                    </td>
-                                    <td>
-                                      5894<sup class="medium ml-2 txt-green"
-                                        >+15%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="
-                                          fas
-                                          fa-hand-holding-usd
-                                          mr-2
-                                          icon-only
-                                        "
-                                      ></i
-                                      >Total Income
-                                    </td>
-                                    <td>
-                                      4453<sup class="medium ml-2 txt-green"
-                                        >+25%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="fas fa-signal mr-2 icon-only"
-                                      ></i
-                                      >Total Expense
-                                    </td>
-                                    <td>
-                                      7454<sup class="medium ml-2 txt-red"
-                                        >+2%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i class="far fa-heart mr-2 icon-only"></i
-                                      >Total Likes
-                                    </td>
-                                    <td>
-                                      14454<sup class="medium ml-2 txt-red"
-                                        >+5%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <i
-                                        class="far fa-frown-open mr-2 icon-only"
-                                      ></i
-                                      >Tax Paid
-                                    </td>
-                                    <td>
-                                      786<sup class="medium ml-2 txt-green"
-                                        >+5%</sup
-                                      >
-                                    </td>
-                                  </tr>
-                                </tbody>
+                                <tbody id="tab_yearly"></tbody>
                               </table>
                             </div>
                           </div>
@@ -679,14 +423,14 @@
       </div>
     </div>
     <div
-      class="modal fade bd-example-modal-lg"
+      class="modal fade bd-example-modal-xl"
       tabindex="-1"
       role="dialog"
       aria-labelledby="myLargeModalLabel"
       aria-hidden="true"
       id="md_detail"
     >
-      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title h4" id="myLargeModalLabel">Check Details</h5>
@@ -746,7 +490,6 @@
     <script type="text/javascript">
       $(function () {
         $.getJSON('/report/meta', {}, function (res) {
-          console.log(res)
           $('#lb_total_check').text(res.cluster_status.total_execution_count)
           $('#lb_total_item').text(res.cluster_status.total_checked_item)
           $('#lb_last_check').text(
@@ -764,6 +507,40 @@
             warnings.push(item.warning_items)
           })
           chartD(categories, warnings)
+
+          $.each(res.normal_week, function (index, item) {
+            $('#tab_weekly').append(
+              '<tr><td><i class="fas fa-tags mr-2 icon-only"></i>' +
+                item.check_name +
+                '(' +
+                item.check_item +
+                ')</td><td>' +
+                item.count +
+                '</td></tr>'
+            )
+          })
+          $.each(res.normal_month, function (index, item) {
+            $('#tab_monthly').append(
+              '<tr><td><i class="fas fa-tags mr-2 icon-only"></i>' +
+                item.check_name +
+                '(' +
+                item.check_item +
+                ')</td><td>' +
+                item.count +
+                '</td></tr>'
+            )
+          })
+          $.each(res.normal_year, function (index, item) {
+            $('#tab_yearly').append(
+              '<tr><td><i class="fas fa-tags mr-2 icon-only"></i>' +
+                item.check_name +
+                '(' +
+                item.check_item +
+                ')</td><td>' +
+                item.count +
+                '</td></tr>'
+            )
+          })
         })
         $('#tb_history').DataTable({
           paging: true,
@@ -848,6 +625,7 @@
                     data.check_value +
                     '</label>') +
                 '</td><td>' +
+                data.operator +
                 data.threshold +
                 '</td><td>' +
                 (data.check_status == '正常'
@@ -888,6 +666,7 @@
                     item.check_value +
                     '</label>') +
                 '</td><td>' +
+                item.operator +
                 item.threshold +
                 '</td><td>' +
                 (item.check_status == '正常'
