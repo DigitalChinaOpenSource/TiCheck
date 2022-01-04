@@ -73,7 +73,7 @@ func (se *Session) verifyDBUser() bool {
 	return true
 }
 
-// UpdateToken 更新验证Token, 同时重置token更新时间
+// UpdateToken 更新Token, 同时重置token过期时间
 func (se *Session) UpdateToken() {
 	se.CreateToken(64)
 	se.ticker.Reset(time.Minute * 30)
@@ -97,7 +97,7 @@ func (sh *SessionHandler) VerifyToken(c *gin.Context) {
 	user, err0 := c.Cookie("TiCheckerUser")
 	token, err1 := c.Cookie("TiCheckerToken")
 
-	if err0 == nil && err1 ==nil && token == sh.Sessions[user].token {
+	if err0 == nil && err1 == nil && sh.UserIsExit(user) && token == sh.Sessions[user].token {
 		c.Next()
 		return
 	}
@@ -127,6 +127,12 @@ func (sh *SessionHandler) CreateUser(user string, password string) *Session {
 	se.CreateToken(64)
 	se.ticker = time.NewTicker(time.Minute * 30)
 	sh.Sessions[user] = se
+	go func() {
+		<- se.ticker.C
+		se.ticker.Stop()
+		delete(sh.Sessions, user)
+		return
+	}()
 	return se
 }
 
@@ -139,7 +145,7 @@ func (sh *SessionHandler) Logout(c *gin.Context) {
 	}
 
 	if _,ok := sh.Sessions[user]; ok {
-		delete(sh.Sessions, user)
+		sh.Sessions[user].ticker.Reset(time.Millisecond)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
