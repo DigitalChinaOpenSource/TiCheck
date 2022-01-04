@@ -51,6 +51,10 @@ func (r *ReportHandler) GetCatalog(c *gin.Context) {
 	length, _ := strconv.Atoi(c.Query("length"))
 	start, _ := strconv.Atoi(c.Query("start"))
 
+	if length == 0 {
+		length = 10
+	}
+
 	err := r.ConnectDB()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
