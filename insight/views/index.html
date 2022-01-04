@@ -160,7 +160,7 @@
                   </div>
                   <div class="icon-info-text">
                     <h5 class="ad-title">Total Check Count</h5>
-                    <h4 class="ad-card-title">66k</h4>
+                    <h4 class="ad-card-title" id="lb_total_check"></h4>
                   </div>
                 </div>
               </div>
@@ -180,7 +180,7 @@
                   </div>
                   <div class="icon-info-text">
                     <h5 class="ad-title">Total Check Items</h5>
-                    <h4 class="ad-card-title">15k</h4>
+                    <h4 class="ad-card-title" id="lb_total_item"></h4>
                   </div>
                 </div>
               </div>
@@ -208,7 +208,7 @@
                   </div>
                   <div class="icon-info-text">
                     <h5 class="ad-title">Last Check At</h5>
-                    <h4 class="ad-card-title">420k</h4>
+                    <h4 class="ad-card-title" id="lb_last_check"></h4>
                   </div>
                 </div>
               </div>
@@ -250,7 +250,7 @@
                   </div>
                   <div class="icon-info-text">
                     <h5 class="ad-title">Cluster Healthy</h5>
-                    <h4 class="ad-card-title">10k</h4>
+                    <h4 class="ad-card-title" id="lb_cluster_leahthy"></h4>
                   </div>
                 </div>
               </div>
@@ -645,7 +645,7 @@
                         <tr>
                           <th>ID</th>
                           <th>Start Time</th>
-                          <th>Duration</th>
+                          <th>Duration(ms)</th>
                           <th>Normal Items</th>
                           <th>Warning Items</th>
                           <th>Total Items</th>
@@ -665,7 +665,7 @@
           </div>
           <div class="ad-footer-btm">
             <p>
-              Copyright 2021 ©
+              Copyright 2022 ©
               <a href="https://github.com/DigitalChinaOpenSource/TiCheck"
                 >TiCheck</a
               >
@@ -745,6 +745,26 @@
 
     <script type="text/javascript">
       $(function () {
+        $.getJSON('/report/meta', {}, function (res) {
+          console.log(res)
+          $('#lb_total_check').text(res.cluster_status.total_execution_count)
+          $('#lb_total_item').text(res.cluster_status.total_checked_item)
+          $('#lb_last_check').text(
+            new Date(res.cluster_status.last_execution * 1000).Format(
+              'yyyy-MM-dd hh:mm:ss'
+            )
+          )
+          $('#lb_cluster_leahthy')
+            .text(res.cluster_status.cluster_health)
+            .addClass(res.cluster_status.cluster_health < 60 ? 'danger' : '')
+          var categories = [],
+            warnings = []
+          $.each(res.recent_warnings, function (index, item) {
+            categories.push(new Date(item.check_time * 1000).Format('hh:mm'))
+            warnings.push(item.warning_items)
+          })
+          chartD(categories, warnings)
+        })
         $('#tb_history').DataTable({
           paging: true,
           serverSide: true,
@@ -756,6 +776,11 @@
             url: '/report/catalog',
             type: 'get',
             dataType: 'json',
+            error: function (xhr, status, error) {
+              if (xhr.status == 401) {
+                location.href = '/login'
+              }
+            },
             dataSrc: function (json) {
               $('#tb_history_show').empty()
               $.each(json.data, function (index, item) {
@@ -765,10 +790,12 @@
                     ')" >#' +
                     item.check_time +
                     '</a> </td> <td> <span class="ml-2">' +
-                    item.check_time +
+                    new Date(item.check_time * 1000).Format(
+                      'yyyy-MM-dd hh:mm:ss'
+                    ) +
                     '</span> </td> <td>' +
                     item.duration +
-                    's</td> <td> <label class="mb-0 badge badge-success">' +
+                    '</td> <td> <label class="mb-0 badge badge-success">' +
                     item.normal_items +
                     '</label> </td> <td> <label class="mb-0 badge badge-danger">' +
                     item.warning_items +
@@ -803,6 +830,10 @@
           ws.onmessage = function (evt) {
             console.log(evt.data)
             var data = JSON.parse(evt.data)
+            if (data.finish) {
+              ws.close()
+              return
+            }
             var tr = $(
               '<tr style="display:none"><td>' +
                 data.check_class +
@@ -811,18 +842,18 @@
                 '</td><td>' +
                 data.check_item +
                 '</td><td>' +
-                (data.check_result == '正常'
+                (data.check_Status == '正常'
                   ? data.check_value
                   : '<label class="mb-0 badge badge-danger">' +
                     data.check_value +
                     '</label>') +
                 '</td><td>' +
-                data.check_threshold +
+                data.threshold +
                 '</td><td>' +
-                (data.check_result == '正常'
+                (data.check_Status == '正常'
                   ? '<i class="fas fa-check success"></i>'
                   : '<label class="mb-0 badge icon-badge badge-danger"><i class="fas fa-times-circle"></i></label> ' +
-                    data.check_result) +
+                    data.check_Status) +
                 '</td></tr>'
             )
             $('#tb_details').append(tr)
@@ -867,6 +898,31 @@
             )
           })
         })
+      }
+      Date.prototype.Format = function (fmt) {
+        var o = {
+          'M+': this.getMonth() + 1, //月份
+          'd+': this.getDate(), //日
+          'h+': this.getHours(), //小时
+          'm+': this.getMinutes(), //分
+          's+': this.getSeconds(), //秒
+          'q+': Math.floor((this.getMonth() + 3) / 3), //季度
+          S: this.getMilliseconds(), //毫秒
+        }
+        if (/(y+)/.test(fmt))
+          fmt = fmt.replace(
+            RegExp.$1,
+            (this.getFullYear() + '').substr(4 - RegExp.$1.length)
+          )
+        for (var k in o)
+          if (new RegExp('(' + k + ')').test(fmt))
+            fmt = fmt.replace(
+              RegExp.$1,
+              RegExp.$1.length == 1
+                ? o[k]
+                : ('00' + o[k]).substr(('' + o[k]).length)
+            )
+        return fmt
       }
     </script>
   </body>

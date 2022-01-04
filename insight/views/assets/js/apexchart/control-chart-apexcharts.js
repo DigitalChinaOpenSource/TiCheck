@@ -1,11 +1,11 @@
 'use strict';
-$(function() {
-    chartD();
-});
+// $(function() {
+//     chartD();
+// });
 
 /* Vertical Bar Chart */
 
-function chartD() {
+function chartD(categories,data) {
 
     var options = {
         chart: {
@@ -30,9 +30,9 @@ function chartD() {
         colors: ["#11a0fd"],
         dataLabels: {
             enabled: true,
-            formatter: function(val) {
-                return val + "%";
-            },
+            // formatter: function(val) {
+            //     return val + "%";
+            // },
             offsetY: -20,
             style: {
                 fontSize: '12px',
@@ -41,11 +41,11 @@ function chartD() {
             }
         },
         series: [{
-            name: 'Revenue',
-            data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6, 3.2, 2.3, 1.4, 0.8, 0.5, 0.2]
+            name: 'Warnings',
+            data: data
         }],
         xaxis: {
-            categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            categories: categories,
             position: 'top',
             labels: {
                 offsetY: -18,
@@ -99,14 +99,14 @@ function chartD() {
             },
             labels: {
                 show: false,
-                formatter: function(val) {
-                    return val + "%";
-                }
+                // formatter: function(val) {
+                //     return val + "%";
+                // }
             }
 
         },
         title: {
-            text: 'Monthly Revenue',
+            text: 'Warnings Of Lastest 10 Checks',
             floating: true,
             offsetY: 320,
             align: 'center',

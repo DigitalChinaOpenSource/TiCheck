@@ -110,7 +110,31 @@ func (r *ReportHandler) GetLastReport(c *gin.Context) {
 }
 
 func (r *ReportHandler) GetMeta(c *gin.Context) {
-	return
+	r.ConnectDB()
+	var total_his, total_items, last_checktime, healthy int
+	querySQL := "select count(*),sum(total_items),sum(normal_items)*100/sum(total_items) from check_history"
+	row := r.Conn.QueryRow(querySQL)
+	if row != nil {
+		row.Scan(&total_his, &total_items, &healthy)
+	}
+	querySQL = "select check_time from check_history order by check_time desc limit 1"
+	row = r.Conn.QueryRow(querySQL)
+	if row != nil {
+		row.Scan(&last_checktime)
+	}
+	var recent_warnings = []CheckHistory{}
+	querySQL = "select check_time,warning_items from check_history order by check_time asc limit 10"
+	rows, _ := r.Conn.Query(querySQL)
+	for rows.Next() {
+		r := CheckHistory{}
+		rows.Scan(&r.CheckTime, &r.WarningItems)
+		recent_warnings = append(recent_warnings, r)
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"cluster_status":              gin.H{"total_execution_count": total_his, "total_checked_item": total_items, "last_execution": last_checktime, "cluster_health": healthy},
+		"recent_warnings_total_check": len(recent_warnings),
+		"recent_warnings":             recent_warnings,
+	})
 }
 
 func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
