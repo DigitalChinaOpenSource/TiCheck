@@ -48,7 +48,7 @@ func Register(engine *gin.Engine) {
 		reportGroup.GET("/meta", report.GetMeta)
 
 		// 执行一次巡检
-		reportGroup.POST("/", report.ExecuteCheck)
+		reportGroup.GET("/", report.ExecuteCheck)
 
 		// 下载所有的巡检报告
 		reportGroup.GET("/download/all", report.DownloadAllReport)
