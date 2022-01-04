@@ -2160,17 +2160,17 @@ body.mini-sidebar .main-content {
   padding-left: 10px;
   position: relative;
 }
-.breadcrumb-list ul li:first-child {
+.breadcrumb-list ul li.breadcrumb-link:first-child {
   margin-left: 0;
   padding-left: 0;
   font-weight: 600;
 }
-.breadcrumb-list ul li:first-child:before {
+.breadcrumb-list ul li.breadcrumb-link:first-child:before {
   content: unset;
 }
-.breadcrumb-list ul li:before {
+.breadcrumb-list ul li.breadcrumb-link:before {
   position: absolute;
-  content: '||';
+  content: '|';
   top: 1px;
   bottom: 0;
   left: -4px;

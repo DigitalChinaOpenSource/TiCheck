@@ -267,6 +267,17 @@ func (r *ReportHandler) ConnectDB() error {
 	return nil
 }
 
+func (r *ReportHandler) EditConfig(c *gin.Context) {
+	script := c.Param("script")
+	cmd := exec.Command("sh ../run/" + script + ".sh")
+	err := cmd.Run()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+}
+
 func (r *ReportHandler) executeScript(executeTime int64, executionFinished chan bool) {
 	cmd := exec.Command("../run.sh", strconv.FormatInt(executeTime, 10))
 	err := cmd.Run()

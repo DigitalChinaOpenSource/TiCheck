@@ -54,6 +54,59 @@
                     <li class="breadcrumb-link active">
                       <a href="javascript:location.href='/login';">Logout</a>
                     </li>
+                    <li>
+                      <div class="notification-wrapper" style="height: 25px">
+                        <a href="javascript:void(0);" class="notification-info"
+                          ><span class="header-icon">
+                            <i class="fa fa-cog" aria-hidden="true"></i></span
+                        ></a>
+                        <div
+                          class="recent-notification"
+                          style="z-index: 999; top: 40px"
+                        >
+                          <div class="drop-down-header">
+                            <p>You have any config to edit.</p>
+                          </div>
+                          <ul>
+                            <li>
+                              <a
+                                href="javascript:void(0);"
+                                onclick="edit_config('edit_execution_config')"
+                              >
+                                <i class="far fa-edit"></i> edit execution
+                                config
+                              </a>
+                            </li>
+                            <li>
+                              <a
+                                href="javascript:void(0);"
+                                onclick="edit_config('edit_connection_config')"
+                              >
+                                <i class="far fa-edit"></i>
+                                edit connection config
+                              </a>
+                            </li>
+                            <li>
+                              <a
+                                href="javascript:void(0);"
+                                onclick="edit_config('new_check_script')"
+                              >
+                                <i class="far fa-edit"></i>
+                                new check script
+                              </a>
+                            </li>
+                            <li>
+                              <a
+                                href="javascript:void(0);"
+                                onclick="edit_config('edit_check_script')"
+                              >
+                                <i class="far fa-edit"></i> edit check script
+                              </a>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -478,6 +531,7 @@
         </div>
       </div>
     </div>
+
     <!-- Script Start -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
@@ -647,6 +701,9 @@
           }
         })
       })
+      function edit_config(script) {
+        $.post('/report/editconf/' + script, {}, function (res) {})
+      }
       function view_report(id) {
         $('#btn_execute').hide()
         $('#md_detail').modal({ backdrop: 'static' })
