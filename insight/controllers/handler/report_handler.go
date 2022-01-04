@@ -51,6 +51,10 @@ func (r *ReportHandler) GetCatalog(c *gin.Context) {
 	length, _ := strconv.Atoi(c.Query("length"))
 	start, _ := strconv.Atoi(c.Query("start"))
 
+	if length == 0 {
+		length = 10
+	}
+
 	err := r.ConnectDB()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -265,6 +269,17 @@ func (r *ReportHandler) ConnectDB() error {
 	}
 
 	return nil
+}
+
+func (r *ReportHandler) EditConfig(c *gin.Context) {
+	script := c.Param("script")
+	cmd := exec.Command("../run/" + script + ".sh")
+	err := cmd.Run()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
 }
 
 func (r *ReportHandler) executeScript(executeTime int64, executionFinished chan bool) {

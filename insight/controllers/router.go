@@ -60,6 +60,9 @@ func Register(engine *gin.Engine) {
 
 		// 下载指定的一次巡检报告
 		reportGroup.GET("/download/:id", report.DownloadReport)
+
+		// 编辑配置脚本
+		reportGroup.POST("/editconf/:script", report.EditConfig)
 	}
 
 }
