@@ -23,11 +23,16 @@ func Register(engine *gin.Engine) {
 	}
 
 	sessionGroup := engine.Group("/session")
-	session := &handler.SessionHandler{}
+	session := &handler.SessionHandler{
+		Sessions: make(map[string]*handler.Session, 0),
+	}
 
 	{
 		// 用户认证
 		sessionGroup.POST("/", session.AuthenticatedUser)
+
+		// 退出用户
+		sessionGroup.POST("/logout", session.Logout)
 	}
 
 	reportGroup := engine.Group("/report")
