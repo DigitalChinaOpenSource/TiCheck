@@ -185,7 +185,7 @@ func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 
 	err = r.ConnectDB()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		ws.WriteJSON(gin.H{
 			"error": err.Error(),
 		})
 		return
