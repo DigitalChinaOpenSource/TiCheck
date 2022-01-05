@@ -136,7 +136,7 @@ func (r *ReportHandler) GetMeta(c *gin.Context) {
 	}
 
 	var weekly = []gin.H{}
-	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime','-7 days')> date('now','-7 days') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
+	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime')> date('now','-7 days') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
 	rows, _ = r.Conn.Query(querySQL)
 	for rows.Next() {
 		var name, item, cnt string
@@ -145,7 +145,7 @@ func (r *ReportHandler) GetMeta(c *gin.Context) {
 	}
 
 	var monthly = []gin.H{}
-	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime','-1 months')> date('now','-1 months') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
+	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime')> date('now','-1 months') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
 	rows, _ = r.Conn.Query(querySQL)
 	for rows.Next() {
 		var name, item, cnt string
@@ -154,7 +154,7 @@ func (r *ReportHandler) GetMeta(c *gin.Context) {
 	}
 
 	var yearly = []gin.H{}
-	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime','-1 years')> date('now','-1 years') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
+	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime')> date('now','-1 years') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
 	rows, _ = r.Conn.Query(querySQL)
 	for rows.Next() {
 		var name, item, cnt string
