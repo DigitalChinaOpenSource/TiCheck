@@ -85,30 +85,29 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 	}
 
 	for i, _ := range jsonMap{
-		switch data := jsonMap[i]["name"].(type) {
-		case string:
-			script := &RemoteScript{}
-			remoteList = append(remoteList, data)
-			isDownload := false
-			for _, v := range localList {
-				if data == v {
-					isDownload = true
-					break
-				}
-			}
-
-			script.Name = data
-			script.Download = isDownload
-
-			scriptList.Total += 1
-			scriptList.Scripts = append(scriptList.Scripts, script)
-		default:
+		data, ok := jsonMap[i]["name"].(string)
+		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "can't find script for remote warehouse, please check whether the remote warehouse is valid : " + url,
 			})
 			return
 		}
 
+		script := &RemoteScript{}
+		remoteList = append(remoteList, data)
+		isDownload := false
+		for _, v := range localList {
+			if data == v {
+				isDownload = true
+				break
+			}
+		}
+
+		script.Name = data
+		script.Download = isDownload
+
+		scriptList.Total += 1
+		scriptList.Scripts = append(scriptList.Scripts, script)
 	}
 
 	c.JSON(http.StatusOK, scriptList)
