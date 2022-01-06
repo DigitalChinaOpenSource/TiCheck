@@ -184,8 +184,6 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 
 	jsonMap, err := s.SendRequest(scriptFileUrl)
 
-	var fileName string
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error" : err.Error(),
@@ -193,34 +191,54 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 		return
 	}
 
-	label:
-		for i, _ := range jsonMap {
-			switch data := jsonMap[i]["name"].(type) {
-			case string:
-				if data != name+".config" || data != "readme.md" {
-					fileName = data
-				}
-				break label
-			default:
+	var fileName string
+
+	for i, _ := range jsonMap {
+		value, ok := jsonMap[i]["name"].(string)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "can't find script for remote warehouse, please check whether the remote warehouse is valid : " + scriptFileUrl,
+			})
+			return
+		}
+
+		if value != name+".config" && value != "readme.md" {
+			fileName = value
+			break
+		} else {
+			if i == len(jsonMap) - 1 {
 				c.JSON(http.StatusBadRequest, gin.H{
 					"error": "can't find script for remote warehouse, please check whether the remote warehouse is valid : " + scriptFileUrl,
 				})
 				return
 			}
 		}
+	}
 
 	configUrl := "https://raw.githubusercontent.com/DigitalChinaOpenSource/TiCheck_ScriptWarehouse/main/scripts/" + name + "/" + name + ".config"
 
 	scriptUrl := "https://raw.githubusercontent.com/DigitalChinaOpenSource/TiCheck_ScriptWarehouse/main/scripts/" + name + "/" + fileName
 
-	if err := s.saveSctipt(scriptUrl, fileName); err != nil {
+	if err := s.saveScript(scriptUrl, fileName); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 
+		return
 	}
 
 	if err := s.updateConfig(configUrl); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 
+		return
 	}
 
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+	return
 }
 
 func (s *ScriptHandler) SendRequest(url string) ([]map[string]interface{} ,error) {
@@ -264,7 +282,7 @@ func (s *ScriptHandler) CheckScriptIsExist(name string) (bool, error) {
 
 // saveSctipt 通过 url 下载脚本文件保存到本地
 // 本地文件保存目录： ../script/
-func (s *ScriptHandler) saveSctipt(scriptUrl string, scriptName string) error {
+func (s *ScriptHandler) saveScript(scriptUrl string, scriptName string) error {
 	resp, err := http.Get(scriptUrl)
 
 	if err != nil {
