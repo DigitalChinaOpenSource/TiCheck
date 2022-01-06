@@ -184,8 +184,6 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 
 	jsonMap, err := s.SendRequest(scriptFileUrl)
 
-	var fileName string
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error" : err.Error(),
@@ -193,21 +191,29 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 		return
 	}
 
-	label:
-		for i, _ := range jsonMap {
-			switch data := jsonMap[i]["name"].(type) {
-			case string:
-				if data != name+".config" && data != "readme.md" {
-					fileName = data
-					break label
-				}
-			default:
+	var fileName string
+
+	for i, _ := range jsonMap {
+		value, ok := jsonMap[i]["name"].(string)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "can't find script for remote warehouse, please check whether the remote warehouse is valid : " + scriptFileUrl,
+			})
+			return
+		}
+
+		if value != name+".config" && value != "readme.md" {
+			fileName = value
+			break
+		} else {
+			if i == len(jsonMap) - 1 {
 				c.JSON(http.StatusBadRequest, gin.H{
 					"error": "can't find script for remote warehouse, please check whether the remote warehouse is valid : " + scriptFileUrl,
 				})
 				return
 			}
 		}
+	}
 
 	configUrl := "https://raw.githubusercontent.com/DigitalChinaOpenSource/TiCheck_ScriptWarehouse/main/scripts/" + name + "/" + name + ".config"
 
