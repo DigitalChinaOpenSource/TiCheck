@@ -197,7 +197,7 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 		for i, _ := range jsonMap {
 			switch data := jsonMap[i]["name"].(type) {
 			case string:
-				if data != name+".config" || data != "readme.md" {
+				if data != name+".config" && data != "readme.md" {
 					fileName = data
 				}
 				break label
