@@ -199,8 +199,8 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 			case string:
 				if data != name+".config" && data != "readme.md" {
 					fileName = data
+					break label
 				}
-				break label
 			default:
 				c.JSON(http.StatusBadRequest, gin.H{
 					"error": "can't find script for remote warehouse, please check whether the remote warehouse is valid : " + scriptFileUrl,
@@ -213,7 +213,7 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 
 	scriptUrl := "https://raw.githubusercontent.com/DigitalChinaOpenSource/TiCheck_ScriptWarehouse/main/scripts/" + name + "/" + fileName
 
-	if err := s.saveSctipt(scriptUrl, fileName); err != nil {
+	if err := s.saveScript(scriptUrl, fileName); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -276,7 +276,7 @@ func (s *ScriptHandler) CheckScriptIsExist(name string) (bool, error) {
 
 // saveSctipt 通过 url 下载脚本文件保存到本地
 // 本地文件保存目录： ../script/
-func (s *ScriptHandler) saveSctipt(scriptUrl string, scriptName string) error {
+func (s *ScriptHandler) saveScript(scriptUrl string, scriptName string) error {
 	resp, err := http.Get(scriptUrl)
 
 	if err != nil {
