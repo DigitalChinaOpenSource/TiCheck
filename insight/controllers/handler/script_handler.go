@@ -214,13 +214,25 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 	scriptUrl := "https://raw.githubusercontent.com/DigitalChinaOpenSource/TiCheck_ScriptWarehouse/main/scripts/" + name + "/" + fileName
 
 	if err := s.saveSctipt(scriptUrl, fileName); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 
+		return
 	}
 
 	if err := s.updateConfig(configUrl); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 
+		return
 	}
 
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+	return
 }
 
 func (s *ScriptHandler) SendRequest(url string) ([]map[string]interface{} ,error) {
