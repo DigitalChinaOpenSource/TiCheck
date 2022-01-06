@@ -42,6 +42,7 @@ func (s *ScriptHandler) GetAllScript(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error" : err.Error(),
 		})
+		return
 	}
 
 	for i, _ := range jsonMap{
@@ -77,7 +78,42 @@ func (s *ScriptHandler) GetAllScript(c *gin.Context) {
 
 // GetReadMe 获取远程仓库某个脚本的 Readme 文件并返回
 func (s *ScriptHandler) GetReadMe(c *gin.Context) {
+	name := c.Param("name")
+	if name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "script name not specified",
+		})
+		return
+	}
 
+	url := "https://raw.githubusercontent.com/DigitalChinaOpenSource/TiCheck_ScriptWarehouse/main/scripts/" + name + "/readme.md"
+	//url1 := "https://raw.githubusercontent.com/DigitalChinaOpenSource/TiCheck_ScriptWarehouse/main/scripts/" + name + "/"+ name + ".config"
+
+	resp, err := http.Get(url)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to access remote warehouse: " + err.Error(),
+		})
+		return
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to get readme: " + err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"readme": string(body),
+	})
+
+	return
 }
 
 // DownloadScript 下载远程仓库脚本到本地
