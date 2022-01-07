@@ -58,10 +58,21 @@ func (s *ScriptHandler) GetAllLocalScript(c *gin.Context) {
 		return
 	}
 
+	if st > len(files) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error" : "exceeded the maximum number of files",
+		})
+		return
+	}
+
 	for _, f := range files {
 		name := strings.Split(f.Name(), ".")
 		localList.Scripts = append(localList.Scripts, &LocalScript{name[0]})
 		localList.Total += 1
+	}
+
+	if st + le > len(files) {
+		le = len(files)
 	}
 
 	localList.Scripts = localList.Scripts[st:le]
@@ -139,6 +150,17 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 
 		scriptList.Total += 1
 		scriptList.Scripts = append(scriptList.Scripts, script)
+	}
+
+	if st + le > len(files) {
+		le = len(files)
+	}
+
+	if st > len(scriptList.Scripts) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error" : "exceeded the maximum number of scripts",
+		})
+		return
 	}
 
 	scriptList.Scripts = scriptList.Scripts[st:le]
