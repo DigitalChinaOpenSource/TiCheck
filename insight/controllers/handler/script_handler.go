@@ -215,6 +215,7 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "script name not specified",
 		})
+		return
 	}
 
 	isExist, err := s.CheckScriptIsExist(name)
@@ -222,12 +223,14 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "the script already exists locally",
 		})
+		return
 	}
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	scriptFileUrl := "https://api.github.com/repos/DigitalChinaOpenSource/TiCheck_ScriptWarehouse/contents/scripts/" + name
