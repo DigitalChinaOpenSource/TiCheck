@@ -599,10 +599,55 @@
                   id="home0"
                   role="tabpanel"
                 >
-                  <p>doing...</p>
+                  <div class="int-tab-peragraph"></div>
+
+                  <div
+                    class="btn-group btn-group-pill mt-2"
+                    style="float: right"
+                    role="group"
+                    id="pager_local"
+                    data-pager-start="0"
+                  >
+                    <button
+                      class="btn-outline secondary-outline sm-btn"
+                      type="button"
+                      onclick="script_local_pager(0)"
+                    >
+                      Prev
+                    </button>
+                    <button
+                      class="btn-outline secondary-outline border-lf-0 sm-btn"
+                      type="button"
+                      onclick="script_local_pager(1)"
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
                 <div class="tab-pane fade" id="profile0" role="tabpanel">
                   <div class="row"></div>
+                  <div
+                    class="btn-group btn-group-pill mt-2"
+                    style="float: right"
+                    role="group"
+                    id="pager_remote"
+                    data-pager-start="0"
+                  >
+                    <button
+                      class="btn-outline secondary-outline sm-btn"
+                      type="button"
+                      onclick="script_remote_pager(0)"
+                    >
+                      Prev
+                    </button>
+                    <button
+                      class="btn-outline secondary-outline border-lf-0 sm-btn"
+                      type="button"
+                      onclick="script_remote_pager(1)"
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -627,7 +672,6 @@
     <script src="assets/js/apexcharts.min.js"></script>
     <script src="assets/js/apexchart/control-chart-apexcharts.js"></script>
     <script src="assets/js/datatables.min.js"></script>
-    <script src="assets/js/template-web.js"></script>
     <!-- Custom Script -->
     <script src="assets/js/custom.js"></script>
 
@@ -736,38 +780,8 @@
           $('#md_warehouse').modal({ backdrop: 'static' })
         })
         $('#md_warehouse').on('shown.bs.modal', function () {
-          $('#profile0 .row').empty()
-          $.getJSON('/script/remote', {}, function (res) {
-            $.each(res.script_list, function (index, item) {
-              $('#profile0 .row').append(
-                '<div class="col-xl-4 col-lg-6 col-md-6">\
-                        <div class="prooduct-details-box">\
-                          <div class="media">\
-                            <div class="media-body ms-4">\
-                              <div class="product-name">\
-                                <h6>\
-                                  <a href="javascript:;" title="">' +
-                  item.name +
-                  '</a>\
-                                </h6>\
-                              </div>\
-                              <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>\
-                              </div>\
-                              <div class="avaiabilty">\
-                                <a href="javascript:;" onclick="show_script_readme(\'' +
-                  item.name +
-                  '\',this)"><i class="fas fa-eye"></i> detail</a> |\
-                                <a target="_blank" href="/script/remote/download/' +
-                  item.name +
-                  '"><i class="fas fa-download"></i> download</a>\
-                              </div>\
-                            </div>\
-                          </div>\
-                        </div>\
-                      </div>'
-              )
-            })
-          })
+          load_local_script(0)
+          load_remote_script(0)
         })
         $('#btn_launch').click(function () {
           $('#btn_execute').show()
@@ -861,6 +875,90 @@
                 '</td></tr>'
             )
           })
+        })
+      }
+      function script_local_pager(s) {
+        var start = parseInt($('#pager_local').attr('data-pager-start'))
+        var total = parseInt($('#pager_local').attr('data-pager-total'))
+        if (s == 0) {
+          start -= 5
+        } else if (s == 1) {
+          start += 5
+        } else {
+          return
+        }
+        if (start < 0 || start > total) {
+          alert('out of page index')
+          return
+        }
+        load_local_script(start)
+      }
+      function load_local_script(start) {
+        $('#home0 .int-tab-peragraph').empty()
+        $.getJSON('/script/local?length=5&start=' + start, {}, function (res) {
+          $.each(res.script_list, function (index, item) {
+            $('#home0 .int-tab-peragraph').append(
+              '<h4><span><i class="fas fa-file-code"></i></span>' +
+                item.name +
+                '</h4><p>this is script description. this is script description. this is script description. this is script description.</p>'
+            )
+          })
+          $('#pager_local')
+            .attr('data-pager-start', start)
+            .attr('data-pager-total', res.total)
+        })
+      }
+      function script_remote_pager(s) {
+        var start = parseInt($('#pager_remote').attr('data-pager-start'))
+        var total = parseInt($('#pager_remote').attr('data-pager-total'))
+        if (s == 0) {
+          start -= 9
+        } else if (s == 1) {
+          start += 9
+        } else {
+          return
+        }
+        if (start < 0 || start > total) {
+          alert('out of page index')
+          return
+        }
+        load_remote_script(start)
+      }
+      function load_remote_script(start) {
+        $('#profile0 .row').empty()
+        $.getJSON('/script/remote?length=9&start=' + start, {}, function (res) {
+          $.each(res.script_list, function (index, item) {
+            $('#profile0 .row').append(
+              '<div class="col-xl-4 col-lg-6 col-md-6">\
+                        <div class="prooduct-details-box">\
+                          <div class="media">\
+                            <div class="media-body ms-4">\
+                              <div class="product-name">\
+                                <h6>\
+                                  <a href="javascript:;" title="">' +
+                item.name +
+                '</a>\
+                                </h6>\
+                              </div>\
+                              <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>\
+                              </div>\
+                              <div class="avaiabilty">\
+                                <a href="javascript:;" onclick="show_script_readme(\'' +
+                item.name +
+                '\',this)"><i class="fas fa-eye"></i> detail</a> |\
+                                <a target="_blank" href="/script/remote/download/' +
+                item.name +
+                '"><i class="fas fa-download"></i> download</a>\
+                              </div>\
+                            </div>\
+                          </div>\
+                        </div>\
+                      </div>'
+            )
+          })
+          $('#pager_remote')
+            .attr('data-pager-start', start)
+            .attr('data-pager-total', res.total)
         })
       }
       function show_script_readme(name, obj) {
