@@ -152,8 +152,8 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 		scriptList.Scripts = append(scriptList.Scripts, script)
 	}
 
-	if st + le > len(files) {
-		le = len(files)
+	if st + le > len(scriptList.Scripts) {
+		le = len(scriptList.Scripts)
 	}
 
 	if st > len(scriptList.Scripts) {
