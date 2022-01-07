@@ -72,10 +72,10 @@ func (s *ScriptHandler) GetAllLocalScript(c *gin.Context) {
 	}
 
 	if st + le > len(files) {
-		le = len(files)
+		le = len(files) - st
 	}
 
-	localList.Scripts = localList.Scripts[st:le]
+	localList.Scripts = localList.Scripts[st:le+st]
 
 	c.JSON(http.StatusOK, localList)
 	return
@@ -90,7 +90,6 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 	if err != nil {
 		st = 0
 	}
-
 
 	le, err := strconv.Atoi(length)
 	if err != nil && le == 0 {
@@ -153,7 +152,7 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 	}
 
 	if st + le > len(scriptList.Scripts) {
-		le = len(scriptList.Scripts)
+		le = len(scriptList.Scripts) - st
 	}
 
 	if st > len(scriptList.Scripts) {
@@ -163,7 +162,7 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 		return
 	}
 
-	scriptList.Scripts = scriptList.Scripts[st:le]
+	scriptList.Scripts = scriptList.Scripts[st:le+st]
 
 	c.JSON(http.StatusOK, scriptList)
 	return
