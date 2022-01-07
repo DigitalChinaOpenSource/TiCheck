@@ -333,6 +333,13 @@
                       >
                         <i class="fas fa-rocket mr-2"></i> Launch
                       </button>
+                      <button
+                        type="button"
+                        class="squer-btn btn-outline secondary-outline mt-2 mr-2"
+                        id="btn_warehouse"
+                      >
+                        <i class="fas fa-warehouse mr-2"></i>Warehouse
+                      </button>
                     </span>
                   </h4>
                 </div>
@@ -535,13 +542,92 @@
         </div>
       </div>
     </div>
+    <div
+      class="modal fade bd-example-modal-lg"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="myLargeModalLabel"
+      aria-hidden="true"
+      id="md_warehouse"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title h4" id="md_warehouseLabel">
+              Script Warehouse
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="mfh-machine-profile">
+              <ul class="nav nav-tabs" id="myTab1" role="tablist">
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    id="home-tab1"
+                    data-toggle="tab"
+                    href="#home0"
+                    role="tab"
+                    aria-controls="home"
+                    aria-selected="true"
+                    >Local</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    id="profile-tab20"
+                    data-toggle="tab"
+                    href="#profile0"
+                    role="tab"
+                    aria-controls="profile"
+                    aria-selected="false"
+                    >Store</a
+                  >
+                </li>
+              </ul>
+              <div class="tab-content ad-content2" id="myTabContent2">
+                <div
+                  class="tab-pane fade show active"
+                  id="home0"
+                  role="tabpanel"
+                >
+                  <p>doing...</p>
+                </div>
+                <div class="tab-pane fade" id="profile0" role="tabpanel">
+                  <div class="row"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Script Start -->
     <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/popper.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
     <script src="assets/js/apexcharts.min.js"></script>
     <script src="assets/js/apexchart/control-chart-apexcharts.js"></script>
     <script src="assets/js/datatables.min.js"></script>
+    <script src="assets/js/template-web.js"></script>
     <!-- Custom Script -->
     <script src="assets/js/custom.js"></script>
 
@@ -646,6 +732,43 @@
             },
           },
         })
+        $('#btn_warehouse').click(function () {
+          $('#md_warehouse').modal({ backdrop: 'static' })
+        })
+        $('#md_warehouse').on('shown.bs.modal', function () {
+          $('#profile0 .row').empty()
+          $.getJSON('/script/remote', {}, function (res) {
+            $.each(res.script_list, function (index, item) {
+              $('#profile0 .row').append(
+                '<div class="col-xl-4 col-lg-6 col-md-6">\
+                        <div class="prooduct-details-box">\
+                          <div class="media">\
+                            <div class="media-body ms-4">\
+                              <div class="product-name">\
+                                <h6>\
+                                  <a href="javascript:;" title="">' +
+                  item.name +
+                  '</a>\
+                                </h6>\
+                              </div>\
+                              <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>\
+                              </div>\
+                              <div class="avaiabilty">\
+                                <a href="javascript:;" onclick="show_script_readme(\'' +
+                  item.name +
+                  '\',this)"><i class="fas fa-eye"></i> detail</a> |\
+                                <a target="_blank" href="/script/remote/download/' +
+                  item.name +
+                  '"><i class="fas fa-download"></i> download</a>\
+                              </div>\
+                            </div>\
+                          </div>\
+                        </div>\
+                      </div>'
+              )
+            })
+          })
+        })
         $('#btn_launch').click(function () {
           $('#btn_execute').show()
           $('#tb_details').empty()
@@ -738,6 +861,19 @@
                 '</td></tr>'
             )
           })
+        })
+      }
+      function show_script_readme(name, obj) {
+        if ($(obj)[0].hasAttribute('data-toggle')) {
+          //$(obj).popover('toggle')
+          return
+        }
+        $.getJSON('/script/remote/readme/' + name, {}, function (res) {
+          $(obj)
+            .attr('title', name)
+            .attr('data-toggle', 'popover')
+            .attr('data-content', res.readme)
+            .popover('show')
         })
       }
       Date.prototype.Format = function (fmt) {
