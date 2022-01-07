@@ -676,329 +676,336 @@
     <script src="assets/js/custom.js"></script>
 
     <script type="text/javascript">
-      $(function () {
-        $.getJSON('/report/meta', {}, function (res) {
-          $('#lb_total_check').text(res.cluster_status.total_execution_count)
-          $('#lb_total_item').text(res.cluster_status.total_checked_item)
-          $('#lb_last_check').text(
-            new Date(res.cluster_status.last_execution * 1000).Format(
-              'yyyy-MM-dd hh:mm:ss'
-            )
-          )
-          $('#lb_cluster_leahthy')
-            .text(res.cluster_status.cluster_health)
-            .addClass(res.cluster_status.cluster_health < 60 ? 'danger' : '')
-          var categories = [],
-            warnings = []
-          $.each(res.recent_warnings, function (index, item) {
-            categories.push(new Date(item.check_time * 1000).Format('hh:mm'))
-            warnings.push(item.warning_items)
-          })
-          chartD(categories, warnings)
-
-          $.each(res.normal_week, function (index, item) {
-            $('#tab_weekly').append(
-              '<tr><td><i class="fas fa-tags mr-2 icon-only"></i>' +
-                item.check_name +
-                '(' +
-                item.check_item +
-                ')</td><td>' +
-                item.count +
-                '</td></tr>'
-            )
-          })
-          $.each(res.normal_month, function (index, item) {
-            $('#tab_monthly').append(
-              '<tr><td><i class="fas fa-tags mr-2 icon-only"></i>' +
-                item.check_name +
-                '(' +
-                item.check_item +
-                ')</td><td>' +
-                item.count +
-                '</td></tr>'
-            )
-          })
-          $.each(res.normal_year, function (index, item) {
-            $('#tab_yearly').append(
-              '<tr><td><i class="fas fa-tags mr-2 icon-only"></i>' +
-                item.check_name +
-                '(' +
-                item.check_item +
-                ')</td><td>' +
-                item.count +
-                '</td></tr>'
-            )
-          })
-        })
-        $('#tb_history').DataTable({
-          paging: true,
-          serverSide: true,
-          searching: false,
-          ordering: false,
-          lengthChange: false,
-          columns: [{ data: 'check_time' }],
-          ajax: {
-            url: '/report/catalog',
-            type: 'get',
-            dataType: 'json',
-            error: function (xhr, status, error) {
-              if (xhr.status == 401) {
-                location.href = '/login'
-              }
-            },
-            dataSrc: function (json) {
-              $('#tb_history_show').empty()
-              $.each(json.data, function (index, item) {
-                $('#tb_history_show').append(
-                  '<tr><td><a style="color: #007bff" href="javascript:view_report(' +
-                    item.check_time +
-                    ')" >#' +
-                    item.check_time +
-                    '</a> </td> <td> <span class="ml-2">' +
-                    new Date(item.check_time * 1000).Format(
-                      'yyyy-MM-dd hh:mm:ss'
-                    ) +
-                    '</span> </td> <td>' +
-                    item.duration +
-                    '</td> <td> <label class="mb-0 badge badge-success">' +
-                    item.normal_items +
-                    '</label> </td> <td> <label class="mb-0 badge badge-danger">' +
-                    item.warning_items +
-                    '</label> </td> <td>' +
-                    item.total_items +
-                    '</td> <td> <a target="_blank" href="/report/download/' +
-                    item.check_time +
-                    '" ><i class="fas fa-download"></i> Download Report</a> </td> </tr>'
+            $(function () {
+              $.getJSON('/report/meta', {}, function (res) {
+                $('#lb_total_check').text(res.cluster_status.total_execution_count)
+                $('#lb_total_item').text(res.cluster_status.total_checked_item)
+                $('#lb_last_check').text(
+                  new Date(res.cluster_status.last_execution * 1000).Format(
+                    'yyyy-MM-dd hh:mm:ss'
+                  )
                 )
+                $('#lb_cluster_leahthy')
+                  .text(res.cluster_status.cluster_health)
+                  .addClass(res.cluster_status.cluster_health < 60 ? 'danger' : '')
+                var categories = [],
+                  warnings = []
+                $.each(res.recent_warnings, function (index, item) {
+                  categories.push(new Date(item.check_time * 1000).Format('hh:mm'))
+                  warnings.push(item.warning_items)
+                })
+                chartD(categories, warnings)
+
+                $.each(res.normal_week, function (index, item) {
+                  $('#tab_weekly').append(
+                    '<tr><td><i class="fas fa-tags mr-2 icon-only"></i>' +
+                      item.check_name +
+                      '(' +
+                      item.check_item +
+                      ')</td><td>' +
+                      item.count +
+                      '</td></tr>'
+                  )
+                })
+                $.each(res.normal_month, function (index, item) {
+                  $('#tab_monthly').append(
+                    '<tr><td><i class="fas fa-tags mr-2 icon-only"></i>' +
+                      item.check_name +
+                      '(' +
+                      item.check_item +
+                      ')</td><td>' +
+                      item.count +
+                      '</td></tr>'
+                  )
+                })
+                $.each(res.normal_year, function (index, item) {
+                  $('#tab_yearly').append(
+                    '<tr><td><i class="fas fa-tags mr-2 icon-only"></i>' +
+                      item.check_name +
+                      '(' +
+                      item.check_item +
+                      ')</td><td>' +
+                      item.count +
+                      '</td></tr>'
+                  )
+                })
               })
+              $('#tb_history').DataTable({
+                paging: true,
+                serverSide: true,
+                searching: false,
+                ordering: false,
+                lengthChange: false,
+                columns: [{ data: 'check_time' }],
+                ajax: {
+                  url: '/report/catalog',
+                  type: 'get',
+                  dataType: 'json',
+                  error: function (xhr, status, error) {
+                    if (xhr.status == 401) {
+                      location.href = '/login'
+                    }
+                  },
+                  dataSrc: function (json) {
+                    $('#tb_history_show').empty()
+                    $.each(json.data, function (index, item) {
+                      $('#tb_history_show').append(
+                        '<tr><td><a style="color: #007bff" href="javascript:view_report(' +
+                          item.check_time +
+                          ')" >#' +
+                          item.check_time +
+                          '</a> </td> <td> <span class="ml-2">' +
+                          new Date(item.check_time * 1000).Format(
+                            'yyyy-MM-dd hh:mm:ss'
+                          ) +
+                          '</span> </td> <td>' +
+                          item.duration +
+                          '</td> <td> <label class="mb-0 badge badge-success">' +
+                          item.normal_items +
+                          '</label> </td> <td> <label class="mb-0 badge badge-danger">' +
+                          item.warning_items +
+                          '</label> </td> <td>' +
+                          item.total_items +
+                          '</td> <td> <a target="_blank" href="/report/download/' +
+                          item.check_time +
+                          '" ><i class="fas fa-download"></i> Download Report</a> </td> </tr>'
+                      )
+                    })
 
-              return json.data
-            },
-          },
-        })
-        $('#btn_warehouse').click(function () {
-          $('#md_warehouse').modal({ backdrop: 'static' })
-        })
-        $('#md_warehouse').on('shown.bs.modal', function () {
-          load_local_script(0)
-          load_remote_script(0)
-        })
-        $('#btn_launch').click(function () {
-          $('#btn_execute').show()
-          $('#tb_details').empty()
-          $('#md_detail').modal({ backdrop: 'static' })
-        })
-        $('#btn_execute').click(function () {
-          var ws = new WebSocket('ws://localhost:8081/report/')
-          //连接打开时触发
-          ws.onopen = function (evt) {
-            console.log('Connection open ...')
-            $('#btn_execute')
-              .attr('disabled', true)
-              .html('<i class="fa fa-spin fa-spinner mr-2"></i> Executing')
-            $('#tb_details').empty()
-            $('#ld_detail').show()
-          }
-          //接收到消息时触发
-          ws.onmessage = function (evt) {
-            console.log(evt.data)
-            var data = JSON.parse(evt.data)
-            if (data.finish) {
-              ws.close()
-              return
+                    return json.data
+                  },
+                },
+              })
+              $('#btn_warehouse').click(function () {
+                $('#md_warehouse').modal({ backdrop: 'static' })
+              })
+              $('#md_warehouse').on('shown.bs.modal', function () {
+                load_local_script(0)
+                load_remote_script(0)
+              })
+              $('#btn_launch').click(function () {
+                $('#btn_execute').show()
+                $('#tb_details').empty()
+                $('#md_detail').modal({ backdrop: 'static' })
+              })
+              $('#btn_execute').click(function () {
+                var ws = new WebSocket('ws://localhost:8081/report/')
+                //连接打开时触发
+                ws.onopen = function (evt) {
+                  console.log('Connection open ...')
+                  $('#btn_execute')
+                    .attr('disabled', true)
+                    .html('<i class="fa fa-spin fa-spinner mr-2"></i> Executing')
+                  $('#tb_details').empty()
+                  $('#ld_detail').show()
+                }
+                //接收到消息时触发
+                ws.onmessage = function (evt) {
+                  console.log(evt.data)
+                  var data = JSON.parse(evt.data)
+                  if (data.finish) {
+                    ws.close()
+                    return
+                  }
+                  var tr = $(
+                    '<tr style="display:none"><td>' +
+                      data.check_class +
+                      '</td><td>' +
+                      data.check_name +
+                      '</td><td>' +
+                      data.check_item +
+                      '</td><td>' +
+                      (data.check_status == '正常'
+                        ? data.check_value
+                        : '<label class="mb-0 badge badge-danger">' +
+                          data.check_value +
+                          '</label>') +
+                      '</td><td>' +
+                      data.operator +
+                      data.threshold +
+                      '</td><td>' +
+                      (data.check_status == '正常'
+                        ? '<i class="fas fa-check success"></i>'
+                        : '<label class="mb-0 badge icon-badge badge-danger"><i class="fas fa-times-circle"></i></label> ' +
+                          data.check_status) +
+                      '</td></tr>'
+                  )
+                  $('#tb_details').append(tr)
+                  tr.fadeIn(500)
+                }
+                //连接关闭时触发
+                ws.onclose = function (evt) {
+                  console.log('Connection closed.')
+
+                  $('#ld_detail').hide()
+                  $('#btn_execute').removeAttr('disabled').html('Execute')
+                }
+              })
+            })
+            function edit_config(script) {
+              $.post('/report/editconf/' + script, {}, function (res) {})
             }
-            var tr = $(
-              '<tr style="display:none"><td>' +
-                data.check_class +
-                '</td><td>' +
-                data.check_name +
-                '</td><td>' +
-                data.check_item +
-                '</td><td>' +
-                (data.check_status == '正常'
-                  ? data.check_value
-                  : '<label class="mb-0 badge badge-danger">' +
-                    data.check_value +
-                    '</label>') +
-                '</td><td>' +
-                data.operator +
-                data.threshold +
-                '</td><td>' +
-                (data.check_status == '正常'
-                  ? '<i class="fas fa-check success"></i>'
-                  : '<label class="mb-0 badge icon-badge badge-danger"><i class="fas fa-times-circle"></i></label> ' +
-                    data.check_status) +
-                '</td></tr>'
-            )
-            $('#tb_details').append(tr)
-            tr.fadeIn(500)
-          }
-          //连接关闭时触发
-          ws.onclose = function (evt) {
-            console.log('Connection closed.')
-
-            $('#ld_detail').hide()
-            $('#btn_execute').removeAttr('disabled').html('Execute')
-          }
-        })
-      })
-      function edit_config(script) {
-        $.post('/report/editconf/' + script, {}, function (res) {})
-      }
-      function view_report(id) {
-        $('#btn_execute').hide()
-        $('#md_detail').modal({ backdrop: 'static' })
-        $('#tb_details').empty()
-        $.getJSON('/report/id/' + id, {}, function (res) {
-          $.each(res.data, function (index, item) {
-            $('#tb_details').append(
-              '<tr><td>' +
-                item.check_class +
-                '</td><td>' +
-                item.check_name +
-                '</td><td>' +
-                item.check_item +
-                '</td><td>' +
-                (item.check_result == '正常'
-                  ? item.check_value
-                  : '<label class="mb-0 badge badge-danger">' +
-                    item.check_value +
-                    '</label>') +
-                '</td><td>' +
-                item.operator +
-                item.threshold +
-                '</td><td>' +
-                (item.check_status == '正常'
-                  ? '<i class="fas fa-check success"></i>'
-                  : '<label class="mb-0 badge icon-badge badge-danger"><i class="fas fa-times-circle"></i></label> ' +
-                    item.check_status) +
-                '</td></tr>'
-            )
-          })
-        })
-      }
-      function script_local_pager(s) {
-        var start = parseInt($('#pager_local').attr('data-pager-start'))
-        var total = parseInt($('#pager_local').attr('data-pager-total'))
-        if (s == 0) {
-          start -= 5
-        } else if (s == 1) {
-          start += 5
-        } else {
-          return
-        }
-        if (start < 0 || start > total) {
-          alert('out of page index')
-          return
-        }
-        load_local_script(start)
-      }
-      function load_local_script(start) {
-        $('#home0 .int-tab-peragraph').empty()
-        $.getJSON('/script/local?length=5&start=' + start, {}, function (res) {
-          $.each(res.script_list, function (index, item) {
-            $('#home0 .int-tab-peragraph').append(
-              '<h4><span><i class="fas fa-file-code"></i></span>' +
-                item.name +
-                '</h4><p>this is script description. this is script description. this is script description. this is script description.</p>'
-            )
-          })
-          $('#pager_local')
-            .attr('data-pager-start', start)
-            .attr('data-pager-total', res.total)
-        })
-      }
-      function script_remote_pager(s) {
-        var start = parseInt($('#pager_remote').attr('data-pager-start'))
-        var total = parseInt($('#pager_remote').attr('data-pager-total'))
-        if (s == 0) {
-          start -= 9
-        } else if (s == 1) {
-          start += 9
-        } else {
-          return
-        }
-        if (start < 0 || start > total) {
-          alert('out of page index')
-          return
-        }
-        load_remote_script(start)
-      }
-      function load_remote_script(start) {
-        $('#profile0 .row').empty()
-        $.getJSON('/script/remote?length=9&start=' + start, {}, function (res) {
-          $.each(res.script_list, function (index, item) {
-            $('#profile0 .row').append(
-              '<div class="col-xl-4 col-lg-6 col-md-6">\
-                        <div class="prooduct-details-box">\
-                          <div class="media">\
-                            <div class="media-body ms-4">\
-                              <div class="product-name">\
-                                <h6>\
-                                  <a href="javascript:;" title="">' +
-                item.name +
-                '</a>\
-                                </h6>\
+            function view_report(id) {
+              $('#btn_execute').hide()
+              $('#md_detail').modal({ backdrop: 'static' })
+              $('#tb_details').empty()
+              $.getJSON('/report/id/' + id, {}, function (res) {
+                $.each(res.data, function (index, item) {
+                  $('#tb_details').append(
+                    '<tr><td>' +
+                      item.check_class +
+                      '</td><td>' +
+                      item.check_name +
+                      '</td><td>' +
+                      item.check_item +
+                      '</td><td>' +
+                      (item.check_result == '正常'
+                        ? item.check_value
+                        : '<label class="mb-0 badge badge-danger">' +
+                          item.check_value +
+                          '</label>') +
+                      '</td><td>' +
+                      item.operator +
+                      item.threshold +
+                      '</td><td>' +
+                      (item.check_status == '正常'
+                        ? '<i class="fas fa-check success"></i>'
+                        : '<label class="mb-0 badge icon-badge badge-danger"><i class="fas fa-times-circle"></i></label> ' +
+                          item.check_status) +
+                      '</td></tr>'
+                  )
+                })
+              })
+            }
+            function script_local_pager(s) {
+              var start = parseInt($('#pager_local').attr('data-pager-start'))
+              var total = parseInt($('#pager_local').attr('data-pager-total'))
+              if (s == 0) {
+                start -= 5
+              } else if (s == 1) {
+                start += 5
+              } else {
+                return
+              }
+              if (start < 0 || start > total) {
+                alert('out of page index')
+                return
+              }
+              load_local_script(start)
+            }
+            function load_local_script(start) {
+              $('#home0 .int-tab-peragraph').empty()
+              $.getJSON('/script/local?length=5&start=' + start, {}, function (res) {
+                $.each(res.script_list, function (index, item) {
+                  $('#home0 .int-tab-peragraph').append(
+                    '<h4><span><i class="fas fa-file-code"></i></span>' +
+                      item.name +
+                      '</h4><p>this is script description. this is script description. this is script description. this is script description.</p>'
+                  )
+                })
+                $('#pager_local')
+                  .attr('data-pager-start', start)
+                  .attr('data-pager-total', res.total)
+              })
+            }
+            function script_remote_pager(s) {
+              var start = parseInt($('#pager_remote').attr('data-pager-start'))
+              var total = parseInt($('#pager_remote').attr('data-pager-total'))
+              if (s == 0) {
+                start -= 9
+              } else if (s == 1) {
+                start += 9
+              } else {
+                return
+              }
+              if (start < 0 || start > total) {
+                alert('out of page index')
+                return
+              }
+              load_remote_script(start)
+            }
+            function load_remote_script(start) {
+              $('#profile0 .row').empty()
+              $.getJSON('/script/remote?length=9&start=' + start, {}, function (res) {
+                $.each(res.script_list, function (index, item) {
+                  $('#profile0 .row').append(
+                    '<div class="col-xl-4 col-lg-6 col-md-6">\
+                              <div class="prooduct-details-box">\
+                                <div class="media">\
+                                  <div class="media-body ms-4">\
+                                    <div class="product-name">\
+                                      <h6>\
+                                        <a href="javascript:;" title="">' +
+                      item.name +
+                      '</a>\
+                                      </h6>\
+                                    </div>\
+                                    <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>\
+                                    </div>\
+                                    <div class="avaiabilty">\
+                                      <a href="javascript:;" onclick="show_script_readme(\'' + item.name + '\',this)"><i class="fas fa-eye"></i> detail</a> |\
+                      '+(item.download==true?'<span class="mb-0 badge badge-success">downloaded</span>':('<a href="javascript:" onclick="script_download(\'' + item.name + '\',this)"><i class="fas fa-download"></i> download</a>'))+'</div>\
+                                  </div>\
+                                </div>\
                               </div>\
-                              <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>\
-                              </div>\
-                              <div class="avaiabilty">\
-                                <a href="javascript:;" onclick="show_script_readme(\'' +
-                item.name +
-                '\',this)"><i class="fas fa-eye"></i> detail</a> |\
-                                <a target="_blank" href="/script/remote/download/' +
-                item.name +
-                '"><i class="fas fa-download"></i> download</a>\
-                              </div>\
-                            </div>\
-                          </div>\
-                        </div>\
-                      </div>'
-            )
-          })
-          $('#pager_remote')
-            .attr('data-pager-start', start)
-            .attr('data-pager-total', res.total)
-        })
-      }
-      function show_script_readme(name, obj) {
-        if ($(obj)[0].hasAttribute('data-toggle')) {
-          //$(obj).popover('toggle')
-          return
-        }
-        $.getJSON('/script/remote/readme/' + name, {}, function (res) {
-          $(obj)
-            .attr('title', name)
-            .attr('data-toggle', 'popover')
-            .attr('data-content', res.readme)
-            .popover('show')
-        })
-      }
-      Date.prototype.Format = function (fmt) {
-        var o = {
-          'M+': this.getMonth() + 1, //月份
-          'd+': this.getDate(), //日
-          'h+': this.getHours(), //小时
-          'm+': this.getMinutes(), //分
-          's+': this.getSeconds(), //秒
-          'q+': Math.floor((this.getMonth() + 3) / 3), //季度
-          S: this.getMilliseconds(), //毫秒
-        }
-        if (/(y+)/.test(fmt))
-          fmt = fmt.replace(
-            RegExp.$1,
-            (this.getFullYear() + '').substr(4 - RegExp.$1.length)
-          )
-        for (var k in o)
-          if (new RegExp('(' + k + ')').test(fmt))
-            fmt = fmt.replace(
-              RegExp.$1,
-              RegExp.$1.length == 1
-                ? o[k]
-                : ('00' + o[k]).substr(('' + o[k]).length)
-            )
-        return fmt
-      }
+                            </div>'
+                  )
+                })
+                $('#pager_remote')
+                  .attr('data-pager-start', start)
+                  .attr('data-pager-total', res.total)
+              })
+            }
+            function show_script_readme(name, obj) {
+              if ($(obj)[0].hasAttribute('data-toggle')) {
+                //$(obj).popover('toggle')
+                return
+              }
+              $.getJSON('/script/remote/readme/' + name, {}, function (res) {
+                $(obj)
+                  .attr('title', name)
+                  .attr('data-toggle', 'popover')
+                  .attr('data-content', res.readme)
+                  .popover('show')
+              })
+            }
+            function script_download(name, obj){
+              $.ajax({url:'/script/remote/download/'+name,type:'post',complete:function(xhr,status){
+                if(xhr.status==200){
+                    var lk=$(obj)
+                    lk.parent().append('<span class="mb-0 badge badge-success">downloaded</span>')
+                    lk.remove()
+                    alert(xhr.responseJSON.status)
+                }else{
+                    alert(xhr.responseJSON.error)                
+                }
+              }})
+            }
+            Date.prototype.Format = function (fmt) {
+              var o = {
+                'M+': this.getMonth() + 1, //月份
+                'd+': this.getDate(), //日
+                'h+': this.getHours(), //小时
+                'm+': this.getMinutes(), //分
+                's+': this.getSeconds(), //秒
+                'q+': Math.floor((this.getMonth() + 3) / 3), //季度
+                S: this.getMilliseconds(), //毫秒
+              }
+              if (/(y+)/.test(fmt))
+                fmt = fmt.replace(
+                  RegExp.$1,
+                  (this.getFullYear() + '').substr(4 - RegExp.$1.length)
+                )
+              for (var k in o)
+                if (new RegExp('(' + k + ')').test(fmt))
+                  fmt = fmt.replace(
+                    RegExp.$1,
+                    RegExp.$1.length == 1
+                      ? o[k]
+                      : ('00' + o[k]).substr(('' + o[k]).length)
+                  )
+              return fmt
+            }
     </script>
   </body>
 </html>

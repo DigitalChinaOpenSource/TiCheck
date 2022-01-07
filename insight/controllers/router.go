@@ -81,6 +81,6 @@ func Register(engine *gin.Engine) {
 		scriptGroup.GET("/remote/readme/:name", script.GetReadMe)
 
 		// 下载指定名的脚本到本地
-		scriptGroup.GET("/remote/download/:name", script.DownloadScript)
+		scriptGroup.POST("/remote/download/:name", script.DownloadScript)
 	}
 }
