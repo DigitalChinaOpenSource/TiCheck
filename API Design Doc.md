@@ -238,11 +238,18 @@ Response Body:
 
 `GET /script/local`
 
+- Request Query Param
+```
+  // The start default value is 0
+  // The length default value is 10
+  ?start=0&length=2
+```
+
 - Response Body
 
 ```json
 {
-  "total": 2,
+  "total": 2, 
   "script_list": [
     {
       "name": "alive_pd_number"
@@ -257,6 +264,13 @@ Response Body:
 
 `GET /script/remote`
 
+- Request Query Param
+```
+  // The start default value is 0
+  // The length default value is 10
+  ?start=0&length=2
+```
+- 
 - Response Body :
 
 ```json

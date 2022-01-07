@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -34,6 +35,20 @@ type LocalScript struct {
 
 // GetAllLocalScript 获取本地所有脚本列表
 func (s *ScriptHandler) GetAllLocalScript(c *gin.Context) {
+	start := c.Query("start")
+	length := c.Query("length")
+
+	st, err := strconv.Atoi(start)
+	if err != nil {
+		st = 0
+	}
+
+
+	le, err := strconv.Atoi(length)
+	if err != nil && le == 0 {
+		le = 10
+	}
+
 	localList := &LocalScriptList{}
 	files, err := ioutil.ReadDir("../script/")
 	if err != nil {
@@ -49,12 +64,28 @@ func (s *ScriptHandler) GetAllLocalScript(c *gin.Context) {
 		localList.Total += 1
 	}
 
+	localList.Scripts = localList.Scripts[st:le]
+
 	c.JSON(http.StatusOK, localList)
 	return
 }
 
 // GetAllRemoteScript 获取远程仓库脚本列表
 func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
+	start := c.Query("start")
+	length := c.Query("length")
+
+	st, err := strconv.Atoi(start)
+	if err != nil {
+		st = 0
+	}
+
+
+	le, err := strconv.Atoi(length)
+	if err != nil && le == 0 {
+		le = 10
+	}
+
 	url := "https://api.github.com/repos/DigitalChinaOpenSource/TiCheck_ScriptWarehouse/contents/scripts"
 
 	remoteList := make([]string, 0)
@@ -109,6 +140,8 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 		scriptList.Total += 1
 		scriptList.Scripts = append(scriptList.Scripts, script)
 	}
+
+	scriptList.Scripts = scriptList.Scripts[st:le]
 
 	c.JSON(http.StatusOK, scriptList)
 	return
