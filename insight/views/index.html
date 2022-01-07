@@ -859,7 +859,7 @@
                       '</td><td>' +
                       item.check_item +
                       '</td><td>' +
-                      (item.check_result == '正常'
+                      (item.check_status == '正常'
                         ? item.check_value
                         : '<label class="mb-0 badge badge-danger">' +
                           item.check_value +
@@ -926,7 +926,7 @@
             }
             function load_remote_script(start) {
               $('#profile0 .row').empty()
-              $.getJSON('/script/remote?length=9&start=' + start, {}, function (res) {
+              $.getJSON('/script/remote?length=6&start=' + start, {}, function (res) {
                 $.each(res.script_list, function (index, item) {
                   $('#profile0 .row').append(
                     '<div class="col-xl-4 col-lg-6 col-md-6">\
