@@ -1,7 +1,7 @@
 是否开启:检测类别:检测项目:检测脚本:检测方式:检测阈值:检测脚本参数
-ENABLE:集群:存活的TiDB数量:alive_tidb_number.py:等于:3:
+ENABLE:集群:存活的TiDB数量:alive_tidb_number.py:等于:2:
 ENABLE:集群:存活的TiKV数量:alive_tikv_number.py:等于:3:
-ENABLE:集群:存活的PD数量:alive_pd_number.py:等于:5:
+ENABLE:集群:存活的PD数量:alive_pd_number.py:等于:3:
 ENABLE:网络:今天网卡流入流量(MB):network_in.py:小于等于:4096:
 ENABLE:网络:今天网卡流出流量(MB):network_out.py:小于等于:4096:
 ENABLE:运行状态:表没有主键:no_primary_key.sh:无数据:NA:
