@@ -65,4 +65,22 @@ func Register(engine *gin.Engine) {
 		reportGroup.POST("/editconf/:script", report.EditConfig)
 	}
 
+	scriptGroup := engine.Group("/script")
+	// test, ignore token
+	// scriptGroup.Use(session.VerifyToken)
+	{
+		script := &handler.ScriptHandler{}
+
+		// 查看所有本地脚本
+		scriptGroup.GET("/local", script.GetAllLocalScript)
+
+		// 查看所有的远程仓库脚本，获取列表
+		scriptGroup.GET("/remote", script.GetAllRemoteScript)
+
+		// 查看指定远程脚本的介绍
+		scriptGroup.GET("/remote/readme/:name", script.GetReadMe)
+
+		// 下载指定名的脚本到本地
+		scriptGroup.POST("/remote/download/:name", script.DownloadScript)
+	}
 }

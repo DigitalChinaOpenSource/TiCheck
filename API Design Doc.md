@@ -1,17 +1,21 @@
 API Design
 
-| REST verb | URI                   | Note                     |
-| --------- | --------------------- | ------------------------ |
-| GET       | /login                | 进入登陆页面             |
-| POST      | /session              | 登陆验证                 |
-| DELETE    | /session              | 注销登陆                 |
-| GET       | /report/catalog       | 获取所有巡检结果的文件名 |
-| GET       | /report/id/{id}       | 获取指定的某次结果       |
-| GET       | /report/latest        | 获取最后一次巡检结果     |
-| GET       | /report/meta          | 获取巡检结果元信息       |
-| POST      | /report               | 执行一次巡检             |
-| GET       | /report/download/all  | 下载所有巡检报告         |
-| GET       | /report/download/{id} | 下载指定的巡检报告       |
+| REST verb | URI                          | Note                     |
+| --------- | ---------------------------- | ------------------------ |
+| GET       | /login                       | 进入登陆页面               |
+| POST      | /session                     | 登陆验证                  |
+| DELETE    | /session                     | 注销登陆                  |
+| GET       | /report/catalog              | 获取所有巡检结果的文件名     |
+| GET       | /report/id/{id}              | 获取指定的某次结果          |
+| GET       | /report/latest               | 获取最后一次巡检结果        |
+| GET       | /report/meta                 | 获取巡检结果元信息          |
+| POST      | /report                      | 执行一次巡检              |
+| GET       | /report/download/all         | 下载所有巡检报告           |
+| GET       | /report/download/{id}        | 下载指定的巡检报告          |
+| GET       | /script/local                | 查看所有远程仓库脚本        |
+| GET       | /script/remote               | 查看所有远程仓库脚本        |
+| GET       | /script/remote/readme/:name  | 查看指定脚本名的介绍        |
+| POST      | /script/remote/download/:name| 下载远程仓库的脚本到本地     |
 
 ### 登陆验证
 
@@ -227,5 +231,83 @@ Response Body:
   "check_value": 5,
   "check_threshold": "等于5",
   "check_time": 20211221063030
+}
+```
+
+### 查看本地脚本列表
+
+`GET /script/local`
+
+- Request Query Param
+```
+  // The start default value is 0
+  // The length default value is 10
+  ?start=0&length=2
+```
+
+- Response Body
+
+```json
+{
+  "total": 2, 
+  "script_list": [
+    {
+      "name": "alive_pd_number"
+    },{
+      "name": "alive_tidb_number"
+    }
+  ]
+}
+```
+
+### 查看所有远程仓库脚本
+
+`GET /script/remote`
+
+- Request Query Param
+```
+  // The start default value is 0
+  // The length default value is 10
+  ?start=0&length=2
+```
+- 
+- Response Body :
+
+```json
+{
+  "total": 2,
+  "script_list": [
+    {
+      "name": "alive_pd_number",
+      "download": true
+    },{
+      "name": "alive_tidb_number",
+      "download": false
+    }
+  ]
+}
+```
+
+### 查看指定脚本名的介绍
+
+`GET /script/remote/readme/:name`
+
+- Response Body :
+
+```json
+{
+    "readme": ""
+}
+```
+
+### 下载远程仓库的脚本到本地
+
+`POST /script/remote/download/:name`
+
+- Response Body :
+
+```json
+{
+  "status": "ok"
 }
 ```
