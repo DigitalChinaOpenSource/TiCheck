@@ -16,10 +16,10 @@
 | user_name    | TEXT   | 用户名，登录名 | 不可为空 | 唯一值    |
 | user_password    | TEXT   | 用户登录密码 | 不可为空 |     |
 | full_name    | TEXT   | 用户真实姓名 | 不可为空 |     |
-| email  | TEXT   | 关联的脚本文件  | 不可为空 |   |
+| email  | TEXT   |   | 不可为空 |  用户邮箱地址 |
 | is_enabled | INTEGER   | 启用状态     | 不可为空 |  0-禁用，1-启用     |
 | creator      | TEXT   | 创建人        | 不可为空 |   |
-| create_time      | INTEGER   | 脚本创建时间     | 不可为空 |   |
+| create_time      | INTEGER   | 创建时间     | 不可为空 |   |
 
 
 ### 脚本（组件/插件/巡检项）信息
