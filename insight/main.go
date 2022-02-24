@@ -1,6 +1,7 @@
 package main
 
 import (
+	"TiCheck/insight/server"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -12,7 +13,7 @@ func main() {
 	// 初始化服务
 	initService(engine)
 
-	Register(engine)
+	server.Register(engine)
 
 	engine.Run(":8081")
 }
@@ -31,3 +32,5 @@ func initService(r *gin.Engine) {
 		})
 	})
 }
+
+

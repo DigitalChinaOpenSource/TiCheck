@@ -33,6 +33,7 @@
 | script_name    | TEXT   | 脚本名称， 也就是这个巡检项的名称 | 不可为空 |     |
 | script_file  | TEXT   | 关联的脚本文件  | 不可为空 | 文件名需要唯一，更新的时候根据文件名去查找            |
 | script_tag | TEXT   | 脚本所属分类，即以前的检测类别                  | 不可为空 |             |
+| description | TEXT  | 脚本简介     | 可为空 |   |
 | threshold_operator   | INTEGER   | 阈值检查方式，默认值 | 可为空 |  0-无，1-等于，2-大于，3-大于等于，4-小于，5-小于等于|
 | threshold_value      | TEXT   | 阈值检测值，默认值 | 可为空 |   |
 | threshold_args    | TEXT   | 阈值检测参数，默认值 | 可为空 |     |
@@ -61,6 +62,7 @@
 | dashboard_url | TEXT   | dashboard地址       | 可为空 |   |
 | grafana_url | TEXT   | grafana地址         | 可为空 |   |
 | last_check_time | INTEGER   | 最后巡检时间      | 可为空 |  |
+| cluster_health | INTEGER   | 集群健康度      | 可为空 |  |
 
 ### 集群巡检项
 
@@ -117,11 +119,11 @@
 | ------------ | --------- | -------------------- | ---------------------------- | ------------------------------------- |
 | id           | INTEGER   | 自增主键             | 不可为空                     |                                       |
 | check_time   | INTEGER   | 巡检开始时间         | 不可为空                     | 精确到秒                              |
-| check_tag  | TEXT      | 检查类别             | 不可为空                     |                                       |
+| check_tag    | TEXT      | 检查类别             | 不可为空                     |                                       |
 | check_name   | TEXT      | 检查项目             | 不可为空                     |                                       |
 | operator     | TEXT      | 比较方式             | 不可为空                     | 参考tck_addons.threshold_operator |
 | threshold    | REAL      | 阈值                 |  |        |
-| duration     | INTEGER   | 该项巡检用了多少时间 | 不可为空                     | 单位为毫秒   |
+| duration     | INTEGER   | 该项巡检用了多少时间   | 不可为空                     | 单位为毫秒   |
 | check_item   | TEXT      | 检查指标             | 不可为空                     |                                       |
 | check_value  | REAL      | 指标数值             | 可为空，代表脚本无输出       |                                       |
 | check_status | TEXT      | 检查结果             | 不可为空                     | `正常`/`异常_已有`/`异常_新增`        |

@@ -9,13 +9,11 @@ import (
 type ViewHandler struct{}
 
 func (v *ViewHandler) GetIndex(c *gin.Context) {
-	c.HTML(http.StatusOK, "", gin.H{
-		"index": "首页",
-	})
+	c.HTML(http.StatusOK, "frontend", nil)
 	return
 }
 
 func (v *ViewHandler) GetLogin(c *gin.Context) {
-	c.HTML(http.StatusOK, "login.html", gin.H{})
+	c.HTML(http.StatusOK, "frontend", gin.H{})
 	return
 }
