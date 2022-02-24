@@ -1,15 +1,15 @@
 package controllers
 
 import (
-	"TiCheck/insight/controllers/handler"
+	"TiCheck/insight/server/controllers/handler"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Register(engine *gin.Engine) {
 
-	engine.Static("/assets", "./views/assets")
-	engine.LoadHTMLGlob("./views/*.html")
+	engine.Static("/assets", "../../web/dist/assets")
+	engine.LoadHTMLGlob("../../web/dist/*.html")
 
 	viewGroup := engine.Group("/")
 	{
@@ -42,6 +42,10 @@ func Register(engine *gin.Engine) {
 
 		// 获取历史巡检列表
 		reportGroup.GET("/catalog", report.GetCatalog)
+
+
+		reportGroup.GET("/frontend/auth/login", report.GetCatalog)
+
 
 		// 通过id获得某次巡检结果
 		reportGroup.GET("/id/:id", report.GetReport)
