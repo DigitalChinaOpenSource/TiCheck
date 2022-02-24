@@ -1,19 +1,28 @@
-package controllers
+package server
 
 import (
-	"TiCheck/insight/controllers/handler"
+	handler2 "TiCheck/insight/server/handler"
+	"github.com/gin-contrib/multitemplate"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Register(engine *gin.Engine) {
 
-	engine.Static("/assets", "./views/assets")
-	engine.LoadHTMLGlob("./views/*.html")
+	// 多模板
+	engine.HTMLRender = createMyRender()
+
+	// 加载静态资源
+	engine.Static("/assets", "web/dist/assets")
+	engine.Static("/css", "web/dist/css")
+	engine.Static("/img", "web/dist/img")
+	engine.Static("/js", "web/dist/js")
+	engine.StaticFile("/avatar2.jpg", "web/dist/avatar2.jpg")
+	engine.StaticFile("/logo.png", "web/dist/logo.png")
 
 	viewGroup := engine.Group("/")
 	{
-		view := &handler.ViewHandler{}
+		view := &handler2.ViewHandler{}
 
 		// 打开首页
 		viewGroup.GET("/", view.GetIndex)
@@ -23,8 +32,8 @@ func Register(engine *gin.Engine) {
 	}
 
 	sessionGroup := engine.Group("/session")
-	session := &handler.SessionHandler{
-		Sessions: make(map[string]*handler.Session, 0),
+	session := &handler2.SessionHandler{
+		Sessions: make(map[string]*handler2.Session, 0),
 	}
 
 	{
@@ -38,10 +47,14 @@ func Register(engine *gin.Engine) {
 	reportGroup := engine.Group("/report")
 	reportGroup.Use(session.VerifyToken)
 	{
-		report := &handler.ReportHandler{}
+		report := &handler2.ReportHandler{}
 
 		// 获取历史巡检列表
 		reportGroup.GET("/catalog", report.GetCatalog)
+
+
+		reportGroup.GET("/frontend/auth/login", report.GetCatalog)
+
 
 		// 通过id获得某次巡检结果
 		reportGroup.GET("/id/:id", report.GetReport)
@@ -69,7 +82,7 @@ func Register(engine *gin.Engine) {
 	// test, ignore token
 	// scriptGroup.Use(session.VerifyToken)
 	{
-		script := &handler.ScriptHandler{}
+		script := &handler2.ScriptHandler{}
 
 		// 查看所有本地脚本
 		scriptGroup.GET("/local", script.GetAllLocalScript)
@@ -83,4 +96,10 @@ func Register(engine *gin.Engine) {
 		// 下载指定名的脚本到本地
 		scriptGroup.POST("/remote/download/:name", script.DownloadScript)
 	}
+}
+
+func createMyRender() multitemplate.Renderer {
+	p := multitemplate.NewRenderer()
+	p.AddFromFiles("frontend", "web/dist/index.html")
+	return p
 }

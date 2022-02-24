@@ -15,8 +15,8 @@ type ScriptHandler struct {
 }
 
 type RemoteScriptList struct {
-	Total int		    `json:"total"`
-	Scripts []*RemoteScript    `json:"script_list"`
+	Total int               `json:"total"`
+	Scripts []*RemoteScript `json:"script_list"`
 }
 
 type RemoteScript struct {
@@ -25,8 +25,8 @@ type RemoteScript struct {
 }
 
 type LocalScriptList struct {
-	Total int		    `json:"total"`
-	Scripts []*LocalScript    `json:"script_list"`
+	Total int              `json:"total"`
+	Scripts []*LocalScript `json:"script_list"`
 }
 
 type LocalScript struct {
