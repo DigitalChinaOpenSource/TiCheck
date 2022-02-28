@@ -1,10 +1,10 @@
 package executor
 
 type Result struct {
-	executionError error
-	resultID       int
+	executionError error // script level error
+	result         CheckData
 }
 
 type Executor interface {
-	Execute(string, chan Result)
+	ExecuteCheck(string, chan Result) // executes one round of check
 }
