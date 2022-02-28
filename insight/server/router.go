@@ -11,7 +11,6 @@ func Register(engine *gin.Engine) {
 
 	// 多模板
 	engine.HTMLRender = createMyRender()
-
 	// 加载静态资源
 	engine.Static("/assets", "web/dist/assets")
 	engine.Static("/css", "web/dist/css")
@@ -29,6 +28,8 @@ func Register(engine *gin.Engine) {
 
 		// 打开登录界面
 		viewGroup.GET("/login", view.GetLogin)
+
+		engine.NoRoute(view.GetIndex)
 	}
 
 	sessionGroup := engine.Group("/session")
