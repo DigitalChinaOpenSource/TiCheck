@@ -6,5 +6,5 @@ type Result struct {
 }
 
 type Executor interface {
-	ExecuteCheck(string, chan Result) // executes one round of check
+	ExecuteCheck(chan Result) // executes one round of check
 }
