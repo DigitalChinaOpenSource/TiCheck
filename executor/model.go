@@ -19,23 +19,22 @@ type User struct {
 	FullName   string `gorm:"not null"`
 	Email      string `gorm:"not null"`
 	IsEnabled  int    `gorm:"not null"` // 0: Disabled, 1: Enabled
-	SystemUser string `gorm:"not null"` // under which user is this user created
+	SystemUser string `gorm:"not null"` // under which system user is this user created
 }
-type Addon struct {
+type Script struct {
 	gorm.Model
-	Name           string `gorm:"not null"`
-	FileName       string `gorm:"not null"`
-	Tag            string `gorm:"not null"`
-	Description    string
-	Comparator     Comparator `gorm:"embedded"`
-	AdditionalArgs string
-	IsSystem       int    `gorm:"not null"`
-	Creator        string `gorm:"not null"`
+	Name              string `gorm:"not null;unique"`
+	FileName          string `gorm:"not null;unique"`
+	Tag               string `gorm:"not null"`
+	Description       string
+	DefaultComparator Comparator `gorm:"embedded"`
+	IsSystem          int        `gorm:"not null"`
+	Creator           string     `gorm:"not null"`
 }
 
 type Cluster struct {
 	gorm.Model
-	Name          string `gorm:"not null"`
+	Name          string `gorm:"not null;unique"`
 	PrometheusURL string `gorm:"not null"`
 	TiDBUsername  string `gorm:"not null"`
 	TiDBPassword  string `gorm:"not null"`
@@ -57,17 +56,17 @@ type ClusterChecklist struct {
 	AdditionalArgs string
 }
 
-type ClusterScheduler struct {
+type Scheduler struct {
 	gorm.Model
 	Name           string `gorm:"not null"`
 	ClusterID      uint   `gorm:"not null"`
 	CronExpression string `gorm:"not null"`
-	IsActive       int    `gorm:"not null"`
+	IsEnabled      int    `gorm:"not null"`
 	Creator        string `gorm:"not null"`
 	RunCount       int    `gorm:"not null"`
 }
 
-type ClusterCheckHistory struct {
+type CheckHistory struct {
 	gorm.Model
 	CheckTime    time.Time     `gorm:"not null"`
 	ClusterID    uint          `gorm:"not null"`
@@ -78,7 +77,7 @@ type ClusterCheckHistory struct {
 	Duration     time.Duration `gorm:"not null"`
 }
 
-type ClusterCheckData struct {
+type CheckData struct {
 	gorm.Model
 	CheckTime   time.Time     `gorm:"not null"`
 	CheckTag    string        `gorm:"not null"`
