@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS `tck_users`;
 CREATE TABLE "tck_users" (
-    "user_id" INTEGER NOT NULL AUTO_INCREMENT,
+    "user_id" INTEGER NOT NULL,
     "user_name" TEXT NOT NULL unique,
     "user_password" TEXT NOT NULL,
     "full_name" TEXT NOT NULL,
@@ -11,11 +11,11 @@ CREATE TABLE "tck_users" (
     PRIMARY KEY ("user_id")
 );
 
-insert into tck_users values (1, "admin","21232f297a57a5a743894a0e4a801fc3","管理员","admin@ticheck.com", 1, "system", 1645756378);
+insert into tck_users values (1, 'admin','21232f297a57a5a743894a0e4a801fc3','管理员','admin@ticheck.com', 1, 'system', 1645756378);
 
 DROP TABLE IF EXISTS `tck_addons`;
 CREATE TABLE "tck_addons" (
-    "script_id" INTEGER NOT NULL AUTO_INCREMENT,
+    "script_id" INTEGER NOT NULL,
     "script_name" TEXT NOT NULL  ,
     "script_file" TEXT NOT NULL unique,
     "script_tag" TEXT NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE "tck_addons" (
 
 DROP TABLE IF EXISTS `tck_cluster`;
 CREATE TABLE "tck_cluster" (
-    "cluster_id" INTEGER NOT NULL AUTO_INCREMENT,
+    "cluster_id" INTEGER NOT NULL,
     "cluster_name" TEXT NOT NULL,
     "prometheus_url" TEXT NOT NULL,
     "tidb_username" TEXT NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE "tck_cluster" (
 
 DROP TABLE IF EXISTS `tck_cluster_checklist`;
 CREATE TABLE "tck_cluster_checklist" (
-    "checklist_id" INTEGER NOT NULL AUTO_INCREMENT,
+    "checklist_id" INTEGER NOT NULL,
     "cluster_id" INTEGER NOT NULL,
     "script_id" INTEGER NOT NULL,
     "is_enabled" INTEGER(1) NOT NULL, --0-未启用，1-已启用
@@ -62,7 +62,7 @@ CREATE TABLE "tck_cluster_checklist" (
 
 DROP TABLE IF EXISTS `tck_cluster_scheduler`;
 CREATE TABLE "tck_cluster_scheduler" (
-    "scheduler_id" INTEGER NOT NULL AUTO_INCREMENT,
+    "scheduler_id" INTEGER NOT NULL,
     "cluster_id" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
     "cron_expression" TEXT NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE "tck_cluster_check_history" (
 
 DROP TABLE IF EXISTS `tck_cluster_check_data`;
 CREATE TABLE "tck_cluster_check_data" (
-    "id" INTEGER NOT NULL AUTO_INCREMENT,
+    "id" INTEGER NOT NULL ,
     "check_time" INTEGER NOT NULL,
     "check_tag" TEXT NOT NULL,
     "check_name" TEXT NOT NULL,
