@@ -45,7 +45,7 @@
 
 ### 集群信息
 
-- Table Name: `tck_cluster`
+- Table Name: `cluster`
 - Table Schema:
 
 | column name   | data type | explanation             | nullable | other notes |
@@ -66,7 +66,7 @@
 
 ### 集群巡检项
 
-- Table Name: `tck_cluster_checklist`
+- Table Name: `cluster_checklist`
 - Table Schema:
 
 | column name   | data type | explanation             | nullable | other notes |
@@ -81,7 +81,7 @@
 
 ### 集群巡检定时器
 
-- Table Name: `tck_cluster_scheduler`
+- Table Name: `scheduler`
 - Table Schema:
 
 | column name   | data type | explanation             | nullable | other notes |
@@ -97,7 +97,7 @@
 
 ### 集群巡检记录
 
-- Table Name: `tck_cluster_check_history`
+- Table Name: `check_history`
 - Table Schema:
 
 | column name   | data type | explanation             | nullable | other notes |
@@ -113,7 +113,7 @@
 
 ### 集群巡检结果
 
-- Table Name: `tck_cluster_check_data`
+- Table Name: `check_data`
 - Table Schema:
 
 | column name  | data type | explanation          | nullable                     | other notes                           |
