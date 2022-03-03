@@ -28,7 +28,7 @@ export const asyncRouterMap = [
             path: '/cluster/list',
             name: 'Workplace',
             component: () => import('@/views/cluster/List'),
-            meta: { title: 'menu.dashboard.workplace', keepAlive: true, permission: ['dashboard'] }
+            meta: { title: 'menu.dashboard.workplace', keepAlive: true, permission: ['sham'] }
           }
         ]
       },
@@ -65,7 +65,7 @@ export const asyncRouterMap = [
         component: RouteView,
         redirect: '/account/center',
         name: 'account',
-        meta: { title: 'menu.account', icon: 'user', keepAlive: true, permission: ['user'] },
+        meta: { title: 'menu.account', icon: 'user', keepAlive: true, permission: ['sham'] },
         children: [
         ]
       },
@@ -75,14 +75,14 @@ export const asyncRouterMap = [
         name: 'list',
         component: RouteView,
         redirect: '/list/table-list',
-        meta: { title: 'menu.setting', icon: 'setting', permission: ['table'] },
+        meta: { title: 'menu.setting', icon: 'setting', permission: ['sham'] },
         children: [
           {
             path: '/list/table-list/:pageNo([1-9]\\d*)?',
             name: 'TableListWrapper',
             hideChildrenInMenu: true, // 强制显示 MenuItem 而不是 SubMenu
             // component: () => import('@/views/list/TableList'),
-            meta: { title: 'menu.setting.store', keepAlive: true, permission: ['table'] }
+            meta: { title: 'menu.setting.store', keepAlive: true, permission: ['sham'] }
           }
         ]
       }
