@@ -10,16 +10,18 @@ import (
 
 func Register(engine *gin.Engine) {
 
-	// 多模板
-	engine.HTMLRender = createMyRender()
+	// 使用静态资源需要在 web 目录下 npm run build
 
-	// 加载静态资源
-	engine.Static("/assets", "web/dist/assets")
-	engine.Static("/css", "web/dist/css")
-	engine.Static("/img", "web/dist/img")
-	engine.Static("/js", "web/dist/js")
-	engine.StaticFile("/avatar2.jpg", "web/dist/avatar2.jpg")
-	engine.StaticFile("/logo.png", "web/dist/logo.png")
+	//// 多模板
+	//engine.HTMLRender = createMyRender()
+	//
+	//// 加载静态资源
+	//engine.Static("/assets", "web/dist/assets")
+	//engine.Static("/css", "web/dist/css")
+	//engine.Static("/img", "web/dist/img")
+	//engine.Static("/js", "web/dist/js")
+	//engine.StaticFile("/avatar2.jpg", "web/dist/avatar2.jpg")
+	//engine.StaticFile("/logo.png", "web/dist/logo.png")
 
 	// 初始化数据库
 	err := model.InitDB()
@@ -45,10 +47,13 @@ func Register(engine *gin.Engine) {
 
 	{
 		// 用户认证
-		sessionGroup.POST("/", session.AuthenticatedUser)
+		sessionGroup.POST("", session.AuthenticatedUser)
 
 		// 退出用户
 		sessionGroup.POST("/logout", session.Logout)
+
+		// 获取当前用户信息
+		sessionGroup.GET("/info", session.GetUserInfo)
 	}
 
 	reportGroup := engine.Group("/report")
