@@ -21,6 +21,7 @@ export const asyncRouterMap = [
         name: 'dashboard',
         redirect: '/cluster/list',
         component: RouteView,
+            hideChildrenInMenu: true,
         meta: { title: 'menu.dashboard', keepAlive: true, icon: 'cluster', permission: ['dashboard'] },
         children: [
           {
@@ -31,29 +32,29 @@ export const asyncRouterMap = [
           }
         ]
       },
-      // forms
+      // store
       {
-        path: '/form',
-        redirect: '/form/base-form',
+        path: '/store',
+        redirect: '/store/local',
         component: RouteView,
-        meta: { title: 'menu.form', icon: 'form', permission: ['form'] },
+        meta: { title: 'menu.form', icon: 'appstore', permission: ['form'] },
         children: [
           {
-            path: '/form/base-form',
+            path: '/store/local',
             name: 'BaseForm',
-            // compoknent: () => import('@/views/form/basicForm'),
+            component: () => import('@/views/store/Local'),
             meta: { title: 'menu.form.basic-form', keepAlive: true, permission: ['form'] }
           },
           {
-            path: '/form/step-form',
+            path: '/form/remote',
             name: 'StepForm',
-            // component: () => import('@/views/form/stepForm/StepForm'),
+            component: () => import('@/views/store/Remote'),
             meta: { title: 'menu.form.step-form', keepAlive: true, permission: ['form'] }
           },
           {
-            path: '/form/advanced-form',
+            path: '/form/custome',
             name: 'AdvanceForm',
-            // component: () => import('@/views/form/advancedForm/AdvancedForm'),
+            component: () => import('@/views/store/Custom'),
             meta: { title: 'menu.form.advanced-form', keepAlive: true, permission: ['form'] }
           }
         ]

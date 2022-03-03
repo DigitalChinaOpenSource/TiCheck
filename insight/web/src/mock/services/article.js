@@ -2,21 +2,18 @@ import Mock from 'mockjs2'
 import { builder, getQueryParameters } from '../util'
 
 const titles = [
-  'Alipay',
-  'Angular',
-  'Ant Design',
-  'Ant Design Pro',
-  'Bootstrap',
-  'React',
-  'Vue',
-  'Webpack'
+  '存活的TiDB数量',
+  '存活的TiKV数量',
+  '存活的PD数量',
+  '今天网卡流入流量(MB)',
+  '今天网卡流出流量(MB)',
+  '表没有主键',
+  '正在执行且超过5分钟的SQL',
+  '执行超过1h的DDL'
 ]
 
-const avatar = ['https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png',
-  'https://gw.alipayobjects.com/zos/rmsportal/zOsKZmFRdUtvpqCImOVY.png',
-  'https://gw.alipayobjects.com/zos/rmsportal/dURIMkkrRFpPgTuzkwnB.png',
-  'https://gw.alipayobjects.com/zos/rmsportal/sfjbOqnsXXJgNCjCzDBL.png',
-  'https://gw.alipayobjects.com/zos/rmsportal/siCrBXXhmvTQGWPNLBow.png'
+const avatar = ['/assets/icons/python.png',
+  '/assets/icons/shell.png'
 ]
 
 const covers = [
