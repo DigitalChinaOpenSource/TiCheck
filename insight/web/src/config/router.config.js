@@ -28,6 +28,12 @@ export const asyncRouterMap = [
             name: 'Workplace',
             component: () => import('@/views/cluster/List'),
             meta: { title: 'menu.dashboard.workplace', keepAlive: true, permission: ['dashboard'] }
+          },
+          {
+            path: '/cluster/info',
+            name: 'ClsuerInfo',
+            component: () => import('@/views/cluster/Info'),
+            meta: { title: 'menu.dashboard.clusterInfo', keepAlive: true, permission: ['dashboard'] }
           }
         ]
       },

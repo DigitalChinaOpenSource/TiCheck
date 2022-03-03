@@ -6,7 +6,8 @@ const api = {
   service: '/service',
   permission: '/permission',
   permissionNoPager: '/permission/no-pager',
-  orgTree: '/org/tree'
+  orgTree: '/org/tree',
+  clusterInfo: '/cluster/info'
 }
 
 export default api
@@ -46,6 +47,14 @@ export function getPermissions (parameter) {
 export function getOrgTree (parameter) {
   return request({
     url: api.orgTree,
+    method: 'get',
+    params: parameter
+  })
+}
+
+export function getClusterInfo (parameter) {
+  return request({
+    url: api.clusterInfo,
     method: 'get',
     params: parameter
   })
