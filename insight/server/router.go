@@ -2,6 +2,7 @@ package server
 
 import (
 	handler2 "TiCheck/insight/server/handler"
+	"TiCheck/insight/server/model"
 	"github.com/gin-contrib/multitemplate"
 
 	"github.com/gin-gonic/gin"
@@ -11,6 +12,7 @@ func Register(engine *gin.Engine) {
 
 	// 多模板
 	engine.HTMLRender = createMyRender()
+
 	// 加载静态资源
 	engine.Static("/assets", "web/dist/assets")
 	engine.Static("/css", "web/dist/css")
@@ -19,6 +21,12 @@ func Register(engine *gin.Engine) {
 	engine.StaticFile("/avatar2.jpg", "web/dist/avatar2.jpg")
 	engine.StaticFile("/logo.png", "web/dist/logo.png")
 
+	// 初始化数据库
+	err := model.InitDB()
+	if err != nil {
+		panic("can't connect to db")
+	}
+
 	viewGroup := engine.Group("/")
 	{
 		view := &handler2.ViewHandler{}
@@ -26,9 +34,7 @@ func Register(engine *gin.Engine) {
 		// 打开首页
 		viewGroup.GET("/", view.GetIndex)
 
-		// 打开登录界面
-		viewGroup.GET("/login", view.GetLogin)
-
+		// 未定义的路由直接重定向到 Index
 		engine.NoRoute(view.GetIndex)
 	}
 
