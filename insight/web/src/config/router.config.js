@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-import { UserLayout, BasicLayout, BlankLayout } from '@/layouts'
+import { UserLayout, BasicLayout, MenuLayout } from '@/layouts'
 // import { bxAnaalyse } from '@/core/icons'
 
 const RouteView = {
@@ -21,40 +21,42 @@ export const asyncRouterMap = [
         redirect: '/cluster/list',
         component: RouteView,
         hideChildrenInMenu: true,
-        meta: { title: 'menu.dashboard', keepAlive: true, icon: 'cluster', permission: ['sham'] },
+        meta: { title: 'menu.cluster', keepAlive: true, icon: 'cluster', permission: ['sham'] },
         children: [
           {
             path: '/cluster/list',
             name: 'cluster',
             component: () => import('@/views/cluster/List'),
-            meta: { title: 'menu.dashboard.workplace', keepAlive: true, permission: ['sham'] }
+            meta: { title: 'menu.cluster.list', keepAlive: true, permission: ['sham'] }
           }
         ]
       },
       // store
       {
         path: '/store',
+        name: 'Store',
         redirect: '/store/local',
-        component: RouteView,
-        meta: { title: 'menu.form', icon: 'appstore', permission: ['sham'] },
+        component: () => import('@/views/store/Index'),
+        meta: { title: 'menu.store', icon: 'appstore', permission: ['sham'] },
+        hideChildrenInMenu: true,
         children: [
           {
             path: '/store/local',
-            name: 'BaseForm',
+            name: 'StoreLocal',
             component: () => import('@/views/store/Local'),
-            meta: { title: 'menu.form.basic-form', keepAlive: true, permission: ['sham'] }
+            meta: { title: 'menu.store.local', keepAlive: true, permission: ['sham'] }
           },
           {
-            path: '/form/remote',
-            name: 'StepForm',
+            path: '/store/remote',
+            name: 'StoreRemote',
             component: () => import('@/views/store/Remote'),
-            meta: { title: 'menu.form.step-form', keepAlive: true, permission: ['sham'] }
+            meta: { title: 'menu.store.remote', keepAlive: true, permission: ['sham'] }
           },
           {
-            path: '/form/custome',
-            name: 'AdvanceForm',
+            path: '/store/custom',
+            name: 'StoreCustom',
             component: () => import('@/views/store/Custom'),
-            meta: { title: 'menu.form.advanced-form', keepAlive: true, permission: ['sham'] }
+            meta: { title: 'menu.store.custom', keepAlive: true, permission: ['sham'] }
           }
         ]
       },
