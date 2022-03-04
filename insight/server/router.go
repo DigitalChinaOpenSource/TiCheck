@@ -83,6 +83,14 @@ func Register(engine *gin.Engine) {
 		reportGroup.POST("/editconf/:script", report.EditConfig)
 	}
 
+	clusterGroup := engine.Group("/cluster")
+	{
+		cluster := &handler2.ClusterHandler{}
+
+		//
+		clusterGroup.GET("/:id", cluster.GetClusterInfo)
+	}
+
 	scriptGroup := engine.Group("/script")
 	// test, ignore token
 	// scriptGroup.Use(session.VerifyToken)
