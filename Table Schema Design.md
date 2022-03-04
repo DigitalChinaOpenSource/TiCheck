@@ -7,7 +7,7 @@
 
 ### 系统用户信息
 
-- Table Name: `user`
+- Table Name: `users`
 - Table Schema:
 
 | column name   | data type | explanation             | nullable | other notes |
@@ -24,7 +24,7 @@
 
 ### 脚本（组件/插件/巡检项）信息
 
-- Table Name: `script`
+- Table Name: `scripts`
 - Table Schema:
 
 | column name   | data type | explanation             | nullable | other notes |
@@ -45,7 +45,7 @@
 
 ### 集群信息
 
-- Table Name: `cluster`
+- Table Name: `clusters`
 - Table Schema:
 
 | column name   | data type | explanation             | nullable | other notes |
@@ -66,7 +66,7 @@
 
 ### 集群巡检项
 
-- Table Name: `cluster_checklist`
+- Table Name: `cluster_checklists`
 - Table Schema:
 
 | column name   | data type | explanation             | nullable | other notes |
@@ -81,7 +81,7 @@
 
 ### 集群巡检定时器
 
-- Table Name: `scheduler`
+- Table Name: `schedulers`
 - Table Schema:
 
 | column name   | data type | explanation             | nullable | other notes |
@@ -97,7 +97,7 @@
 
 ### 集群巡检记录
 
-- Table Name: `check_history`
+- Table Name: `check_histories`
 - Table Schema:
 
 | column name   | data type | explanation             | nullable | other notes |
@@ -119,7 +119,8 @@
 | column name  | data type | explanation          | nullable                     | other notes                           |
 | ------------ | --------- | -------------------- | ---------------------------- | ------------------------------------- |
 | id           | INTEGER   | 自增主键             | 不可为空                     |                                       |
-| check_time   | TEXT   | 巡检开始时间         | 不可为空                     | 精确到秒                              |
+| history_id   | INTEGER   | 巡检记录id         | 不可为空                     | 关联到check_history的id                   |
+| cluster_id    | INTEGER   | 集群id | 不可为空 |     |
 | check_tag    | TEXT      | 检查类别             | 不可为空                     |                                       |
 | check_name   | TEXT      | 检查项目             | 不可为空                     |                                       |
 | operator     | TEXT      | 比较方式             | 不可为空                     | 参考tck_addons.threshold_operator |

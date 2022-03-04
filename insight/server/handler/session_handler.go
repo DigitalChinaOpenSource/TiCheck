@@ -1,10 +1,9 @@
 package handler
 
 import (
+	"TiCheck/insight/server/model"
 	"bytes"
 	"crypto/rand"
-	"database/sql"
-	"fmt"
 	"math/big"
 	"net/http"
 	"time"
@@ -18,65 +17,118 @@ type SessionHandler struct {
 }
 
 type Session struct {
-	user     string
-	password string
-	token    string
-	ticker   *time.Ticker
+	User  *model.User
+	Token  string
+	Ticker *time.Ticker
+}
+
+type UserReq struct {
+	UserName string `json:"username"`
+	Password string `json:"password"`
+}
+
+type GetUserInfoResp struct {
+	UserName  string `json:"user_name,omitempty"`
+	FullName  string `json:"full_name,omitempty"`
+	Email     string `json:"email,omitempty"`
 }
 
 func (sh *SessionHandler) AuthenticatedUser(c *gin.Context) {
-
-	user := c.PostForm("username")
-	password := c.PostForm("password")
-	se := &Session{
-		user: user,
-		password: password,
-	}
-	if sh.UserIsExit(user) {
-		se = sh.Sessions[user]
-	} else {
-		se = sh.CreateUser(user, password)
-	}
-
-	if se.verifyDBUser() {
-		c.SetCookie("TiCheckerToken", se.token, 3600, "/", "", false, true)
-		c.SetCookie("TiCheckerUser", se.user, 3600, "/", "", false, false)
-
-		c.JSON(http.StatusOK, gin.H{
-			"token": se.token,
+	userReq := &UserReq{}
+	err := c.BindJSON(userReq)
+	if err !=nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "the request body is wrong",
 		})
+
 		return
 	}
 
-	c.JSON(http.StatusUnauthorized, gin.H{
-		"error": "the user name or password is wrong.",
+	se := &Session{
+		User: &model.User{
+			UserName: userReq.UserName,
+			UserPassword: userReq.Password,
+		},
+	}
+
+	if !se.User.VerifyUser() {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "the User name or password is wrong.",
+		})
+
+		return
+	}
+
+	if sh.UserIsExit(userReq.UserName) {
+		se = sh.Sessions[userReq.UserName]
+	} else {
+		sh.CreateUser(se)
+	}
+
+	c.SetCookie("TiCheckerToken", se.Token, 3600, "/", "", false, true)
+	c.SetCookie("TiCheckerUser", userReq.UserName, 3600, "/", "", false, false)
+
+	c.JSON(http.StatusOK, gin.H{
+		"token": se.Token,
 	})
+	return
 
 }
 
-func (se *Session) verifyDBUser() bool {
-	// 用ping做账号密码验证
-	conn := fmt.Sprintf("%s:%s@tcp(10.3.65.140:4000)/mysql", se.user, se.password)
-	db, err := sql.Open("mysql", conn)
+func (sh *SessionHandler) Logout(c *gin.Context) {
+	user, err := c.Cookie("TiCheckerUser")
 	if err != nil {
-		return false
-	}
-	err = db.Ping()
-	if err != nil {
-		return false
+		c.JSON(http.StatusOK, gin.H{
+			"error": err.Error(),
+		})
 	}
 
-	defer db.Close()
+	if _,ok := sh.Sessions[user]; ok {
+		sh.Sessions[user].Ticker.Reset(time.Millisecond)
+	}
 
-	se.UpdateToken()
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+	return
+}
 
-	return true
+func (sh *SessionHandler) GetUserInfo(c *gin.Context) {
+	user, err0 := c.Cookie("TiCheckerUser")
+	token, err1 := c.Cookie("TiCheckerToken")
+
+	if err0 == nil && err1 == nil && sh.UserIsExit(user) {
+		if token == sh.Sessions[user].Token {
+			userInfo := model.User{
+				UserName: user,
+			}
+			if err := userInfo.GetUserInfoByName(); err != nil {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+
+			c.JSON(http.StatusOK, GetUserInfoResp{
+				UserName: userInfo.UserName,
+				FullName: userInfo.FullName,
+				Email: userInfo.Email,
+			})
+
+			return
+		}
+	}
+
+	c.JSON(http.StatusUnauthorized, gin.H{
+		"error": "Unauthorized",
+	})
+	return
 }
 
 // UpdateToken 更新Token, 同时重置token过期时间
 func (se *Session) UpdateToken() {
 	se.CreateToken(64)
-	se.ticker.Reset(time.Minute * 30)
+	se.Ticker.Reset(time.Minute * 30)
 }
 
 func (se *Session) CreateToken(len int) {
@@ -89,7 +141,7 @@ func (se *Session) CreateToken(len int) {
 		randomInt, _ := rand.Int(rand.Reader, bigInt)
 		container += string(str[randomInt.Int64()])
 	}
-	se.token = container
+	se.Token = container
 }
 
 func (sh *SessionHandler) VerifyToken(c *gin.Context) {
@@ -97,9 +149,11 @@ func (sh *SessionHandler) VerifyToken(c *gin.Context) {
 	user, err0 := c.Cookie("TiCheckerUser")
 	token, err1 := c.Cookie("TiCheckerToken")
 
-	if err0 == nil && err1 == nil && sh.UserIsExit(user) && token == sh.Sessions[user].token {
-		c.Next()
-		return
+	if err0 == nil && err1 == nil && sh.UserIsExit(user) {
+		if token == sh.Sessions[user].Token {
+			c.Next()
+			return
+		}
 	}
 
 	c.Abort()
@@ -118,38 +172,18 @@ func (sh *SessionHandler) UserIsExit(user string) bool {
 	return false
 }
 
-// CreateUser 创建一个 user 并生成相应 token
-func (sh *SessionHandler) CreateUser(user string, password string) *Session {
-	se := &Session{
-		user: user,
-		password: password,
-	}
+// CreateUser 创建一个 User 并生成相应 token
+func (sh *SessionHandler) CreateUser(se *Session) {
 	se.CreateToken(64)
-	se.ticker = time.NewTicker(time.Minute * 30)
-	sh.Sessions[user] = se
+	se.Ticker = time.NewTicker(time.Minute * 30)
+	userName := se.User.UserName
+	sh.Sessions[userName] = se
 	go func() {
-		<- se.ticker.C
-		se.ticker.Stop()
-		delete(sh.Sessions, user)
+		<- se.Ticker.C
+		se.Ticker.Stop()
+		delete(sh.Sessions, userName)
 		return
 	}()
-	return se
-}
 
-func (sh *SessionHandler) Logout(c *gin.Context) {
-	user, err := c.Cookie("TiCheckerUser")
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"error": err.Error(),
-		})
-	}
-
-	if _,ok := sh.Sessions[user]; ok {
-		sh.Sessions[user].ticker.Reset(time.Millisecond)
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-	})
 	return
 }
