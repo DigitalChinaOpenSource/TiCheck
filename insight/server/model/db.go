@@ -9,7 +9,7 @@ var DbConn *gorm.DB
 
 func InitDB() error {
 	if DbConn == nil {
-		db, err := gorm.Open(sqlite.Open("../report/report.db"), &gorm.Config{})
+		db, err := gorm.Open(sqlite.Open("report/report.db"), &gorm.Config{})
 		if err != nil {
 			return err
 		}

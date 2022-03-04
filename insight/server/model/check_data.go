@@ -5,7 +5,7 @@ import (
 )
 
 type CheckData struct {
-	ID        	uint          `gorm:"primarykey"`
+	ID          uint          `gorm:"primarykey"`
 	CheckTime   time.Time     `gorm:"not null"`
 	CheckTag    string        `gorm:"not null"`
 	CheckName   string        `gorm:"not null"`

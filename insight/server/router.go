@@ -92,8 +92,10 @@ func Register(engine *gin.Engine) {
 	{
 		cluster := &handler2.ClusterHandler{}
 
-		//
-		clusterGroup.GET("/:id", cluster.GetClusterInfo)
+		// Get cluster list
+		clusterGroup.GET("/list", cluster.GetClusterInfo)
+		// Get cluster information by id
+		clusterGroup.GET("/info/:id", cluster.GetClusterInfo)
 	}
 
 	scriptGroup := engine.Group("/script")
