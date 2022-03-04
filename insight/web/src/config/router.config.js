@@ -13,20 +13,19 @@ export const asyncRouterMap = [
     name: 'index',
     component: BasicLayout,
     meta: { title: 'menu.home' },
-    redirect: '/dashboard',
+    redirect: '/cluster',
     children: [
-      // dashboard
       {
-        path: '/dashboard',
-        name: 'dashboard',
+        path: '/cluster',
+        name: 'cluster',
         redirect: '/cluster/list',
         component: RouteView,
-            hideChildrenInMenu: true,
-        meta: { title: 'menu.dashboard', keepAlive: true, icon: 'cluster', permission: ['dashboard'] },
+        hideChildrenInMenu: true,
+        meta: { title: 'menu.dashboard', keepAlive: true, icon: 'cluster', permission: ['sham'] },
         children: [
           {
             path: '/cluster/list',
-            name: 'Workplace',
+            name: 'cluster',
             component: () => import('@/views/cluster/List'),
             meta: { title: 'menu.dashboard.workplace', keepAlive: true, permission: ['sham'] }
           }
@@ -37,25 +36,25 @@ export const asyncRouterMap = [
         path: '/store',
         redirect: '/store/local',
         component: RouteView,
-        meta: { title: 'menu.form', icon: 'appstore', permission: ['form'] },
+        meta: { title: 'menu.form', icon: 'appstore', permission: ['sham'] },
         children: [
           {
             path: '/store/local',
             name: 'BaseForm',
             component: () => import('@/views/store/Local'),
-            meta: { title: 'menu.form.basic-form', keepAlive: true, permission: ['form'] }
+            meta: { title: 'menu.form.basic-form', keepAlive: true, permission: ['sham'] }
           },
           {
             path: '/form/remote',
             name: 'StepForm',
             component: () => import('@/views/store/Remote'),
-            meta: { title: 'menu.form.step-form', keepAlive: true, permission: ['form'] }
+            meta: { title: 'menu.form.step-form', keepAlive: true, permission: ['sham'] }
           },
           {
             path: '/form/custome',
             name: 'AdvanceForm',
             component: () => import('@/views/store/Custom'),
-            meta: { title: 'menu.form.advanced-form', keepAlive: true, permission: ['form'] }
+            meta: { title: 'menu.form.advanced-form', keepAlive: true, permission: ['sham'] }
           }
         ]
       },
