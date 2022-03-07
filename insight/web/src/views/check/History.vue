@@ -1,29 +1,37 @@
 <template>
-  <a-table :columns="columns" :data-source="data">
-    <a slot="ID" slot-scope="text">{{ text }}</a>
-    <span slot="customTitle"><a-icon type="smile-o" /> ID </span>
-    <span slot="normal" slot-scope="normal">
-      <a-tag
-        :key="normal"
-        :color="'green'"
-      >
-        {{ normal }}
-      </a-tag>
-    </span>
-    <span slot="warning" slot-scope="warning">
-      <a-tag
-        :key="warning"
-        :color="'volcano'"
-      >
-        {{ warning }}
-      </a-tag>
-    </span>
-    <span slot="action" slot-scope="record">
-      <a>Download - {{record.id}}</a>
-    </span>
-  </a-table>
+  <div>
+    <a-page-header
+      style="border: 1px solid rgb(235, 237, 240)"
+      title= "cluster.detail.check.history"
+    />
+    <a-table :columns="columns" :data-source="data" rowKey="id">
+      <a slot="ID" slot-scope="text">{{ text }}</a>
+      <span slot="customTitle"><a-icon type="smile-o" /> ID </span>
+      <span slot="normal_items" slot-scope="normal_items">
+        <a-tag
+          :key="normal_items"
+          :color="'green'"
+        >
+          {{ normal_items }}
+        </a-tag>
+      </span>
+      <span slot="warning_items" slot-scope="warning_items">
+        <a-tag
+          :key="warning_items"
+          :color="'volcano'"
+        >
+          {{ warning_items }}
+        </a-tag>
+      </span>
+      <span slot="action" slot-scope="record">
+        <a @click="downloadReport(record.id)">Download</a>
+      </span>
+    </a-table>
+  </div>
 </template>
 <script>
+import { getCheckHistoryByClusterID, downloadReport } from '@/api/check'
+
 const columns = [
   {
     title: 'ID',
@@ -34,8 +42,8 @@ const columns = [
   },
   {
     title: 'Time',
-    dataIndex: 'start_time',
-    key: 'start_time'
+    dataIndex: 'check_time',
+    key: 'check_time'
   },
   {
     title: 'Duration',
@@ -44,21 +52,20 @@ const columns = [
   },
   {
     title: 'Normal',
-    key: 'normal',
-    dataIndex: 'normal',
-    scopedSlots: { customRender: 'normal' }
+    key: 'normal_items',
+    dataIndex: 'normal_items',
+    scopedSlots: { customRender: 'normal_items' }
   },
   {
     title: 'Warning',
-    key: 'warning',
-    dataIndex: 'warning',
-    scopedSlots: { customRender: 'warning' }
+    key: 'warning_items',
+    dataIndex: 'warning_items',
+    scopedSlots: { customRender: 'warning_items' }
   },
   {
     title: 'Total',
-    key: 'total',
-    dataIndex: 'total',
-    scopedSlots: { customRender: 'total' }
+    key: 'total_items',
+    dataIndex: 'total_items'
   },
   {
     title: 'Action',
@@ -67,16 +74,7 @@ const columns = [
   }
 ]
 
-const data = [
-  {
-    id: 1,
-    start_time: '2022-10-10 23:00:00',
-    duration: 32,
-    normal: 12,
-    warning: 21,
-    total: 33
-  }
-]
+const data = []
 
 export default {
   data () {
@@ -84,7 +82,20 @@ export default {
       data,
       columns
     }
+  },
+  mounted () {
+    this.getHistoryList()
+  },
+  methods: {
+    getHistoryList () {
+      getCheckHistoryByClusterID(1).then(res => {
+        this.data = res
+      })
+    },
+    downloadReport (params) {
+      console.log(params)
+      downloadReport(params)
+    }
   }
 }
-
 </script>
