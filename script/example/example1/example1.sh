@@ -1,0 +1,1 @@
+echo "example1 script by ticheck"

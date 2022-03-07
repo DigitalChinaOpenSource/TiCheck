@@ -2,7 +2,7 @@ package server
 
 import (
 	handler2 "TiCheck/insight/server/handler"
-	"TiCheck/insight/server/model"
+
 	"github.com/gin-contrib/multitemplate"
 
 	"github.com/gin-gonic/gin"
@@ -22,12 +22,6 @@ func Register(engine *gin.Engine) {
 	//engine.Static("/js", "web/dist/js")
 	//engine.StaticFile("/avatar2.jpg", "web/dist/avatar2.jpg")
 	//engine.StaticFile("/logo.png", "web/dist/logo.png")
-
-	// 初始化数据库
-	err := model.InitDB()
-	if err != nil {
-		panic("can't connect to db")
-	}
 
 	viewGroup := engine.Group("/")
 	{

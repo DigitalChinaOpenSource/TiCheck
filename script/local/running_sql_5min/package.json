@@ -1,0 +1,27 @@
+{
+    "_id": "running_sql_5min",
+    "name": "正在执行且超过5分钟的SQL",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "running_sql_5min.sh"
+    ],
+    "main": "running_sql_5min.sh",
+    "tags": [
+      "运行状态"
+    ],
+    "rules": [
+        {
+            "operator": 0,
+            "threshold": "NA",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }
