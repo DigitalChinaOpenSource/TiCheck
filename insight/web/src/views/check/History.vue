@@ -1,48 +1,64 @@
 <template>
   <a-table :columns="columns" :data-source="data">
-    <a slot="name" slot-scope="text">{{ text }}</a>
-    <span slot="customTitle"><a-icon type="smile-o" /> Name</span>
-    <span slot="tags" slot-scope="tags">
+    <a slot="ID" slot-scope="text">{{ text }}</a>
+    <span slot="customTitle"><a-icon type="smile-o" /> ID </span>
+    <span slot="normal" slot-scope="normal">
       <a-tag
-        v-for="tag in tags"
-        :key="tag"
-        :color="tag === 'loser' ? 'volcano' : tag.length > 5 ? 'geekblue' : 'green'"
+        :key="normal"
+        :color="'green'"
       >
-        {{ tag.toUpperCase() }}
+        {{ normal }}
       </a-tag>
     </span>
-    <span slot="action" slot-scope="text, record">
-      <a>Invite 一 {{ record.name }}</a>
-      <a-divider type="vertical" />
-      <a>Delete</a>
-      <a-divider type="vertical" />
-      <a class="ant-dropdown-link"> More actions <a-icon type="down" /> </a>
+    <span slot="warning" slot-scope="warning">
+      <a-tag
+        :key="warning"
+        :color="'volcano'"
+      >
+        {{ warning }}
+      </a-tag>
+    </span>
+    <span slot="action" slot-scope="record">
+      <a>Download - {{record.id}}</a>
     </span>
   </a-table>
 </template>
 <script>
 const columns = [
   {
-    dataIndex: 'name',
-    key: 'name',
+    title: 'ID',
+    dataIndex: 'id',
+    key: 'id',
     slots: { title: 'customTitle' },
-    scopedSlots: { customRender: 'name' }
+    scopedSlots: { customRender: 'ID' }
   },
   {
-    title: 'Age',
-    dataIndex: 'age',
-    key: 'age'
+    title: 'Time',
+    dataIndex: 'start_time',
+    key: 'start_time'
   },
   {
-    title: 'Address',
-    dataIndex: 'address',
-    key: 'address'
+    title: 'Duration',
+    dataIndex: 'duration',
+    key: 'duration'
   },
   {
-    title: 'Tags',
-    key: 'tags',
-    dataIndex: 'tags',
-    scopedSlots: { customRender: 'tags' }
+    title: 'Normal',
+    key: 'normal',
+    dataIndex: 'normal',
+    scopedSlots: { customRender: 'normal' }
+  },
+  {
+    title: 'Warning',
+    key: 'warning',
+    dataIndex: 'warning',
+    scopedSlots: { customRender: 'warning' }
+  },
+  {
+    title: 'Total',
+    key: 'total',
+    dataIndex: 'total',
+    scopedSlots: { customRender: 'total' }
   },
   {
     title: 'Action',
@@ -53,25 +69,12 @@ const columns = [
 
 const data = [
   {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-    tags: ['nice', 'developer']
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    tags: ['loser']
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park',
-    tags: ['cool', 'teacher']
+    id: 1,
+    start_time: '2022-10-10 23:00:00',
+    duration: 32,
+    normal: 12,
+    warning: 21,
+    total: 33
   }
 ]
 
