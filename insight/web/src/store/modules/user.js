@@ -99,7 +99,6 @@ const user = {
     GetInfo ({ commit }) {
       return new Promise((resolve, reject) => {
         getInfo().then(response => {
-          debugger
           const role = roleObj
           const result = {
             ...response,

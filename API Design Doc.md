@@ -276,7 +276,7 @@ null
         "id": "20211228092830",
         "start_time":"2021-12-28 09:28:03",
         "duration": 30,
-        "success": 29,
+        "normal": 29,
         "warning": 1,
         "total": 30
       },{

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a-card :bordered="false" class="ant-pro-components-tag-select" title="Remote Store">
+    <a-card :bordered="false" class="ant-pro-components-tag-select" :title="$t('store.page.remote.title')">
          <div slot="extra">
         <a-radio-group default-value="all" @change="onSearch">
           <a-radio-button value="all">全部分类</a-radio-button>

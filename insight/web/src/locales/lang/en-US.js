@@ -1,6 +1,7 @@
 import antdEnUS from 'ant-design-vue/es/locale-provider/en_US'
 import momentEU from 'moment/locale/eu'
 import global from './en-US/global'
+import dictData from './en-US/dict'
 
 import menu from './en-US/menu'
 import setting from './en-US/setting'
@@ -10,6 +11,8 @@ import dashboard from './en-US/dashboard'
 import form from './en-US/form'
 import result from './en-US/result'
 import account from './en-US/account'
+
+import store from './en-US/store'
 
 const components = {
   antLocale: antdEnUS,
@@ -25,11 +28,13 @@ export default {
   'layouts.userLayout.title': 'TiDB automated checklist for hackathon 2021.',
   ...components,
   ...global,
+  ...dictData,
   ...menu,
   ...setting,
   ...user,
   ...dashboard,
   ...form,
   ...result,
-  ...account
+  ...account,
+  ...store
 }
