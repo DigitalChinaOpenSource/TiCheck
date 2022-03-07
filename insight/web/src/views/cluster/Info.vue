@@ -61,7 +61,7 @@ import {
   ChartCard,
   RankList,
   Bar
-} from '@/compoments'
+} from '@/components'
 // import { getClusterInfo } from '@/api/manage'
 export default {
   name: 'ClusterInfo',
