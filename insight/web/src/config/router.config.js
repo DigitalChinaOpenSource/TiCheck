@@ -58,6 +58,32 @@ export const asyncRouterMap = [
           }
         ]
       },
+      {
+      // check
+        path: '/check',
+        name: 'check',
+        hideChildrenInMenu: true,
+        redirect: '/check/history',
+        component: RouteView,
+        meta: { title: 'menu.check', icon: 'check', permission: ['sham'] },
+        children: [
+          {
+            path: '/check/history',
+            name: 'History',
+            hideChildrenInMenu: true,
+            component: () => import('@/views/check/History'),
+            meta: { title: 'menu.check.history', keepAlive: true, permission: ['sham'] },
+            children: [
+              {
+                path: '/check/history/detail',
+                name: 'HistoryDetail',
+                component: () => import('@/views/check/HistoryDetail'),
+                meta: { title: 'menu.check.history.detail', keepAlive: true, permission: ['sham'] }
+              }
+            ]
+          }
+        ]
+      },
       // account
       {
         path: '/account',
