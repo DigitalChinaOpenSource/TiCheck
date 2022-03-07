@@ -1,0 +1,27 @@
+{
+    "_id": "tikv_region_number",
+    "name": "TiKV Region数量",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "tikv_region_number.py"
+    ],
+    "main": "tikv_region_number.py",
+    "tags": [
+      "运行状态"
+    ],
+    "rules": [
+        {
+            "operator": 5,
+            "threshold": "30000",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }

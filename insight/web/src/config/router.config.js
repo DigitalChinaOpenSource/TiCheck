@@ -36,7 +36,8 @@ export const asyncRouterMap = [
         path: '/store',
         name: 'Store',
         redirect: '/store/local',
-        component: () => import('@/views/store/Index'),
+        // component: () => import('@/views/store/Index'),
+        component: MenuLayout,
         meta: { title: 'menu.store', icon: 'appstore', permission: ['sham'] },
         hideChildrenInMenu: true,
         children: [

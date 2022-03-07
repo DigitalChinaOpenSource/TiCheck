@@ -1,0 +1,30 @@
+{
+    "_id": "example1", 
+    "name": "脚本示例1",
+    "author": {
+      "name": "DigitalChina",
+      "email": "heao@digitalchina.com"
+    },
+    "description": "this script description.",
+    "files": [
+      "index.js",
+      "lib/"
+    ],
+    "main": "example1.sh",
+    "tags": [
+      "集群",
+      "网络",
+      "运行状态"
+    ],
+    "rules": [
+        {
+            "operator": 3,
+            "threshold": "3",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "",
+    "updateTime": ""
+  }
