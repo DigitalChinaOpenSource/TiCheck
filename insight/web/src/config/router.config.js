@@ -25,9 +25,31 @@ export const asyncRouterMap = [
         children: [
           {
             path: '/cluster/list',
-            name: 'cluster',
+            name: 'clusterList',
             component: () => import('@/views/cluster/List'),
             meta: { title: 'menu.cluster.list', keepAlive: true, permission: ['sham'] }
+          },
+          {
+            path: '/cluster/detail',
+            name: 'clusterDetail',
+            redirect: '/cluster/check/history',
+            component: () => import('@/views/cluster/Index'),
+            meta: { title: 'menu.cluster.detail', keepAlive: true, permission: ['sham'] },
+            children: [
+              // check
+              {
+                path: '/cluster/check/history',
+                name: 'CheckHistory',
+                component: () => import('@/views/check/History'),
+                meta: { title: 'menu.cluster.check.history', keepAlive: true, permission: ['sham'] }
+              },
+              {
+                path: '/cluster/check/history/detail',
+                name: 'HistoryDetail',
+                component: () => import('@/views/check/HistoryDetail'),
+                meta: { title: 'menu.cluster.check.history.detail', keepAlive: true, permission: ['sham'] }
+              }
+            ]
           }
         ]
       },

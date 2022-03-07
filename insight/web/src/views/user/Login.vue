@@ -46,7 +46,7 @@
         </a-tab-pane>
       </a-tabs>
 
-      <a-form-item>
+      <a-form-item style="display:none">
         <a-checkbox v-decorator="['rememberMe', { valuePropName: 'checked' }]">{{ $t('user.login.remember-me') }}</a-checkbox>
         <router-link
           :to="{ name: 'recover', params: { user: 'aaa'} }"
@@ -66,7 +66,7 @@
         >{{ $t('user.login.login') }}</a-button>
       </a-form-item>
 
-      <div class="user-login-other">
+      <div class="user-login-other" style="display:none">
         <!-- <span>{{ $t('user.login.sign-in-with') }}</span>
         <a>
           <a-icon class="item-icon" type="alipay-circle"></a-icon>
