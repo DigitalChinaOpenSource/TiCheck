@@ -30,12 +30,18 @@ export const asyncRouterMap = [
             meta: { title: 'menu.cluster.list', keepAlive: true, permission: ['sham'] }
           },
           {
-            path: '/cluster/detail',
-            name: 'clusterDetail',
+            path: '/cluster/info',
+            name: 'clusterInfo',
             redirect: '/cluster/check/history',
             component: () => import('@/views/cluster/Index'),
-            meta: { title: 'menu.cluster.detail', keepAlive: true, permission: ['sham'] },
+            meta: { title: 'menu.cluster.info', keepAlive: true, permission: ['sham'] },
             children: [
+              {
+                path: '/cluster/info/:id',
+                name: 'ClusterInfo',
+                component: () => import('@/views/cluster/Info'),
+                meta: { title: 'menu.cluster.check.history', keepAlive: true, permission: ['sham'] }
+              },
               // check
               {
                 path: '/cluster/check/history',
@@ -58,8 +64,8 @@ export const asyncRouterMap = [
         path: '/store',
         name: 'Store',
         redirect: '/store/local',
-        // component: () => import('@/views/store/Index'),
-        component: MenuLayout,
+        component: () => import('@/views/store/Index'),
+        // component: MenuLayout,
         meta: { title: 'menu.store', icon: 'appstore', permission: ['sham'] },
         hideChildrenInMenu: true,
         children: [
