@@ -6,6 +6,8 @@ import (
 
 type CheckData struct {
 	ID          uint          `gorm:"primarykey"`
+	HistoryID   uint          `gorm:"not null"`
+	ClusterID   uint          `gorm:"not null"`
 	CheckTime   time.Time     `gorm:"not null"`
 	CheckTag    string        `gorm:"not null"`
 	CheckName   string        `gorm:"not null"`

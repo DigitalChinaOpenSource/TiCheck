@@ -17,7 +17,6 @@
       >
         <template>
           <a-card
-            :hoverable="true"
             :title="false"
           >
             <div>
@@ -38,7 +37,7 @@
                     style="font-size:30px"
                     @click="jump2Info(item)"
                   >
-                    {{item.cluster_name}}
+                    {{ item.cluster_name }}
                   </a>
                 </div>
               </a-row>
@@ -62,8 +61,8 @@
                   </a-col>
                   <a-col>
                     <span>
-                      <a style="margin-right: 15px">Grafana</a>
-                      <a>Dashboard</a>
+                      <a style="margin-right: 15px;color: #40a9ff" :href="item.grafana_url">Grafana</a>
+                      <a style="color: #40a9ff" :href="item.dashboard_url">Dashboard</a>
                     </span>
                   </a-col>
                 </a-row>

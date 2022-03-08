@@ -37,11 +37,11 @@ type ClusterListReps struct {
 }
 
 type ClusterInfoReps struct {
-	ID                     uint                 `json:"cluster_id"`
-	Name                   string               `json:"cluster_name"`
-	Version                string               `json:"cluster_version"`
-	ClusterOwner           string               `json:"cluster_owner"`
-	Description            string               `json:"cluster_description"`
+	ID                     uint                 `json:"id"`
+	Name                   string               `json:"name"`
+	Version                string               `json:"version"`
+	ClusterOwner           string               `json:"owner"`
+	Description            string               `json:"description"`
 	CreateTime             time.Time            `json:"create_time"`
 	LastCheckTime          time.Time            `json:"last_check_time"`
 	ClusterHealth          int                  `json:"cluster_health"`
