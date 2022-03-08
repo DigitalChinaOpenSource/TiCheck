@@ -1,101 +1,148 @@
 <template>
   <div>
     <a-page-header
-      style="border: 1px solid rgb(235, 237, 240)"
-      title= "cluster.detail.check.history"
+      style="border: 1px solid rgb(235, 237, 240); margin-bottom: 20px;"
+      title="cluster.detail.check.history"
     />
-    <a-table :columns="columns" :data-source="data" rowKey="id">
-      <a slot="ID" slot-scope="text">{{ text }}</a>
-      <span slot="customTitle"><a-icon type="smile-o" /> ID </span>
+    <div style="float: right">
+        <span>{{ $t('cluster.detail.check.history.timeSelect') }}</span>
+        <a-range-picker @change="onTimeChange" style="margin-left: 20px" />
+    </div>
+
+    <a-table
+      :columns="columns"
+      :data-source="data"
+      :rowKey="(record) => record.id"
+      :pagination="pagination"
+      @change="handleChange" 
+      style="padding-top: 20px"
+    >
+
+      <a @click="getReportDetail(text)" slot="id" slot-scope="text">{{ text }}</a>
       <span slot="normal_items" slot-scope="normal_items">
-        <a-tag
-          :key="normal_items"
-          :color="'green'"
-        >
+        <a-tag :key="normal_items" :color="'green'">
           {{ normal_items }}
         </a-tag>
       </span>
       <span slot="warning_items" slot-scope="warning_items">
-        <a-tag
-          :key="warning_items"
-          :color="'volcano'"
-        >
+        <a-tag :key="warning_items" :color="'volcano'">
           {{ warning_items }}
         </a-tag>
       </span>
       <span slot="action" slot-scope="record">
-        <a @click="downloadReport(record.id)">Download</a>
+        <a @click="downloadReport(record.id)">cluster.detail.check.history.download</a>
       </span>
     </a-table>
   </div>
 </template>
 <script>
-import { getCheckHistoryByClusterID, downloadReport } from '@/api/check'
+import { getCheckHistoryByClusterID, downloadReport } from '@/api/check';
 
 const columns = [
   {
-    title: 'ID',
-    dataIndex: 'id',
-    key: 'id',
-    slots: { title: 'customTitle' },
-    scopedSlots: { customRender: 'ID' }
+    title: "ID",
+    dataIndex: "id",
+    key: "id",
+    slots: { title: "customTitle" },
+    scopedSlots: { customRender: "id" },
   },
   {
-    title: 'Time',
-    dataIndex: 'check_time',
-    key: 'check_time'
+    title: "Time",
+    dataIndex: "check_time",
+    key: "check_time",
   },
   {
-    title: 'Duration',
-    dataIndex: 'duration',
-    key: 'duration'
+    title: "Duration",
+    dataIndex: "duration",
+    key: "duration",
   },
   {
-    title: 'Normal',
-    key: 'normal_items',
-    dataIndex: 'normal_items',
-    scopedSlots: { customRender: 'normal_items' }
+    title: "Normal",
+    key: "normal_items",
+    dataIndex: "normal_items",
+    scopedSlots: { customRender: "normal_items" },
   },
   {
-    title: 'Warning',
-    key: 'warning_items',
-    dataIndex: 'warning_items',
-    scopedSlots: { customRender: 'warning_items' }
+    title: "Warning",
+    key: "warning_items",
+    dataIndex: "warning_items",
+    scopedSlots: { customRender: "warning_items" },
   },
   {
-    title: 'Total',
-    key: 'total_items',
-    dataIndex: 'total_items'
+    title: "Total",
+    key: "total_items",
+    dataIndex: "total_items",
   },
   {
-    title: 'Action',
-    key: 'action',
-    scopedSlots: { customRender: 'action' }
-  }
-]
+    title: "Action",
+    key: "action",
+    scopedSlots: { customRender: "action" },
+  },
+];
 
-const data = []
+const data = [];
 
 export default {
-  data () {
+  data() {
     return {
       data,
-      columns
-    }
+      columns,
+      pagination: {},
+      start_time: "",
+      end_time: "",
+    };
   },
-  mounted () {
-    this.getHistoryList()
+
+  watch: {
+    current(val) {
+      debugger;
+    },
+  },
+  mounted() {
+    this.getHistoryList();
   },
   methods: {
-    getHistoryList () {
-      getCheckHistoryByClusterID(1).then(res => {
-        this.data = res
-      })
+    handleChange(pagination) {
+      this.pagination = pagination;
+      this.getHistoryList(pagination)
     },
-    downloadReport (params) {
-      console.log(params)
-      downloadReport(params)
+    getHistoryList(
+      pagination = {
+        current: 1,
+        pageSize: 10,
+      }
+    ) {
+      getCheckHistoryByClusterID(1, pagination.current, pagination.pageSize, this.start_time, this.end_time).then(
+        (res) => {
+          this.data = res.data;
+          this.pagination = {
+            ...this.pagination,
+            total: res.total
+          }
+        }
+      );
+    },
+    downloadReport(params) {
+      console.log(params);
+      downloadReport(params);
+    },
+    onTimeChange(date, dateString) {
+      this.start_time = dateString[0];
+      this.end_time = dateString[1];
+      this.getHistoryList();      
+    },
+    getReportDetail(reportID) {
+      console.log(reportID);
+      this.$router.push({name: 'ReportDetail', params: { id: reportID }});
     }
-  }
-}
+    // onChange: (current, pageSize) => {
+    //   debugger
+
+    //   this.getHistoryList(current, pageSize)
+    // },
+    // onShowSizeChange: (current, pageSize) => {
+    //   this.pageSize = pageSize
+    // }
+  },
+};
 </script>

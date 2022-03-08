@@ -44,10 +44,10 @@ export const asyncRouterMap = [
                 meta: { title: 'menu.cluster.check.history', keepAlive: true, permission: ['sham'] }
               },
               {
-                path: '/cluster/check/history/detail',
-                name: 'HistoryDetail',
-                component: () => import('@/views/check/HistoryDetail'),
-                meta: { title: 'menu.cluster.check.history.detail', keepAlive: true, permission: ['sham'] }
+                path: '/cluster/check/history/report/:id',
+                name: 'ReportDetail',
+                component: () => import('@/views/check/ReportDetail'),
+                meta: { title: 'menu.cluster.check.history.report', keepAlive: true, permission: ['sham'] }
               }
             ]
           }

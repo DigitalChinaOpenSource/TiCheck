@@ -39,10 +39,20 @@ type CheckData struct {
 }
 
 func (r *ReportHandler) GetReportByClusterID(c *gin.Context) {
-
 	id := c.Param("clusterID")
-	//length, _ := strconv.Atoi(c.Query("length"))
-	//start, _ := strconv.Atoi(c.Query("start"))
+	pageSize, _ := strconv.Atoi(c.Query("page_size"))
+	pageNum, _ := strconv.Atoi(c.Query("page_num"))
+	startTime := c.Query("start_time")
+	endTime := c.Query("end_time")
+
+
+	if pageSize == 0 {
+		pageSize = 10
+	}
+
+	if pageNum == 0 {
+		pageNum = 1
+	}
 
 	ch := &model.CheckHistory{}
 	clusterID, err := strconv.Atoi(id)
@@ -52,7 +62,7 @@ func (r *ReportHandler) GetReportByClusterID(c *gin.Context) {
 		})
 		return
 	}
-	chs, err := ch.GetHistoryByClusterID(clusterID)
+	res, err := ch.GetHistoryByClusterID(clusterID, pageSize, pageNum, startTime, endTime)
 
 	if err !=nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -61,7 +71,7 @@ func (r *ReportHandler) GetReportByClusterID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, chs)
+	c.JSON(http.StatusOK, res)
 	return
 }
 

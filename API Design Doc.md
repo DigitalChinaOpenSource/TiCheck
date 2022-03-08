@@ -260,19 +260,19 @@ null
 
 - Request Query Param
 ```
-  // The start default value is 0
-  // The length default value is 10
-  ?start=0&length=2
+  // The page_num default value is 1
+  // The page_size default value is 10
+  ?page_size=10&page_num=1
 ```
 
 - Response Body -200
 
 ```json
 {
-  "start": 1,
+  "page_num": 1,
+  "page_size": 10,
   "total": 10,
-  "length": 10,
-  "records": [{
+  "data": [{
         "id": "20211228092830",
         "start_time":"2021-12-28 09:28:03",
         "duration": 30,
