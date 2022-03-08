@@ -30,12 +30,18 @@ export const asyncRouterMap = [
             meta: { title: 'menu.cluster.list', keepAlive: true, permission: ['sham'] }
           },
           {
-            path: '/cluster/detail',
-            name: 'clusterDetail',
+            path: '/cluster/info',
+            name: 'clusterInfo',
             redirect: '/cluster/check/history',
             component: () => import('@/views/cluster/Index'),
-            meta: { title: 'menu.cluster.detail', keepAlive: true, permission: ['sham'] },
+            meta: { title: 'menu.cluster.info', keepAlive: true, permission: ['sham'] },
             children: [
+              {
+                path: '/cluster/info/:id',
+                name: 'ClusterInfo',
+                component: () => import('@/views/cluster/Info'),
+                meta: { title: 'menu.cluster.check.history', keepAlive: true, permission: ['sham'] }
+              },
               // check
               {
                 path: '/cluster/check/history',
