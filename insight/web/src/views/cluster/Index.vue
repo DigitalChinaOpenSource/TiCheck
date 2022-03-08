@@ -1,7 +1,7 @@
 <template>
   <div class="page-header-index-wide">
     <a-card :bordered="false" :bodyStyle="{ padding: '16px 0', height: '100%' }" :style="{ height: '100%' }">
-      <div class="account-settings-info-main" :class="{ 'mobile': isMobile }">
+      <div class="account-settings-info-main" :class="{ 'mobile': isMobile }" :style="{ height: '100%' }">
         <div class="account-settings-info-left">
           <a-menu
             :mode="isMobile ? 'horizontal' : 'inline'"
@@ -12,43 +12,43 @@
           >
             <a-menu-item key="cluster/detail">
               <router-link :to="{ name: 'ClusterInfo' }">
-                  <a-icon type="folder-open" />
+                <a-icon type="folder-open" />
                 {{ $t('menu.cluster.info') }}
               </router-link>
             </a-menu-item>
             <a-menu-item key="/cluster/check/history">
               <router-link :to="{ name: 'CheckHistory' }">
-                  <a-icon type="folder-open" />
+                <a-icon type="folder-open" />
                 {{ $t('menu.cluster.check.history') }}
               </router-link>
             </a-menu-item>
             <a-menu-item key="/cluster/scheduler">
               <router-link :to="{ name: 'Scheduler' }">
-                  <a-icon type="folder-open" />
+                <a-icon type="folder-open" />
                 {{ $t('menu.cluster.scheduler') }}
               </router-link>
             </a-menu-item>
             <a-menu-item key="/cluster/script">
               <router-link :to="{ name: 'ClusterScript' }">
-                  <a-icon type="folder-open" />
+                <a-icon type="folder-open" />
                 {{ $t('menu.cluster.script') }}
               </router-link>
             </a-menu-item>
             <a-menu-item key="/cluster/user">
               <router-link :to="{ name: 'ClusterUser' }">
-                  <a-icon type="folder-open" />
+                <a-icon type="folder-open" />
                 {{ $t('menu.cluster.user') }}
               </router-link>
             </a-menu-item>
             <a-menu-item key="/cluster/set">
               <router-link :to="{ name: 'ClusterSet' }">
-                  <a-icon type="folder-open" />
+                <a-icon type="folder-open" />
                 {{ $t('menu.cluster.set') }}
               </router-link>
             </a-menu-item>
             <a-menu-item key="/cluster/check/execute">
               <router-link :to="{ name: 'ExecuteCheck' }">
-                  <a-icon type="folder-open" />
+                <a-icon type="folder-open" />
                 {{ $t('menu.cluster.check.execute') }}
               </router-link>
             </a-menu-item>

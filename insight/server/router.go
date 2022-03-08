@@ -50,13 +50,23 @@ func Register(engine *gin.Engine) {
 		sessionGroup.GET("/info", session.GetUserInfo)
 	}
 
+	clusterGroup := engine.Group("/cluster")
+	{
+		cluster := &handler2.ClusterHandler{}
+
+		// Get cluster list
+		clusterGroup.GET("/list", cluster.GetClusterList)
+		// Get cluster information by id
+		clusterGroup.GET("/info/:id", cluster.GetClusterInfo)
+	}
+
 	reportGroup := engine.Group("/cluster/report")
 	//reportGroup.Use(session.VerifyToken)
 	{
 		report := &handler2.ReportHandler{}
 
 		// 获取历史巡检列表
-		reportGroup.GET("/all/:clusterID", report. GetReportByClusterID)
+		reportGroup.GET("/all/:clusterID", report.GetReportByClusterID)
 
 		// 通过id获得某次巡检结果
 		reportGroup.GET("/id/:id", report.GetReport)
