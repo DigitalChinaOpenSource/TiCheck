@@ -1,7 +1,7 @@
-package server
+package router
 
 import (
-	handler2 "TiCheck/insight/server/handler"
+	"TiCheck/cmd/ticheck-server/handler"
 
 	"github.com/gin-contrib/multitemplate"
 
@@ -25,7 +25,7 @@ func Register(engine *gin.Engine) {
 
 	viewGroup := engine.Group("/")
 	{
-		view := &handler2.ViewHandler{}
+		view := &handler.ViewHandler{}
 
 		// 打开首页
 		viewGroup.GET("/", view.GetIndex)
@@ -35,8 +35,8 @@ func Register(engine *gin.Engine) {
 	}
 
 	sessionGroup := engine.Group("/session")
-	session := &handler2.SessionHandler{
-		Sessions: make(map[string]*handler2.Session, 0),
+	session := &handler.SessionHandler{
+		Sessions: make(map[string]*handler.Session, 0),
 	}
 
 	{
@@ -52,7 +52,7 @@ func Register(engine *gin.Engine) {
 
 	clusterGroup := engine.Group("/cluster")
 	{
-		cluster := &handler2.ClusterHandler{}
+		cluster := &handler.ClusterHandler{}
 
 		// Get cluster list
 		clusterGroup.GET("/list", cluster.GetClusterList)
@@ -63,7 +63,7 @@ func Register(engine *gin.Engine) {
 	reportGroup := engine.Group("/cluster/report")
 	//reportGroup.Use(session.VerifyToken)
 	{
-		report := &handler2.ReportHandler{}
+		report := &handler.ReportHandler{}
 
 		// 获取历史巡检列表
 		reportGroup.GET("/all/:clusterID", report.GetReportByClusterID)
@@ -94,7 +94,7 @@ func Register(engine *gin.Engine) {
 	// test, ignore token
 	// scriptGroup.Use(session.VerifyToken)
 	{
-		script := &handler2.ScriptHandler{}
+		script := &handler.ScriptHandler{}
 
 		// 查看所有本地脚本
 		scriptGroup.GET("/local", script.GetAllLocalScript)

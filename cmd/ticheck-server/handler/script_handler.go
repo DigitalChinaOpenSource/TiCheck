@@ -2,35 +2,36 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ScriptHandler struct {
 }
 
 type RemoteScriptList struct {
-	Total int               `json:"total"`
+	Total   int             `json:"total"`
 	Scripts []*RemoteScript `json:"script_list"`
 }
 
 type RemoteScript struct {
-	Name string	        `json:"name"`
-	Download bool       `json:"download"`
+	Name     string `json:"name"`
+	Download bool   `json:"download"`
 }
 
 type LocalScriptList struct {
-	Total int              `json:"total"`
+	Total   int            `json:"total"`
 	Scripts []*LocalScript `json:"script_list"`
 }
 
 type LocalScript struct {
-	Name string			`json:"name"`
+	Name string `json:"name"`
 }
 
 // GetAllLocalScript 获取本地所有脚本列表
@@ -43,7 +44,6 @@ func (s *ScriptHandler) GetAllLocalScript(c *gin.Context) {
 		st = 0
 	}
 
-
 	le, err := strconv.Atoi(length)
 	if err != nil && le == 0 {
 		le = 10
@@ -53,14 +53,14 @@ func (s *ScriptHandler) GetAllLocalScript(c *gin.Context) {
 	files, err := ioutil.ReadDir("../script/")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error" : err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
 
 	if st > len(files) {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error" : "exceeded the maximum number of files",
+			"error": "exceeded the maximum number of files",
 		})
 		return
 	}
@@ -71,11 +71,11 @@ func (s *ScriptHandler) GetAllLocalScript(c *gin.Context) {
 		localList.Total += 1
 	}
 
-	if st + le > len(files) {
+	if st+le > len(files) {
 		le = len(files) - st
 	}
 
-	localList.Scripts = localList.Scripts[st:le+st]
+	localList.Scripts = localList.Scripts[st : le+st]
 
 	c.JSON(http.StatusOK, localList)
 	return
@@ -106,7 +106,7 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 	files, err := ioutil.ReadDir("../script/")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error" : err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
@@ -120,12 +120,12 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error" : err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
 
-	for i, _ := range jsonMap{
+	for i, _ := range jsonMap {
 		data, ok := jsonMap[i]["name"].(string)
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -151,18 +151,18 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 		scriptList.Scripts = append(scriptList.Scripts, script)
 	}
 
-	if st + le > len(scriptList.Scripts) {
+	if st+le > len(scriptList.Scripts) {
 		le = len(scriptList.Scripts) - st
 	}
 
 	if st > len(scriptList.Scripts) {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error" : "exceeded the maximum number of scripts",
+			"error": "exceeded the maximum number of scripts",
 		})
 		return
 	}
 
-	scriptList.Scripts = scriptList.Scripts[st:le+st]
+	scriptList.Scripts = scriptList.Scripts[st : le+st]
 
 	c.JSON(http.StatusOK, scriptList)
 	return
@@ -242,7 +242,7 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error" : err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
@@ -262,7 +262,7 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 			fileName = value
 			break
 		} else {
-			if i == len(jsonMap) - 1 {
+			if i == len(jsonMap)-1 {
 				c.JSON(http.StatusBadRequest, gin.H{
 					"error": "can't find script for remote warehouse, please check whether the remote warehouse is valid : " + scriptFileUrl,
 				})
@@ -297,7 +297,7 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 	return
 }
 
-func (s *ScriptHandler) SendRequest(url string) ([]map[string]interface{} ,error) {
+func (s *ScriptHandler) SendRequest(url string) ([]map[string]interface{}, error) {
 	resp, err := http.Get(url)
 
 	if err != nil {
@@ -306,7 +306,7 @@ func (s *ScriptHandler) SendRequest(url string) ([]map[string]interface{} ,error
 
 	body, err := ioutil.ReadAll(resp.Body)
 
-	if err !=nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -374,7 +374,7 @@ func (s *ScriptHandler) updateConfig(configUrl string) error {
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
-	if err !=nil {
+	if err != nil {
 		return err
 	}
 

@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"TiCheck/insight/server/model"
-	"github.com/gin-gonic/gin"
+	"TiCheck/internal/model"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ClusterHandler struct{}
