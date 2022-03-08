@@ -1,6 +1,7 @@
 package model
 
 import (
+	"crypto/md5"
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
@@ -67,7 +68,7 @@ func SetupSeedData() {
 	// admin user
 	admin := User{
 		UserName:     "admin",
-		UserPassword: fmt.Sprintf("%X", sha1.Sum([]byte("admin"))),
+		UserPassword: fmt.Sprintf("%X", sha1.Sum([]byte(fmt.Sprintf("%x", md5.Sum([]byte("admin")))))),
 		FullName:     "admin",
 		Email:        "admin@ticheck.com",
 		IsEnabled:    1,
