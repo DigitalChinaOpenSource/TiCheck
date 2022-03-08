@@ -1,0 +1,27 @@
+{
+    "_id": "goroutine_number",
+    "name": "goroutine数量",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "goroutine_number.py"
+    ],
+    "main": "goroutine_number.py",
+    "tags": [
+      "运行状态"
+    ],
+    "rules": [
+        {
+            "operator": 5,
+            "threshold": "50000",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }

@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"TiCheck/insight/server/model"
 	"fmt"
 	"net/http"
-	"os"
 	"os/exec"
 	"strconv"
 	"time"
@@ -25,14 +25,6 @@ type ReportHandler struct {
 	Conn *sql.DB
 }
 
-type CheckHistory struct {
-	CheckTime    int `json:"check_time"`
-	NormalItems  int `json:"normal_items"`
-	WarningItems int `json:"warning_items"`
-	TotalItems   int `json:"total_items"`
-	Duration     int `json:"duration"`
-}
-
 type CheckData struct {
 	ID          int    `json:"id"`
 	CheckTime   string `json:"check_time"`
@@ -46,42 +38,31 @@ type CheckData struct {
 	CheckStatus string `json:"check_status"`
 }
 
-func (r *ReportHandler) GetCatalog(c *gin.Context) {
+func (r *ReportHandler) GetReportByClusterID(c *gin.Context) {
 
-	length, _ := strconv.Atoi(c.Query("length"))
-	start, _ := strconv.Atoi(c.Query("start"))
+	id := c.Param("clusterID")
+	//length, _ := strconv.Atoi(c.Query("length"))
+	//start, _ := strconv.Atoi(c.Query("start"))
 
-	if length == 0 {
-		length = 10
+	ch := &model.CheckHistory{}
+	clusterID, err := strconv.Atoi(id)
+	if err !=nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
 	}
+	chs, err := ch.GetHistoryByClusterID(clusterID)
 
-	err := r.ConnectDB()
-	if err != nil {
+	if err !=nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	var total int
-	count := r.Conn.QueryRow("select count(*) from check_history")
-	count.Scan(&total)
-
-	var result = []CheckHistory{}
-	rows, _ := r.Conn.Query(fmt.Sprintf("select * from check_history order by check_time desc limit %v offset %v", length, start))
-	for rows.Next() {
-		r := CheckHistory{}
-		rows.Scan(&r.CheckTime, &r.NormalItems, &r.WarningItems, &r.TotalItems, &r.Duration)
-		result = append(result, r)
-	}
-	rows.Close()
-
-	c.JSON(http.StatusOK, gin.H{
-		"draw":            (start % length) + 1,
-		"recordsFiltered": total,
-		"recordsTotal":    total,
-		"data":            result,
-	})
+	c.JSON(http.StatusOK, chs)
+	return
 }
 
 func (r *ReportHandler) GetReport(c *gin.Context) {
@@ -114,62 +95,7 @@ func (r *ReportHandler) GetLastReport(c *gin.Context) {
 }
 
 func (r *ReportHandler) GetMeta(c *gin.Context) {
-	r.ConnectDB()
-	var total_his, total_items, last_checktime, healthy int
-	querySQL := "select count(*),sum(total_items),sum(normal_items)*100/sum(total_items) from check_history"
-	row := r.Conn.QueryRow(querySQL)
-	if row != nil {
-		row.Scan(&total_his, &total_items, &healthy)
-	}
-	querySQL = "select check_time from check_history order by check_time desc limit 1"
-	row = r.Conn.QueryRow(querySQL)
-	if row != nil {
-		row.Scan(&last_checktime)
-	}
-	var recent_warnings = []CheckHistory{}
-	querySQL = "select check_time,warning_items from check_history order by check_time asc limit 10"
-	rows, _ := r.Conn.Query(querySQL)
-	for rows.Next() {
-		r := CheckHistory{}
-		rows.Scan(&r.CheckTime, &r.WarningItems)
-		recent_warnings = append(recent_warnings, r)
-	}
 
-	var weekly = []gin.H{}
-	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime')> date('now','-7 days') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
-	rows, _ = r.Conn.Query(querySQL)
-	for rows.Next() {
-		var name, item, cnt string
-		rows.Scan(&name, &item, &cnt)
-		weekly = append(weekly, gin.H{"check_name": name, "check_item": item, "count": cnt})
-	}
-
-	var monthly = []gin.H{}
-	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime')> date('now','-1 months') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
-	rows, _ = r.Conn.Query(querySQL)
-	for rows.Next() {
-		var name, item, cnt string
-		rows.Scan(&name, &item, &cnt)
-		monthly = append(monthly, gin.H{"check_name": name, "check_item": item, "count": cnt})
-	}
-
-	var yearly = []gin.H{}
-	querySQL = "SELECT check_name,check_item,count(*) as cnt from check_data where datetime(check_time, 'unixepoch', 'localtime')> date('now','-1 years') and check_status='正常' group by check_name,check_item order by cnt desc limit 7"
-	rows, _ = r.Conn.Query(querySQL)
-	for rows.Next() {
-		var name, item, cnt string
-		rows.Scan(&name, &item, &cnt)
-		yearly = append(yearly, gin.H{"check_name": name, "check_item": item, "count": cnt})
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"cluster_status":              gin.H{"total_execution_count": total_his, "total_checked_item": total_items, "last_execution": last_checktime, "cluster_health": healthy},
-		"recent_warnings_total_check": len(recent_warnings),
-		"recent_warnings":             recent_warnings,
-		"normal_week":                 weekly,
-		"normal_month":                monthly,
-		"normal_year":                 yearly,
-	})
 }
 
 func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
@@ -237,22 +163,24 @@ func (r *ReportHandler) DownloadAllReport(c *gin.Context) {
 
 // DownloadReport 下载指定报告
 func (r *ReportHandler) DownloadReport(c *gin.Context) {
-	reportId := c.Param("id")
-	fileName := reportId + ".csv"
+	c.JSON(http.StatusOK, nil)
 
-	_, err := os.Open("../report/" + fileName)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the report is not found",
-		})
-
-		return
-	}
-
-	c.Header("Content-Type", "application/x-xls")
-	c.Header("Content-Disposition", "attachment; filename=\""+fileName+"\"")
-	c.File("../report/" + fileName)
+	//reportId := c.Param("id")
+	//fileName := reportId + ".csv"
+	//
+	//_, err := os.Open("../report/" + fileName)
+	//
+	//if err != nil {
+	//	c.JSON(http.StatusBadRequest, gin.H{
+	//		"error": "the report is not found",
+	//	})
+	//
+	//	return
+	//}
+	//
+	//c.Header("Content-Type", "application/x-xls")
+	//c.Header("Content-Disposition", "attachment; filename=\""+fileName+"\"")
+	//c.File("../report/" + fileName)
 }
 
 func (r *ReportHandler) ConnectDB() error {

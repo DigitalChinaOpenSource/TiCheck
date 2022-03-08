@@ -1,0 +1,27 @@
+{
+    "_id": "alive_tikv_number",
+    "name": "存活的TiKV节点数量",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "alive_tikv_number.py"
+    ],
+    "main": "alive_tikv_number.py",
+    "tags": [
+      "集群"
+    ],
+    "rules": [
+        {
+            "operator": 1,
+            "threshold": "3",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }

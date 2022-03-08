@@ -2,7 +2,7 @@ package server
 
 import (
 	handler2 "TiCheck/insight/server/handler"
-	"TiCheck/insight/server/model"
+
 	"github.com/gin-contrib/multitemplate"
 
 	"github.com/gin-gonic/gin"
@@ -22,12 +22,6 @@ func Register(engine *gin.Engine) {
 	//engine.Static("/js", "web/dist/js")
 	//engine.StaticFile("/avatar2.jpg", "web/dist/avatar2.jpg")
 	//engine.StaticFile("/logo.png", "web/dist/logo.png")
-
-	// 初始化数据库
-	err := model.InitDB()
-	if err != nil {
-		panic("can't connect to db")
-	}
 
 	viewGroup := engine.Group("/")
 	{
@@ -56,15 +50,13 @@ func Register(engine *gin.Engine) {
 		sessionGroup.GET("/info", session.GetUserInfo)
 	}
 
-	reportGroup := engine.Group("/report")
-	reportGroup.Use(session.VerifyToken)
+	reportGroup := engine.Group("/cluster/report")
+	//reportGroup.Use(session.VerifyToken)
 	{
 		report := &handler2.ReportHandler{}
 
 		// 获取历史巡检列表
-		reportGroup.GET("/catalog", report.GetCatalog)
-
-		reportGroup.GET("/frontend/auth/login", report.GetCatalog)
+		reportGroup.GET("/all/:clusterID", report. GetReportByClusterID)
 
 		// 通过id获得某次巡检结果
 		reportGroup.GET("/id/:id", report.GetReport)
@@ -86,16 +78,6 @@ func Register(engine *gin.Engine) {
 
 		// 编辑配置脚本
 		reportGroup.POST("/editconf/:script", report.EditConfig)
-	}
-
-	clusterGroup := engine.Group("/cluster")
-	{
-		cluster := &handler2.ClusterHandler{}
-
-		// Get cluster list
-		clusterGroup.GET("/list", cluster.GetClusterList)
-		// Get cluster information by id
-		clusterGroup.GET("/info/:id", cluster.GetClusterInfo)
 	}
 
 	scriptGroup := engine.Group("/script")
@@ -120,6 +102,6 @@ func Register(engine *gin.Engine) {
 
 func createMyRender() multitemplate.Renderer {
 	p := multitemplate.NewRenderer()
-	p.AddFromFiles("frontend", "insight/web/dist/index.html")
+	p.AddFromFiles("frontend", "web/dist/index.html")
 	return p
 }

@@ -1,0 +1,27 @@
+{
+    "_id": "available_memory",
+    "name": "内存剩余绝对值(MB)",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "available_memory.py"
+    ],
+    "main": "available_memory.py",
+    "tags": [
+      "运行状态"
+    ],
+    "rules": [
+        {
+            "operator": 3,
+            "threshold": "10240",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }

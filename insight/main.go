@@ -2,8 +2,10 @@ package main
 
 import (
 	"TiCheck/insight/server"
-	"github.com/gin-gonic/gin"
+	"TiCheck/insight/server/model"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -12,6 +14,12 @@ func main() {
 
 	// 初始化服务
 	initService(engine)
+
+	// 初始化数据库
+	err := model.InitDB()
+	if err != nil {
+		panic("can't connect to db")
+	}
 
 	server.Register(engine)
 
@@ -32,5 +40,3 @@ func initService(r *gin.Engine) {
 		})
 	})
 }
-
-
