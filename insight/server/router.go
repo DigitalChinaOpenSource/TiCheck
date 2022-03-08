@@ -93,7 +93,7 @@ func Register(engine *gin.Engine) {
 		cluster := &handler2.ClusterHandler{}
 
 		// Get cluster list
-		clusterGroup.GET("/list", cluster.GetClusterInfo)
+		clusterGroup.GET("/list", cluster.GetClusterList)
 		// Get cluster information by id
 		clusterGroup.GET("/info/:id", cluster.GetClusterInfo)
 	}

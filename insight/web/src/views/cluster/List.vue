@@ -21,12 +21,12 @@
             :title="false"
           >
             <div>
-              <a-row>
-                <a-col :span="8">
+              <a-row type="flex" justify="space-between">
+                <a-col>
                   CLuster Name
                 </a-col>
-                <a-col :span="12" :offset="4">
-                  Add Time :  {{ item.createtTime }}
+                <a-col>
+                  Add Time :  {{ item.create_time }}
                 </a-col>
               </a-row>
             </div>
@@ -36,8 +36,9 @@
                   <a
                     class="text-black-bold"
                     style="font-size:30px"
+                    @click="jump2Info(item)"
                   >
-                    {{item.title}}
+                    {{item.cluster_name}}
                   </a>
                 </div>
               </a-row>
@@ -45,9 +46,9 @@
                 Cluster Description
               </div>
               <div>
-                <div v-if="item.content">
+                <div v-if="item.description">
                   <div>
-                    {{ item.content }}
+                    {{ item.description }}
                   </div>
                 </div>
                 <div v-else>
@@ -55,11 +56,11 @@
                 </div>
               </div>
               <div style="margin-top: 15px">
-                <a-row>
-                  <a-col :span="8">
+                <a-row type="flex" justify="space-between">
+                  <a-col>
                     <span>Node Info</span>
                   </a-col>
-                  <a-col :span="8" :offset="8">
+                  <a-col>
                     <span>
                       <a style="margin-right: 15px">Grafana</a>
                       <a>Dashboard</a>
@@ -78,9 +79,9 @@
               </a-list>
             </div>
             <div>
-              <a-row>
-                <a-col :span="14" :offset="10">
-                  Last Check Time: {{ item.createtTime }}
+              <a-row type="flex" justify="end">
+                <a-col>
+                  Last Check Time: {{ item.last_check_time }}
                 </a-col>
               </a-row>
             </div>
@@ -92,6 +93,7 @@
 </template>
 
 <script>
+import { getClusterList } from '@/api/cluster'
 import {
   ChartCard,
   RankList,
@@ -99,40 +101,26 @@ import {
 } from '@/components'
 // import { getClusterInfo } from '@/api/manage'
 
-const dataSource = [
-  {
-    id: 1,
-    title: 'Alipay',
-    content: 'this is a single tidb for test!',
-    createtTime: '2022-01-01 22:22:22'
-  },
-  {
-    id: 2,
-    title: 'Alipay',
-    content: 'this is a single tidb for test!',
-    createtTime: '2022-01-01 22:22:22'
-  }
-]
-
+const dataSource = []
 const nodeNum = [
   {
     id: 1,
-    title: 'PD Num',
+    title: 'PD',
     num: 3
   },
   {
     id: 2,
-    title: 'TiDB Num',
+    title: 'TiDB',
     num: 3
   },
   {
     id: 3,
-    title: 'TiKV Num',
+    title: 'TiKV',
     num: 3
   },
   {
     id: 4,
-    title: 'TiFlash Num',
+    title: 'TiFlash',
     num: 0
   }
 ]
@@ -151,9 +139,17 @@ export default {
       nodeNum
     }
   },
+  mounted () {
+    this.getList()
+  },
   methods: {
-    testFun () {
-      this.$message.info('快速开始被点击！')
+    getList () {
+      getClusterList().then(res => {
+        this.dataSource = res.data
+      })
+    },
+    jump2Info (item) {
+      this.$router.push({ name: 'ClusterInfo', params: { id: item.id } })
     }
   },
   created () {

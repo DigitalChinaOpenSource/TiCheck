@@ -56,7 +56,6 @@ type ClusterInfoReps struct {
 func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 	var clusterList []model.Cluster
 	res := model.DbConn.
-		Select("").
 		Order("create_time asc").
 		Find(&clusterList)
 	if res.Error != nil {

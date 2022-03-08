@@ -4,13 +4,13 @@
       :style="{ marginTop: '24px'}"
       title="Cluster Info"
     />
-    <a-card :bordered="false" :style="{ marginTop: '5px' }">
+    <a-card :bordered="false" :style="{ marginTop: '5px' }" :data-sourece="clusterInfo">
       <a-descriptions title="" size="middle">
-        <a-descriptions-item label="Cluster Name">cluster name</a-descriptions-item>
-        <a-descriptions-item label="Cluster Version">v5.4.4</a-descriptions-item>
-        <a-descriptions-item label="Create Time">2021-03-04 14:00:00</a-descriptions-item>
-        <a-descriptions-item label="Cluster User" span="3">qiruia@qiruia</a-descriptions-item>
-        <a-descriptions-item label="Cluster Description">this is a simple cluster!</a-descriptions-item>
+        <a-descriptions-item label="Cluster Name">{{ clusterInfo[0].cluster_name }}</a-descriptions-item>
+        <a-descriptions-item label="Cluster Version">{{ clusterInfo[0].cluster_version }}</a-descriptions-item>
+        <a-descriptions-item label="Create Time">{{ clusterInfo[0].create_time }}</a-descriptions-item>
+        <a-descriptions-item label="Cluster User" span="3">{{ clusterInfo[0].cluster_owner }}</a-descriptions-item>
+        <a-descriptions-item label="Cluster Description">{{ clusterInfo[0].cluster_description }}</a-descriptions-item>
       </a-descriptions>
     </a-card>
 
@@ -20,7 +20,7 @@
     />
     <a-row :gutter="24" :style="{marginTop:'5px'}">
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '4px' }">
-        <chart-card :loading="loading" title="累积巡检次数" total="78">
+        <chart-card :loading="loading" title="累积巡检次数" total="123">
         </chart-card>
       </a-col>
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '4px' }">
@@ -57,23 +57,40 @@
 </template>
 
 <script>
+import { getClusterInfo } from '@/api/cluster'
 import {
   ChartCard,
   RankList,
   Bar
 } from '@/components'
 // import { getClusterInfo } from '@/api/manage'
+const clusterInfo = []
 export default {
   name: 'ClusterInfo',
+  clusterID: '',
   components: {
     ChartCard,
     RankList,
     Bar
   },
+  data () {
+    return {
+      clusterInfo
+    }
+  },
   created () {
+    this.clusterID = this.$route.params.id?.toString()
+    this.localClusterInfo()
     setTimeout(() => {
       this.loading = !this.loading
     }, 1000)
+  },
+  methods: {
+    localClusterInfo () {
+      getClusterInfo(this.clusterID).then(res => {
+        this.clusterInfo[0] = res.data
+      })
+    }
   }
 }
 </script>
