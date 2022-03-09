@@ -38,7 +38,7 @@ type CheckData struct {
 	CheckStatus string `json:"check_status"`
 }
 
-func (r *ReportHandler) GetReportByClusterID(c *gin.Context) {
+func (r *ReportHandler) GetReportList(c *gin.Context) {
 	id := c.Param("clusterID")
 	pageSize, _ := strconv.Atoi(c.Query("page_size"))
 	pageNum, _ := strconv.Atoi(c.Query("page_num"))
@@ -76,28 +76,27 @@ func (r *ReportHandler) GetReportByClusterID(c *gin.Context) {
 }
 
 func (r *ReportHandler) GetReport(c *gin.Context) {
-	id := c.Param("id")
-	err := r.ConnectDB()
+	id, err := strconv.Atoi(c.Param("id"))
+	if err !=nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	cd := &model.CheckData{}
+	data, err := cd.GetDataByHistoryID(id)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
-	var result = []CheckData{}
-	rows, _ := r.Conn.Query(fmt.Sprintf("select * from check_data where check_time=%v order by id", id))
-	for rows.Next() {
-		r := CheckData{}
-		rows.Scan(&r.ID, &r.CheckTime, &r.CheckClass, &r.CheckName, &r.Operator, &r.Threshold, &r.Duration, &r.CheckItem, &r.CheckValue, &r.CheckStatus)
-		result = append(result, r)
-	}
-	rows.Close()
 
 	c.JSON(http.StatusOK, gin.H{
-		"total": len(result),
-		"id":    id,
-		"data":  result,
+		"data": data,
 	})
-
 }
 
 func (r *ReportHandler) GetLastReport(c *gin.Context) {
