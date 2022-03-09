@@ -69,10 +69,10 @@
               </div>
             </div>
             <div>
-              <a-list :grid="{ gutter: 16, column: 4 }" :data-source="nodeNum" style="margin-top: 25px">
-                <a-list-item slot="renderItem" slot-scope="items">
-                  <a-card :title="items.title" style="text-align: center">
-                    {{ items.num }}
+              <a-list :grid="{ gutter: 16, column: 4 }" :data-source="item.nodes" style="margin-top: 25px">
+                <a-list-item slot="renderItem" slot-scope="node">
+                  <a-card :title="node.type" style="text-align: center">
+                    {{ node.count }}
                   </a-card>
                 </a-list-item>
               </a-list>
@@ -101,28 +101,6 @@ import {
 // import { getClusterInfo } from '@/api/manage'
 
 const dataSource = []
-const nodeNum = [
-  {
-    id: 1,
-    title: 'PD',
-    num: 3
-  },
-  {
-    id: 2,
-    title: 'TiDB',
-    num: 3
-  },
-  {
-    id: 3,
-    title: 'TiKV',
-    num: 3
-  },
-  {
-    id: 4,
-    title: 'TiFlash',
-    num: 0
-  }
-]
 
 export default {
   name: 'ClusterList',
@@ -135,7 +113,6 @@ export default {
     return {
       extraImage: 'https://gw.alipayobjects.com/zos/rmsportal/RzwpdLnhmvDJToTdfDPe.png',
       dataSource,
-      nodeNum
     }
   },
   mounted () {
