@@ -20,7 +20,7 @@ func InitDB() error {
 	newDB := false
 	if DbConn == nil {
 
-		dbFile := "../report/report.db"
+		dbFile := "../../store/ticheck.db"
 
 		_, err := os.Stat(dbFile)
 		if os.IsNotExist(err) {
@@ -81,7 +81,7 @@ func SetupSeedData() {
 	}
 
 	// local script
-	scriptDir := "../script/local/"
+	scriptDir := "../../probes/local/"
 	fileInfos, err := ioutil.ReadDir(scriptDir)
 	if err != nil {
 		log.Fatal(err)

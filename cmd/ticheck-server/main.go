@@ -1,8 +1,8 @@
 package main
 
 import (
-	"TiCheck/insight/server"
-	"TiCheck/insight/server/model"
+	"TiCheck/cmd/ticheck-server/router"
+	"TiCheck/internal/model"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +21,7 @@ func main() {
 		panic("can't connect to db")
 	}
 
-	server.Register(engine)
+	router.Register(engine)
 
 	engine.Run(":8081")
 }

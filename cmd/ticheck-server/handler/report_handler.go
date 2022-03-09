@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"TiCheck/insight/server/model"
+	"TiCheck/internal/model"
 	"fmt"
 	"net/http"
 	"os/exec"
@@ -45,7 +45,6 @@ func (r *ReportHandler) GetReportByClusterID(c *gin.Context) {
 	startTime := c.Query("start_time")
 	endTime := c.Query("end_time")
 
-
 	if pageSize == 0 {
 		pageSize = 10
 	}
@@ -56,7 +55,7 @@ func (r *ReportHandler) GetReportByClusterID(c *gin.Context) {
 
 	ch := &model.CheckHistory{}
 	clusterID, err := strconv.Atoi(id)
-	if err !=nil {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -64,7 +63,7 @@ func (r *ReportHandler) GetReportByClusterID(c *gin.Context) {
 	}
 	res, err := ch.GetHistoryByClusterID(clusterID, pageSize, pageNum, startTime, endTime)
 
-	if err !=nil {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
