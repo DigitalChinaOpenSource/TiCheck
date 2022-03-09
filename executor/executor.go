@@ -1,8 +1,10 @@
 package executor
 
+import "TiCheck/internal/model"
+
 type Result struct {
 	executionError error // script level error
-	result         CheckData
+	result         model.CheckData
 }
 
 type Executor interface {

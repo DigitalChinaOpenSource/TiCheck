@@ -33,8 +33,8 @@ func (ch *CheckHistory) GetHistoryByClusterID(id int, pageSize int, pageNum int,
 
 	return map[string]interface{}{
 		"page_size": pageSize,
-		"page_num": pageNum,
-		"total": total,
-		"data": chs,
+		"page_num":  pageNum,
+		"total":     total,
+		"data":      chs,
 	}, nil
 }

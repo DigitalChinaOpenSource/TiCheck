@@ -4,9 +4,9 @@
          <div slot="extra">
         <a-radio-group default-value="all" @change="onSearch">
           <a-radio-button value="all">全部分类</a-radio-button>
-          <a-radio-button value="processing">{{ $t('dict.script-tags')[0] }}</a-radio-button>
-          <a-radio-button value="waiting">网络</a-radio-button>
-          <a-radio-button value="run">运行状态</a-radio-button>
+          <a-radio-button value="集群">集群</a-radio-button>
+          <a-radio-button value="网络">网络</a-radio-button>
+          <a-radio-button value="运行状态">运行状态</a-radio-button>
         </a-radio-group>
         <a-input-search style="margin:0 16px; width: 272px;" @search="onSearch" />
         <a-button type="primary" icon="file-add" @click="showModal"> {{ $t('store.page.custom.upload') }} </a-button>
@@ -24,19 +24,20 @@
         <a-list-item :key="item.id" slot="renderItem" slot-scope="item, index">
           <a-list-item-meta>
             <a slot="title" >
-            <a-avatar size="large" :src=" index%2==0?icon.python:icon.shell " />
-            {{ item.title }}</a>
+            <a-avatar size="large" v-if="item.file_name.split('.')[1]=='sh'" :src="icon.shell" />
+            <a-avatar size="large" v-if="item.file_name.split('.')[1]=='py'" :src="icon.python" />
+            {{ item.script_name }}</a>
             <template slot="description">
               <span>
-                <a-tag color="blue">集群</a-tag>
-                <a-tag color="blue">网络</a-tag>
+                <a-tag color="blue">{{ item.tag }}</a-tag>
               </span>
             </template>
           </a-list-item-meta>
-          <article-list-content :description="item.description" :owner="item.owner" :avatar="item.avatar" :href="item.href" :updateAt="item.updatedAt" />
+          <article-list-content :description="item.description" :owner="item.creator" avatar="" href="" :updateAt="item.update_time" />
         </a-list-item>
         <div slot="footer" v-if="data.length > 0" style="text-align: center; margin-top: 16px;">
-          <a-button @click="loadMore" :loading="loadingMore">加载更多...</a-button>
+          <a-button @click="loadMore" v-if="showMore" :loading="loadingMore">加载更多</a-button>
+          <p v-if="!showMore" class="ant-result-subtitle">----没有更多数据了----</p>
         </div>
       </a-list>
     </a-card>
@@ -72,7 +73,7 @@
 </template>
 
 <script>
-import { TagSelect, StandardFormRow, ArticleListContent } from '@/components'
+import { TagSelect, ArticleListContent } from '@/components'
 // import IconText from './components/IconText'
 const TagSelectOption = TagSelect.Option
 
@@ -80,7 +81,6 @@ export default {
   components: {
     TagSelect,
     TagSelectOption,
-    StandardFormRow,
     ArticleListContent
   },
   data () {
@@ -94,8 +94,12 @@ export default {
       loading: true,
       loadingMore: false,
       data: [],
-      fileList: [],
-      form: this.$form.createForm(this)
+      page:0,
+      search:{
+        tag:'all',
+        name:''
+      },
+      fileList: []
     }
   },
   mounted () {
@@ -103,22 +107,33 @@ export default {
   },
   methods: {
     onSearch (value) {
-      alert(`selected ${value}`)
+      this.data =[]
+      this.page=0
+      if (value.target){
+        this.search.tag=value.target.value
+      }else{
+        this.search.name=value
+      }
+      this.getList()
     },
     getList () {
-      this.$http.get('/list/article').then(res => {
-        console.log('res', res)
-        this.data = res.result
+      this.page++
+      this.loading = true
+      this.showMore = true
+      this.$http.get(
+        '/store/custom?page='+this.page+'&page_size=10&tag='+this.search.tag+"&name="+this.search.name).then(res => {
+        this.data = this.data.concat(res.rows)
+        this.loadingMore = false
+        if (res.total <= this.data.length) {
+          this.showMore = false
+        }
+      }).finally(() => {
         this.loading = false
       })
     },
     loadMore () {
       this.loadingMore = true
-      this.$http.get('/list/article').then(res => {
-        this.data = this.data.concat(res.result)
-      }).finally(() => {
-        this.loadingMore = false
-      })
+      this.getList()
     },
     showModal () {
       this.visible = true

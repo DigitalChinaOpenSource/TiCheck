@@ -27,9 +27,9 @@
             <span> <a-icon type="message" style="margin-right: 8px" /> {{ item.message }} </span>
           </template>
           <a-list-item-meta>
-            <a slot="title" href="https://vue.ant.design/">
+            <a slot="title" target="_blank" href="https://github.com/DigitalChinaOpenSource/TiCheck_ScriptWarehouse/tree/main/scripts">
             <a-avatar size="large" :src=" index%2==0?python:shell " />
-            {{ item.title }}</a>
+            {{ item.name }}</a>
             <template slot="description">
               <span>
                 <a-tag color="blue">集群</a-tag>
@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import { TagSelect, StandardFormRow, ArticleListContent } from '@/components'
+import { TagSelect, ArticleListContent } from '@/components'
 // import IconText from './components/IconText'
 const TagSelectOption = TagSelect.Option
 
@@ -56,7 +56,6 @@ export default {
   components: {
     TagSelect,
     TagSelectOption,
-    StandardFormRow,
     ArticleListContent
   },
   data () {
@@ -65,8 +64,7 @@ export default {
       shell: require('@/assets/icons/shell.png'),
       loading: true,
       loadingMore: false,
-      data: [],
-      form: this.$form.createForm(this)
+      data: []
     }
   },
   mounted () {
@@ -77,9 +75,9 @@ export default {
       alert(`selected ${value}`)
     },
     getList () {
-      this.$http.get('/list/article').then(res => {
+      this.$http.get('/store/remote').then(res => {
         console.log('res', res)
-        this.data = res.result
+        this.data = res.script_list
         this.loading = false
       })
     },
