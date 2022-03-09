@@ -2,11 +2,11 @@
   <div>
     <a-page-header
       style="border: 1px solid rgb(235, 237, 240); margin-bottom: 20px;"
-      title="cluster.detail.check.history"
+      title="$t('cluster.detail.check.history.title')"
     />
     <div style="float: right">
         <span>{{ $t('cluster.detail.check.history.timeSelect') }}</span>
-        <a-range-picker @change="onTimeChange" style="margin-left: 20px" />
+        <a-range-picker @change="onTimeChange" style="margin-left: 30px" />
     </div>
 
     <a-table
@@ -15,10 +15,10 @@
       :rowKey="(record) => record.id"
       :pagination="pagination"
       @change="handleChange" 
-      style="padding-top: 20px"
+      style="padding-top: 60px"
     >
 
-      <a @click="getReportDetail(text)" slot="id" slot-scope="text">{{ text }}</a>
+      <a target="blank" @click="getReportDetail(text)" slot="id" slot-scope="text">{{ text }}</a>
       <span slot="normal_items" slot-scope="normal_items">
         <a-tag :key="normal_items" :color="'green'">
           {{ normal_items }}
@@ -30,7 +30,7 @@
         </a-tag>
       </span>
       <span slot="action" slot-scope="record">
-        <a @click="downloadReport(record.id)">cluster.detail.check.history.download</a>
+        <a @click="downloadReport(record.id)">{{ $t('cluster.detail.check.history.download') }}</a>
       </span>
     </a-table>
   </div>
@@ -87,16 +87,14 @@ export default {
     return {
       data,
       columns,
-      pagination: {},
+      pagination: {
+          showTotal: total => `Total ${total} items`,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '30', '40']
+      },
       start_time: "",
       end_time: "",
     };
-  },
-
-  watch: {
-    current(val) {
-      debugger;
-    },
   },
   mounted() {
     this.getHistoryList();
@@ -122,9 +120,9 @@ export default {
         }
       );
     },
-    downloadReport(params) {
-      console.log(params);
-      downloadReport(params);
+    downloadReport(reportID) {
+      console.log(reportID);
+      downloadReport(reportID);
     },
     onTimeChange(date, dateString) {
       this.start_time = dateString[0];
