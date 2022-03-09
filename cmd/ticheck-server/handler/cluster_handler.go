@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"TiCheck/insight/server/model"
+	"TiCheck/internal/model"
 	"encoding/json"
 	"errors"
 	"fmt"
