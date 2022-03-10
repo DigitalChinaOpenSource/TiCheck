@@ -56,10 +56,20 @@
       <div class="salesCard">
         <a-row>
           <a-col :xl="16" :lg="12" :md="12" :sm="24" :xs="24">
-            <bar :title="$t('dashboard.analysis.sales-trend')" :style="{ marginTop: '24px'}"/>
+            <bar :title="$t('dashboard.analysis.sales-trend')" :style="{ marginTop: '24px'}" :data="clusterInfo.recent_warning_items" />
           </a-col>
           <a-col :xl="8" :lg="12" :md="12" :sm="24" :xs="24">
-            <rank-list :title="$t('dashboard.analysis.sales-ranking')" :list="rankList"/>
+            <a-tabs default-active-key="1" size="large" :tab-bar-style="{marginBottom: '24px', paddingLeft: '16px'}" style="color: #40a9ff">
+              <a-tab-pane loading="true" tab="weekly" key="1">
+                <rank-list :list="clusterInfo.weekly_history_warnings" :style="{ marginTop: '24px'}"/>
+              </a-tab-pane>
+              <a-tab-pane tab="monthly" key="2">
+                <rank-list :list="clusterInfo.monthly_history_warnings" :style="{ marginTop: '24px'}"/>
+              </a-tab-pane>
+              <a-tab-pane tab="yearly" key="3">
+                <rank-list :list="clusterInfo.yearly_history_warnings" :style="{ marginTop: '24px'}"/>
+              </a-tab-pane>
+            </a-tabs>
           </a-col>
         </a-row>
       </div>

@@ -2,45 +2,47 @@ package model
 
 import (
 	"database/sql/driver"
+	"errors"
+	"fmt"
 	"time"
 )
 
-const TimeFormat = "2006-01-02 15:04:05"
+const (
+	DateFormat = "2006-01-02"
+	TimeFormat = "2006-01-02 15:04:05"
+)
 
 type JsonTime time.Time
 
-func (t *JsonTime) UnmarshalJSON(data []byte) (err error) {
-	if len(data) == 2 {
-		*t = JsonTime(time.Time{})
-		return
-	}
+func (t JsonTime) String() string {
+	return time.Time(t).Format(TimeFormat)
+}
 
-	now, err := time.Parse(`"`+TimeFormat+`"`, string(data))
+//MarshalJSON 实现它的json序列化方法
+func (t JsonTime) MarshalJSON() ([]byte, error) {
+	var stamp = fmt.Sprintf("\"%s\"", time.Time(t).Format(TimeFormat))
+	return []byte(stamp), nil
+}
+
+func (t *JsonTime) UnmarshalJSON(data []byte) (err error) {
+	now, err := time.ParseInLocation(`"`+TimeFormat+`"`, string(data), time.Local)
 	*t = JsonTime(now)
 	return
 }
 
-func (t JsonTime) MarshalJSON() ([]byte, error) {
-	b := make([]byte, 0, len(TimeFormat)+2)
-	b = append(b, '"')
-	b = time.Time(t).AppendFormat(b, TimeFormat)
-	b = append(b, '"')
-	return b, nil
-}
-
 func (t JsonTime) Value() (driver.Value, error) {
-	if t.String() == "0001-01-01 00:00:00" {
-		return nil, nil
-	}
-	return []byte(time.Time(t).Format(TimeFormat)), nil
+	// MyTime 转换成 time.Time 类型
+	tTime := time.Time(t)
+	return tTime.Format(TimeFormat), nil
 }
 
 func (t *JsonTime) Scan(v interface{}) error {
-	tTime, _ := time.Parse("2006-01-02 15:04:05 +0800 CST", v.(time.Time).String())
-	*t = JsonTime(tTime)
+	switch vt := v.(type) {
+	case time.Time:
+		// 字符串转成 time.Time 类型
+		*t = JsonTime(vt)
+	default:
+		return errors.New("类型处理错误")
+	}
 	return nil
-}
-
-func (t JsonTime) String() string {
-	return time.Time(t).Format(TimeFormat)
 }
