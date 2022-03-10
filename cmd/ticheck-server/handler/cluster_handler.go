@@ -12,24 +12,24 @@ import (
 	"time"
 )
 
-type ClusterHandler struct{}
-
-type CheckHistoryInfo struct {
-	Count int `json:"count"`
-	Total int `json:"total"`
+type ClusterHandler struct {
+	ClusterInfo      model.Cluster
+	CheckHistoryInfo model.CheckHistoryInfo
+	RecentWarnings   model.RecentWarnings
+	HistoryWarnings  model.HistoryWarnings
 }
 
-type RecentWarningItems struct {
-	CheckTime    time.Time `json:"x"`
-	WarningItems int       `json:"y"`
+type QueryHelper struct {
+	Url   string `json:"url"`
+	Query string `json:"query"`
 }
 
-type HistoryWarnings struct {
-	Name  string `json:"name"`
-	Total int    `json:"total"`
+type PrometheusRespMetrics struct {
+	Name     string `json:"__name__"`
+	Group    string `json:"group"`
+	Instance string `json:"instance"`
+	Job      string `json:"job"`
 }
-
-type PrometheusRespMetrics struct{}
 
 type PrometheusRespRes struct {
 	Metrics PrometheusRespMetrics `json:"metric"`
@@ -47,9 +47,19 @@ type PrometheusResp struct {
 }
 
 type NodesInfo struct {
-	ID       int    `json:"id"`
-	NodeType string `json:"type"`
-	Count    int    `json:"count"`
+	ID       int      `json:"id"`
+	NodeType string   `json:"type"`
+	Instance []string `json:"instance"`
+	Count    int      `json:"count"`
+}
+
+type ClusterInfoReq struct {
+	Owner         string `json:"owner"`
+	Name          string `json:"name"`
+	PrometheusUrl string `json:"url"`
+	LogUser       string `json:"user"`
+	LogPasswd     string `json:"password"`
+	Description   string `json:"description"`
 }
 
 type ClusterListReps struct {
@@ -65,30 +75,27 @@ type ClusterListReps struct {
 }
 
 type ClusterInfoReps struct {
-	ID                     uint                 `json:"id"`
-	Name                   string               `json:"name"`
-	Version                string               `json:"version"`
-	ClusterOwner           string               `json:"owner"`
-	Description            string               `json:"description"`
-	CreateTime             time.Time            `json:"create_time"`
-	LastCheckTime          time.Time            `json:"last_check_time"`
-	ClusterHealth          int                  `json:"cluster_health"`
-	CheckCount             int                  `json:"check_count"`
-	CheckTotal             int                  `json:"check_total"`
-	RecentWarningItems     []RecentWarningItems `json:"recent_warning_items"`
-	WeeklyHistoryWarnings  []HistoryWarnings    `json:"weekly_history_warnings"`
-	YearlyHistoryWarnings  []HistoryWarnings    `json:"yearly_history_warnings"`
-	MonthlyHistoryWarnings []HistoryWarnings    `json:"monthly_history_warnings"`
+	ID                     uint                    `json:"id"`
+	Name                   string                  `json:"name"`
+	Version                string                  `json:"version"`
+	ClusterOwner           string                  `json:"owner"`
+	Description            string                  `json:"description"`
+	CreateTime             time.Time               `json:"create_time"`
+	LastCheckTime          time.Time               `json:"last_check_time"`
+	ClusterHealth          int                     `json:"cluster_health"`
+	CheckCount             int                     `json:"check_count"`
+	CheckTotal             int                     `json:"check_total"`
+	RecentWarningItems     []model.RecentWarnings  `json:"recent_warning_items"`
+	WeeklyHistoryWarnings  []model.HistoryWarnings `json:"weekly_history_warnings"`
+	YearlyHistoryWarnings  []model.HistoryWarnings `json:"yearly_history_warnings"`
+	MonthlyHistoryWarnings []model.HistoryWarnings `json:"monthly_history_warnings"`
 }
 
 func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
-	var clusterList []model.Cluster
-	res := model.DbConn.
-		Order("create_time asc").
-		Find(&clusterList)
-	if res.Error != nil {
+	clusterList, err := ch.ClusterInfo.QueryCLusterList()
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": res.Error.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
@@ -105,7 +112,16 @@ func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 			CreateTime:    cluster.CreateTime,
 			LastCheckTime: cluster.LastCheckTime,
 		}
-		reps.NodesInfo, _ = getCLusterNodes(cluster.PrometheusURL)
+		nodeType := []string{"pd", "tidb", "tikv", "tiflash"}
+		url := cluster.PrometheusURL + "/api/v1/query"
+		nodesInfo, err := getClusterNodesInfo(url, nodeType)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		reps.NodesInfo = nodesInfo
 		clusterListReps = append(clusterListReps, reps)
 	}
 
@@ -117,87 +133,58 @@ func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 
 func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 	id := c.Param("id")
-	var clusterInfo model.Cluster
-	res := model.DbConn.First(&clusterInfo, id)
-	if res.Error != nil {
+	clusterID, err := strconv.Atoi(id)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": res.Error.Error(),
+			"error": err.Error(),
+		})
+		return
+	}
+	clusterInfo, err := ch.ClusterInfo.QueryClusterInfoByID(clusterID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
-	var checkHistory CheckHistoryInfo
-	history := model.DbConn.Model(&model.CheckHistory{}).
-		Select("count(*) as count,sum(total_items) as total").
-		Where("cluster_id", id).
-		First(&checkHistory)
-	if history.Error != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"error": res.Error.Error(),
+	checkHistoryInfo, err := ch.CheckHistoryInfo.QueryHistoryInfoByID(clusterID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
-	var recentWarningItems []RecentWarningItems
-	subQuery := model.DbConn.Model(&model.CheckHistory{}).
-		Select("id,check_time,warning_items").
-		Where("cluster_id", id).
-		Order("check_time desc").
-		Limit(10)
-	warningItemNum := model.DbConn.Table("(?)", subQuery).
-		Order("id").
-		Find(&recentWarningItems)
-	if warningItemNum.Error != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"error": res.Error.Error(),
+	var recentWarnings []model.RecentWarnings
+	recentWarnings, err = ch.RecentWarnings.QueryRecentWarningsByID(clusterID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
-	var weekly []HistoryWarnings
-	weeklyItems := model.DbConn.Model(&model.CheckData{}).
-		Select("check_name || '(' ||check_item || ')' as name,count(*) as total").
-		Where("cluster_id = ? AND check_time > ?", id, time.Now().AddDate(0, 0, -7).Format("2006-01-02 15:04:05")).
-		Not("check_status", 0).
-		Group("name").
-		Order("total desc").
-		Limit(10).
-		Find(&weekly)
-	if weeklyItems.Error != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"error": res.Error.Error(),
+	weekly, err := ch.HistoryWarnings.QueryHistoryWarningByID(clusterID, -7)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
-	var monthly []HistoryWarnings
-	monthlyItems := model.DbConn.Model(&model.CheckData{}).
-		Select("check_name || '(' ||check_item || ')' as name,count(*) as total").
-		Where("cluster_id = ? AND check_time > ?", id, time.Now().AddDate(0, -1, 0).Format("2006-01-02 15:04:05")).
-		Not("check_status", 0).
-		Group("name").
-		Order("total desc").
-		Limit(10).
-		Find(&monthly)
-	if monthlyItems.Error != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"error": res.Error.Error(),
+	monthly, err := ch.HistoryWarnings.QueryHistoryWarningByID(clusterID, -30)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
-	var yearly []HistoryWarnings
-	yearlyItems := model.DbConn.Model(&model.CheckData{}).
-		Select("check_name || '(' ||check_item || ')' as name,count(*) as total").
-		Where("cluster_id = ? AND check_time > ?", id, time.Now().AddDate(-1, 0, 0).Format("2006-01-02 15:04:05")).
-		Not("check_status", 0).
-		Group("name").
-		Order("total desc").
-		Limit(10).
-		Find(&yearly)
-	if yearlyItems.Error != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"error": res.Error.Error(),
+	yearly, err := ch.HistoryWarnings.QueryHistoryWarningByID(clusterID, -365)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
@@ -208,12 +195,11 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 		ClusterOwner:           clusterInfo.Owner,
 		Version:                clusterInfo.TiDBVersion,
 		ClusterHealth:          clusterInfo.ClusterHealth,
-		LastCheckTime:          clusterInfo.LastCheckTime,
 		CreateTime:             clusterInfo.CreateTime,
 		Description:            clusterInfo.Description,
-		CheckCount:             checkHistory.Count,
-		CheckTotal:             checkHistory.Total,
-		RecentWarningItems:     recentWarningItems,
+		CheckCount:             checkHistoryInfo.Count,
+		CheckTotal:             checkHistoryInfo.Total,
+		RecentWarningItems:     recentWarnings,
 		WeeklyHistoryWarnings:  weekly,
 		MonthlyHistoryWarnings: monthly,
 		YearlyHistoryWarnings:  yearly,
@@ -225,60 +211,164 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 	})
 }
 
-func getCLusterNodes(url string) (nodes []NodesInfo, err error) {
-	nodeType := []string{"pd", "tidb", "tikv", "tiflash"}
-	for k, v := range nodeType {
-		num, err := queryNodeNum(url, v)
-		if err != nil {
-			return nodes, err
-		}
-		var item = NodesInfo{
-			ID:       k,
-			NodeType: v,
-			Count:    num,
-		}
-		nodes = append(nodes, item)
+func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
+	clusterInfoReq := &ClusterInfoReq{}
+	err := c.BindJSON(clusterInfoReq)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "the request body is wrong",
+		})
+		return
 	}
-	return nodes, nil
+
+	nodeType := []string{"pd", "grafana"}
+	url := fmt.Sprintf("http://%s/api/v1/query", clusterInfoReq.PrometheusUrl)
+	nodes, err := getClusterNodesInfo(url, nodeType)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "the request body is wrong",
+		})
+		return
+	}
+
+	var dashboard string
+	var grafana string
+
+	if len(nodes[0].Instance) < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "no pd found",
+		})
+		return
+	}
+
+	dashboard = fmt.Sprintf("http://%s/dashboard", nodes[0].Instance[0])
+
+	pdUrl := fmt.Sprintf("http://%s/pd/api/v1/version", nodes[0].Instance[0])
+	version, err := getClusterVersion(pdUrl)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "the request body is wrong",
+		})
+		return
+	}
+
+	if len(nodes[1].Instance) > 0 {
+		grafana = fmt.Sprintf("http://%s", nodes[1].Instance[0])
+	}
+
+	cluster := model.Cluster{
+		Name:          clusterInfoReq.Name,
+		PrometheusURL: fmt.Sprintf("http://%s", clusterInfoReq.PrometheusUrl),
+		TiDBUsername:  clusterInfoReq.LogUser,
+		TiDBPassword:  clusterInfoReq.LogPasswd,
+		Description:   clusterInfoReq.Description,
+		Owner:         clusterInfoReq.Owner,
+		TiDBVersion:   version,
+		GrafanaURL:    grafana,
+		DashboardURL:  dashboard,
+		CreateTime:    time.Now().Local(),
+	}
+
+	ch.ClusterInfo = cluster
+	err = ch.ClusterInfo.CreateCluster()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+	})
+	return
 }
 
-func queryNodeNum(url string, nodeType string) (num int, err error) {
-	var nodeNum int
-	queryString := fmt.Sprintf("count(probe_success{group='%s'})", nodeType)
+func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, err error) {
+	queryHelper := QueryHelper{
+		Url: url,
+	}
+	for k, v := range nodeType {
+		var instances []string
+		queryString := fmt.Sprintf("probe_success{group='%s'}", v)
+		queryHelper.Query = queryString
+		resp, err := queryHelper.queryWithPrometheus()
+		if err != nil {
+			return nodesInfo, err
+		}
+		for _, res := range resp.Data.Result {
+			instances = append(instances, res.Metrics.Instance)
+		}
+		node := NodesInfo{
+			ID:       k,
+			NodeType: v,
+			Instance: instances,
+			Count:    len(instances),
+		}
+		nodesInfo = append(nodesInfo, node)
+	}
+
+	return nodesInfo, nil
+}
+
+func getClusterVersion(url string) (version string, err error) {
+	queryHelper := QueryHelper{
+		Url: url,
+	}
+
+	jsonMap, err := queryHelper.queryWithPD()
+	if err != nil {
+		return version, errors.New(fmt.Sprintf("bad request: %s", err))
+	}
+
+	version = fmt.Sprintf("%v", jsonMap["version"])
+	return version, nil
+}
+
+func (h QueryHelper) queryWithPrometheus() (proResp PrometheusResp, err error) {
 	client := &http.Client{}
-	url = url + "api/v1/query"
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", h.Url, nil)
+	if err != nil {
+		return proResp, err
+	}
 
 	q := req.URL.Query()
-	q.Add("query", queryString)
+	q.Add("query", h.Query)
 	req.URL.RawQuery = q.Encode()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nodeNum, errors.New(fmt.Sprintf("bad request: %s", err))
+		return proResp, err
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nodeNum, errors.New(fmt.Sprintf("parse error: %s", err))
+		return proResp, err
 	}
 	bodyStr := string(body)
-	var jsonMap PrometheusResp
-	if errJson := json.Unmarshal([]byte(bodyStr), &jsonMap); errJson != nil {
-		return nodeNum, errors.New(fmt.Sprintf("parse error: %s", err))
+	if errJson := json.Unmarshal([]byte(bodyStr), &proResp); errJson != nil {
+		return proResp, errJson
 	}
-	if len(jsonMap.Data.Result) < 1 {
-		return nodeNum, nil
+
+	return proResp, nil
+}
+
+func (h QueryHelper) queryWithPD() (pdResp map[string]interface{}, err error) {
+	resp, err := http.Get(h.Url)
+	if err != nil {
+		return pdResp, errors.New(fmt.Sprintf("bad request: %s", err))
 	}
-	for _, v := range jsonMap.Data.Result[0].Value {
-		switch value := v.(type) {
-		case string:
-			nodeNum, err = strconv.Atoi(value)
-			if err != nil {
-				return nodeNum, errors.New(fmt.Sprintf("parse error: %s", err))
-			}
-		}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return pdResp, errors.New(fmt.Sprintf("parse error: %s", err))
 	}
-	return nodeNum, nil
+
+	bodyStr := string(body)
+	if errJson := json.Unmarshal([]byte(bodyStr), &pdResp); errJson != nil {
+		return pdResp, errors.New(fmt.Sprintf("parse error: %s", err))
+	}
+
+	return pdResp, nil
 }

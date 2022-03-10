@@ -36,6 +36,7 @@ func Register(engine *gin.Engine) {
 
 	sessionGroup := engine.Group("/session")
 	session := &handler.SessionHandler{
+		Users: map[string]string{},
 		Sessions: make(map[string]*handler.Session, 0),
 	}
 
@@ -51,13 +52,15 @@ func Register(engine *gin.Engine) {
 	}
 
 	clusterGroup := engine.Group("/cluster")
+	//clusterGroup.Use(session.VerifyToken)
 	{
 		cluster := &handler.ClusterHandler{}
-
 		// Get cluster list
 		clusterGroup.GET("/list", cluster.GetClusterList)
 		// Get cluster information by id
 		clusterGroup.GET("/info/:id", cluster.GetClusterInfo)
+		// Add cluster
+		clusterGroup.POST("/add", cluster.PostClusterInfo)
 	}
 
 	reportGroup := engine.Group("/cluster/report")
