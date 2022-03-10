@@ -14,6 +14,7 @@
               :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
               <a-input
                 v-decorator="['name',{rules: [{ required: true }]}]"
+                placeholder="input cluster name"
                 name="name" />
             </a-form-item>
             <a-form-item
@@ -22,7 +23,7 @@
               :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
               <a-input
                 name="url"
-                style="width: 100%"
+                placeholder="input prometheus host&port"
                 v-decorator="['url',{rules: [{ required: true }]}]" />
             </a-form-item>
             <a-form-item
@@ -31,7 +32,7 @@
               :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
               <a-input
                 name="user"
-                style="width: 100%"
+                placeholder="input TiDB database user"
                 v-decorator="['user',{rules: [{ required: true }]}]" />
             </a-form-item>
             <a-form-item
@@ -40,7 +41,7 @@
               :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
               <a-input-password
                 name="passwd"
-                style="width: 100%"
+                placeholder="input TiDB database passwd"
                 v-decorator="['passwd',{rules: [{ required: true }]}]" />
             </a-form-item>
             <a-form-item
@@ -50,7 +51,7 @@
               <a-textarea
                 :auto-size="{ minRows: 4, maxRows: 6 }"
                 name="description"
-                style="width: 100%"
+                placeholder="input TiDB database description"
                 v-decorator="['description']" />
             </a-form-item>
           </a-form>
@@ -143,7 +144,7 @@
 </template>
 
 <script>
-import { getClusterList } from '@/api/cluster'
+import { getClusterList, addCluster } from '@/api/cluster'
 import {
   ChartCard,
   RankList,
@@ -184,10 +185,33 @@ export default {
       this.modalVisible = true
       console.log('visable=>', this.modalVisible)
     },
-    handleOk (e) {
-      console.log(e)
-      this.modalVisible = false
-      this.clusterForm = this.$form.createForm(this)
+    handleOk () {
+      this.clusterForm.validateFields((err, values) => {
+        if (err) {
+          this.addFailed()
+        }
+        values.owner = 'test'
+        addCluster(values)
+        .then(res => this.addSuccess())
+        .catch(res => this.addFailed())
+        .finally(() => {
+          this.modalVisible = false
+          this.clusterForm = this.$form.createForm(this)
+        })
+      })
+    },
+    addSuccess () {
+      this.$notification.success({
+        message: 'add cluster success',
+        description: `success`
+      })
+    },
+    addFailed () {
+      this.$notification['error']({
+        message: 'error',
+        description: `error`,
+        duration: 4
+      })
     }
   },
   created () {

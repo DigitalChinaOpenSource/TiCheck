@@ -2,7 +2,8 @@ import request from '@/utils/request'
 
 const clusterApi = {
   getClusterList: '/cluster/list',
-  getClusterInfo: '/cluster/info/'
+  getClusterInfo: '/cluster/info/',
+  addCluster: '/cluster/add'
 }
 
 export function getClusterList () {
@@ -16,5 +17,13 @@ export function getClusterInfo (param) {
   return request({
     url: clusterApi.getClusterInfo + param,
     method: 'get'
+  })
+}
+
+export function addCluster (parameter) {
+  return request({
+    url: clusterApi.addCluster,
+    method: 'post',
+    data: parameter
   })
 }

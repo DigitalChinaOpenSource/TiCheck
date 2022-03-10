@@ -53,11 +53,12 @@ func Register(engine *gin.Engine) {
 	clusterGroup := engine.Group("/cluster")
 	{
 		cluster := &handler.ClusterHandler{}
-
 		// Get cluster list
 		clusterGroup.GET("/list", cluster.GetClusterList)
 		// Get cluster information by id
 		clusterGroup.GET("/info/:id", cluster.GetClusterInfo)
+		// Add cluster
+		clusterGroup.POST("/add", cluster.PostClusterInfo)
 	}
 
 	reportGroup := engine.Group("/cluster/report")
