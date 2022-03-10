@@ -23,7 +23,7 @@ export function downloadReport (reportID) {
 
 export function getReportDetail(reportID) {
     return request({
-        url: getReportDetail + reportID,
+        url: checkApi.getReportDetail + reportID,
         method: 'get'
     })
 }

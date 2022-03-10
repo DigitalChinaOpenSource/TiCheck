@@ -24,7 +24,7 @@ const permission = {
           commit('SET_ROUTERS', routers)
           resolve()
         })
-      })
+      })``
     }
   }
 }

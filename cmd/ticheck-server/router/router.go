@@ -36,6 +36,7 @@ func Register(engine *gin.Engine) {
 
 	sessionGroup := engine.Group("/session")
 	session := &handler.SessionHandler{
+		Users: map[string]string{},
 		Sessions: make(map[string]*handler.Session, 0),
 	}
 
@@ -51,6 +52,7 @@ func Register(engine *gin.Engine) {
 	}
 
 	clusterGroup := engine.Group("/cluster")
+	//clusterGroup.Use(session.VerifyToken)
 	{
 		cluster := &handler.ClusterHandler{}
 		// Get cluster list
@@ -67,7 +69,7 @@ func Register(engine *gin.Engine) {
 		report := &handler.ReportHandler{}
 
 		// 获取历史巡检列表
-		reportGroup.GET("/all/:clusterID", report.GetReportByClusterID)
+		reportGroup.GET("/all/:clusterID", report. GetReportList)
 
 		// 通过id获得某次巡检结果
 		reportGroup.GET("/id/:id", report.GetReport)
@@ -91,23 +93,26 @@ func Register(engine *gin.Engine) {
 		reportGroup.POST("/editconf/:script", report.EditConfig)
 	}
 
-	scriptGroup := engine.Group("/script")
+	storeGroup := engine.Group("/store")
 	// test, ignore token
-	// scriptGroup.Use(session.VerifyToken)
+	// storeGroup.Use(session.VerifyToken)
 	{
-		script := &handler.ScriptHandler{}
+		sh := &handler.StoreHandler{}
 
 		// 查看所有本地脚本
-		scriptGroup.GET("/local", script.GetAllLocalScript)
+		storeGroup.GET("/local", sh.GetLocalScript)
 
 		// 查看所有的远程仓库脚本，获取列表
-		scriptGroup.GET("/remote", script.GetAllRemoteScript)
+		storeGroup.GET("/remote", sh.GetAllRemoteScript)
+
+		// 查看所有自定义脚本
+		storeGroup.GET("/custom", sh.GetCustomScript)
 
 		// 查看指定远程脚本的介绍
-		scriptGroup.GET("/remote/readme/:name", script.GetReadMe)
+		storeGroup.GET("/remote/readme/:name", sh.GetReadMe)
 
 		// 下载指定名的脚本到本地
-		scriptGroup.POST("/remote/download/:name", script.DownloadScript)
+		storeGroup.POST("/remote/download/:name", sh.DownloadScript)
 	}
 }
 

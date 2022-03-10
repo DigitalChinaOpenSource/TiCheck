@@ -5,14 +5,14 @@ import (
 )
 
 type CheckHistory struct {
-	ID           uint          `gorm:"primarykey" json:"id,omitempty"`
+	ID           uint          `gorm:"primarykey" json:"id"`
 	CheckTime    time.Time     `gorm:"not null" json:"check_time"`
-	ClusterID    uint          `gorm:"not null" json:"cluster_id,omitempty"`
-	SchedulerID  uint          `json:"scheduler_id,omitempty"` // null if run manually
-	NormalItems  int           `gorm:"not null" json:"normal_items,omitempty"`
-	WarningItems int           `gorm:"not null" json:"warning_items,omitempty"`
-	TotalItems   int           `gorm:"not null" json:"total_items,omitempty"`
-	Duration     time.Duration `gorm:"not null" json:"duration,omitempty"`
+	ClusterID    uint          `gorm:"not null" json:"cluster_id"`
+	SchedulerID  uint          `json:"scheduler_id"` // null if run manually
+	NormalItems  int           `gorm:"not null" json:"normal_items"`
+	WarningItems int           `gorm:"not null" json:"warning_items"`
+	TotalItems   int           `gorm:"not null" json:"total_items"`
+	Duration     time.Duration `gorm:"not null" json:"duration"`
 }
 
 func (ch *CheckHistory) GetHistoryByClusterID(id int, pageSize int, pageNum int, startTime string, endTime string) (map[string]interface{}, error) {
@@ -33,8 +33,8 @@ func (ch *CheckHistory) GetHistoryByClusterID(id int, pageSize int, pageNum int,
 
 	return map[string]interface{}{
 		"page_size": pageSize,
-		"page_num": pageNum,
-		"total": total,
-		"data": chs,
+		"page_num":  pageNum,
+		"total":     total,
+		"data":      chs,
 	}, nil
 }

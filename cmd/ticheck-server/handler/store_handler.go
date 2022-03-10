@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"TiCheck/internal/model"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -12,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ScriptHandler struct {
+type StoreHandler struct {
 }
 
 type RemoteScriptList struct {
@@ -34,55 +35,57 @@ type LocalScript struct {
 	Name string `json:"name"`
 }
 
-// GetAllLocalScript 获取本地所有脚本列表
-func (s *ScriptHandler) GetAllLocalScript(c *gin.Context) {
-	start := c.Query("start")
-	length := c.Query("length")
+// GetLocalScript 获取自定义所有脚本列表
+func (s *StoreHandler) GetCustomScript(c *gin.Context) {
 
-	st, err := strconv.Atoi(start)
-	if err != nil {
-		st = 0
+	pg := &model.Paginator{}
+
+	pg.AddFilter("is_system = ?", 0)
+
+	s.GetScriptListInDB(c, pg)
+}
+
+// GetLocalScript 获取本地所有脚本列表
+func (s *StoreHandler) GetLocalScript(c *gin.Context) {
+
+	pg := &model.Paginator{}
+
+	pg.AddFilter("is_system = ?", 1)
+
+	s.GetScriptListInDB(c, pg)
+}
+
+func (s *StoreHandler) GetScriptListInDB(c *gin.Context, pg *model.Paginator) {
+
+	tag := c.Query("tag")
+	name := c.Query("name")
+
+	p := &model.Probe{}
+
+	if tag != "" && tag != "all" {
+		pg.AddFilter("tag = ?", tag)
+	}
+	if name != "" {
+		pg.AddFilter("script_name like ?", "%"+name+"%")
 	}
 
-	le, err := strconv.Atoi(length)
-	if err != nil && le == 0 {
-		le = 10
-	}
+	p.GetPager(c, pg)
 
-	localList := &LocalScriptList{}
-	files, err := ioutil.ReadDir("../script/")
-	if err != nil {
+	if pg.Err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+			"error": pg.Err.Error(),
 		})
 		return
 	}
 
-	if st > len(files) {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "exceeded the maximum number of files",
-		})
-		return
-	}
-
-	for _, f := range files {
-		name := strings.Split(f.Name(), ".")
-		localList.Scripts = append(localList.Scripts, &LocalScript{name[0]})
-		localList.Total += 1
-	}
-
-	if st+le > len(files) {
-		le = len(files) - st
-	}
-
-	localList.Scripts = localList.Scripts[st : le+st]
-
-	c.JSON(http.StatusOK, localList)
-	return
+	c.JSON(http.StatusOK, gin.H{
+		"total": pg.Total,
+		"rows":  pg.Rows,
+	})
 }
 
 // GetAllRemoteScript 获取远程仓库脚本列表
-func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
+func (s *StoreHandler) GetAllRemoteScript(c *gin.Context) {
 	start := c.Query("start")
 	length := c.Query("length")
 
@@ -98,23 +101,23 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 
 	url := "https://api.github.com/repos/DigitalChinaOpenSource/TiCheck_ScriptWarehouse/contents/scripts"
 
-	remoteList := make([]string, 0)
+	//remoteList := make([]string, 0)
 	localList := make([]string, 0)
 
 	scriptList := &RemoteScriptList{}
 
-	files, err := ioutil.ReadDir("../script/")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
+	// files, err := ioutil.ReadDir("../script/")
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 		"error": err.Error(),
+	// 	})
+	// 	return
+	// }
 
-	for _, f := range files {
-		name := strings.Split(f.Name(), ".")
-		localList = append(localList, name[0])
-	}
+	// for _, f := range files {
+	// 	name := strings.Split(f.Name(), ".")
+	// 	localList = append(localList, name[0])
+	// }
 
 	jsonMap, err := s.SendRequest(url)
 
@@ -135,7 +138,7 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 		}
 
 		script := &RemoteScript{}
-		remoteList = append(remoteList, data)
+		//remoteList = append(remoteList, data)
 		isDownload := false
 		for _, v := range localList {
 			if data == v {
@@ -169,7 +172,7 @@ func (s *ScriptHandler) GetAllRemoteScript(c *gin.Context) {
 }
 
 // GetReadMe 获取远程仓库某个脚本的 Readme 文件并返回
-func (s *ScriptHandler) GetReadMe(c *gin.Context) {
+func (s *StoreHandler) GetReadMe(c *gin.Context) {
 	name := c.Param("name")
 	if name == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -209,7 +212,7 @@ func (s *ScriptHandler) GetReadMe(c *gin.Context) {
 }
 
 // DownloadScript 下载远程仓库脚本到本地
-func (s *ScriptHandler) DownloadScript(c *gin.Context) {
+func (s *StoreHandler) DownloadScript(c *gin.Context) {
 	name := c.Param("name")
 	if name == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -297,7 +300,7 @@ func (s *ScriptHandler) DownloadScript(c *gin.Context) {
 	return
 }
 
-func (s *ScriptHandler) SendRequest(url string) ([]map[string]interface{}, error) {
+func (s *StoreHandler) SendRequest(url string) ([]map[string]interface{}, error) {
 	resp, err := http.Get(url)
 
 	if err != nil {
@@ -320,7 +323,7 @@ func (s *ScriptHandler) SendRequest(url string) ([]map[string]interface{}, error
 }
 
 // CheckScriptIsExist 检查改脚本本地是否已经存在
-func (s *ScriptHandler) CheckScriptIsExist(name string) (bool, error) {
+func (s *StoreHandler) CheckScriptIsExist(name string) (bool, error) {
 	files, err := ioutil.ReadDir("../script/")
 	if err != nil {
 		return false, err
@@ -338,7 +341,7 @@ func (s *ScriptHandler) CheckScriptIsExist(name string) (bool, error) {
 
 // saveSctipt 通过 url 下载脚本文件保存到本地
 // 本地文件保存目录： ../script/
-func (s *ScriptHandler) saveScript(scriptUrl string, scriptName string) error {
+func (s *StoreHandler) saveScript(scriptUrl string, scriptName string) error {
 	resp, err := http.Get(scriptUrl)
 
 	if err != nil {
@@ -361,7 +364,7 @@ func (s *ScriptHandler) saveScript(scriptUrl string, scriptName string) error {
 
 // updateConfig 更新配置文件
 // 配置文件目录：
-func (s *ScriptHandler) updateConfig(configUrl string) error {
+func (s *StoreHandler) updateConfig(configUrl string) error {
 	resp, err := http.Get(configUrl)
 
 	if err != nil {

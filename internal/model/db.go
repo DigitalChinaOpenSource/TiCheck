@@ -20,7 +20,7 @@ func InitDB() error {
 	newDB := false
 	if DbConn == nil {
 
-		dbFile := "store/report1.db"
+		dbFile := "store/ticheck.db"
 
 		_, err := os.Stat(dbFile)
 		if os.IsNotExist(err) {
@@ -43,7 +43,7 @@ func InitDB() error {
 	// 表结构未变更时，建议注释此行
 	err := DbConn.AutoMigrate(
 		&User{},
-		&Script{},
+		&Probe{},
 		&Scheduler{},
 		&Cluster{},
 		&CheckHistory{},
@@ -96,31 +96,31 @@ func SetupSeedData() {
 				fmt.Println("读取组件信息失败", err)
 				continue
 			}
-			sm := &ScriptMeta{}
-			err = json.Unmarshal(bytes, sm)
-			if err != nil || fi.Name() != sm.ID {
+			pm := &ProbeMeta{}
+			err = json.Unmarshal(bytes, pm)
+			if err != nil || fi.Name() != pm.ID {
 				fmt.Println("无法识别的组件包", err)
 				continue
 			}
 
 			// transfer to db model
-			s := Script{
-				ScriptName:  sm.Name,
-				FileName:    sm.Main,
-				Description: sm.Description,
+			p := Probe{
+				ScriptName:  pm.Name,
+				FileName:    pm.Main,
+				Description: pm.Description,
 				IsSystem:    1,
-				Creator:     sm.Author.Name,
-				CreateTime:  sm.CreateTime,
-				UpdateTime:  sm.UpdateTime,
+				Creator:     pm.Author.Name,
+				CreateTime:  time.Time(pm.CreateTime).Local(),
+				UpdateTime:  time.Time(pm.UpdateTime).Local(),
 			}
-			if len(sm.Tags) > 0 {
-				s.Tag = sm.Tags[0]
+			if len(pm.Tags) > 0 {
+				p.Tag = pm.Tags[0]
 			}
-			if len(sm.Comparators) > 0 {
-				s.DefaultComparator = *sm.Comparators[0]
+			if len(pm.Comparators) > 0 {
+				p.Comparator = *pm.Comparators[0]
 			}
 			// insert to db
-			DbConn.Create(&s)
+			DbConn.Create(&p)
 		}
 	}
 
