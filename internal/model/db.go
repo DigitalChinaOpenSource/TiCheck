@@ -20,7 +20,7 @@ func InitDB() error {
 	newDB := false
 	if DbConn == nil {
 
-		dbFile := "../../store/ticheck.db"
+		dbFile := "store/report1.db"
 
 		_, err := os.Stat(dbFile)
 		if os.IsNotExist(err) {

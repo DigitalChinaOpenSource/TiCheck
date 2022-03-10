@@ -4,7 +4,58 @@
   >
     <!-- actions -->
     <template v-slot:extra>
-      <a-button type="primary" >Add Cluster</a-button>
+      <div>
+        <a-button type="primary" @click="showModal" >Add Cluster</a-button>
+        <a-modal v-model="modalVisible" title="Add Cluster" @ok="handleOk" width="70%">
+          <a-form :form="clusterForm">
+            <a-form-item
+              label="CLuster Name"
+              :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+              :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+              <a-input
+                v-decorator="['name',{rules: [{ required: true }]}]"
+                name="name" />
+            </a-form-item>
+            <a-form-item
+              label="Prometheus Url"
+              :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+              :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+              <a-input
+                name="url"
+                style="width: 100%"
+                v-decorator="['url',{rules: [{ required: true }]}]" />
+            </a-form-item>
+            <a-form-item
+              label="Login User"
+              :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+              :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+              <a-input
+                name="user"
+                style="width: 100%"
+                v-decorator="['user',{rules: [{ required: true }]}]" />
+            </a-form-item>
+            <a-form-item
+              label="Password"
+              :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+              :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+              <a-input-password
+                name="passwd"
+                style="width: 100%"
+                v-decorator="['passwd',{rules: [{ required: true }]}]" />
+            </a-form-item>
+            <a-form-item
+              label="Cluster Description"
+              :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+              :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+              <a-textarea
+                :auto-size="{ minRows: 4, maxRows: 6 }"
+                name="description"
+                style="width: 100%"
+                v-decorator="['description']" />
+            </a-form-item>
+          </a-form>
+        </a-modal>
+      </div>
     </template>
     <a-list
       rowKey="id"
@@ -61,8 +112,8 @@
                   </a-col>
                   <a-col>
                     <span>
-                      <a style="margin-right: 15px;color: #40a9ff" :href="item.grafana_url">Grafana</a>
-                      <a style="color: #40a9ff" :href="item.dashboard_url">Dashboard</a>
+                      <a style="margin-right: 15px;color: #40a9ff" :href="item.grafana_url" target="_blank">Grafana</a>
+                      <a style="color: #40a9ff" :href="item.dashboard_url" target="_blank">Dashboard</a>
                     </span>
                   </a-col>
                 </a-row>
@@ -111,8 +162,9 @@ export default {
   },
   data () {
     return {
-      extraImage: 'https://gw.alipayobjects.com/zos/rmsportal/RzwpdLnhmvDJToTdfDPe.png',
       dataSource,
+      modalVisible: false,
+      clusterForm: this.$form.createForm(this)
     }
   },
   mounted () {
@@ -126,6 +178,16 @@ export default {
     },
     jump2Info (item) {
       this.$router.push({ name: 'ClusterInfo', params: { id: item.id } })
+    },
+    showModal () {
+      console.log('visable=>', this.modalVisible)
+      this.modalVisible = true
+      console.log('visable=>', this.modalVisible)
+    },
+    handleOk (e) {
+      console.log(e)
+      this.modalVisible = false
+      this.clusterForm = this.$form.createForm(this)
     }
   },
   created () {

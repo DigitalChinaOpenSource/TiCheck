@@ -29,7 +29,12 @@ type HistoryWarnings struct {
 	Total int    `json:"total"`
 }
 
-type PrometheusRespMetrics struct{}
+type PrometheusRespMetrics struct {
+	Name     string `json:"__name__"`
+	Group    string `json:"group"`
+	Instance string `json:"instance"`
+	Job      string `json:"job"`
+}
 
 type PrometheusRespRes struct {
 	Metrics PrometheusRespMetrics `json:"metric"`
@@ -47,6 +52,13 @@ type PrometheusResp struct {
 }
 
 type NodesInfo struct {
+	ID       int      `json:"id"`
+	NodeType string   `json:"type"`
+	Instance []string `json:"instance"`
+	Count    int      `json:"count"`
+}
+
+type NodesCount struct {
 	ID       int    `json:"id"`
 	NodeType string `json:"type"`
 	Count    int    `json:"count"`
@@ -105,8 +117,8 @@ func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 			CreateTime:    cluster.CreateTime,
 			LastCheckTime: cluster.LastCheckTime,
 		}
-		reps.NodesInfo, _ = getCLusterNodes(cluster.PrometheusURL)
-		clusterListReps = append(clusterListReps, reps)
+		reps.NodesInfo, _ = getClusterNodesInfo(cluster.PrometheusURL)
+
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -225,14 +237,14 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 	})
 }
 
-func getCLusterNodes(url string) (nodes []NodesInfo, err error) {
+func getCLusterNodesNum(url string) (nodes []NodesCount, err error) {
 	nodeType := []string{"pd", "tidb", "tikv", "tiflash"}
 	for k, v := range nodeType {
 		num, err := queryNodeNum(url, v)
 		if err != nil {
 			return nodes, err
 		}
-		var item = NodesInfo{
+		var item = NodesCount{
 			ID:       k,
 			NodeType: v,
 			Count:    num,
@@ -242,8 +254,26 @@ func getCLusterNodes(url string) (nodes []NodesInfo, err error) {
 	return nodes, nil
 }
 
+func getClusterNodesInfo(url string) (nodesInfo []NodesInfo, err error) {
+	nodeType := []string{"pd", "tidb", "tikv", "tiflash", "grafana"}
+	for k, v := range nodeType {
+		instances, err := queryNodeInfo(url, v)
+		if err != nil {
+			return nodesInfo, err
+		}
+		node := NodesInfo{
+			ID:       k,
+			NodeType: v,
+			Instance: instances,
+			Count:    len(instances),
+		}
+		nodesInfo = append(nodesInfo, node)
+	}
+
+	return nodesInfo, nil
+}
+
 func queryNodeNum(url string, nodeType string) (num int, err error) {
-	var nodeNum int
 	queryString := fmt.Sprintf("count(probe_success{group='%s'})", nodeType)
 	client := &http.Client{}
 	url = url + "api/v1/query"
@@ -254,31 +284,66 @@ func queryNodeNum(url string, nodeType string) (num int, err error) {
 	req.URL.RawQuery = q.Encode()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nodeNum, errors.New(fmt.Sprintf("bad request: %s", err))
+		return num, errors.New(fmt.Sprintf("bad request: %s", err))
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nodeNum, errors.New(fmt.Sprintf("parse error: %s", err))
+		return num, errors.New(fmt.Sprintf("parse error: %s", err))
 	}
 	bodyStr := string(body)
 	var jsonMap PrometheusResp
 	if errJson := json.Unmarshal([]byte(bodyStr), &jsonMap); errJson != nil {
-		return nodeNum, errors.New(fmt.Sprintf("parse error: %s", err))
+		return num, errors.New(fmt.Sprintf("parse error: %s", err))
 	}
 	if len(jsonMap.Data.Result) < 1 {
-		return nodeNum, nil
+		return num, nil
 	}
 	for _, v := range jsonMap.Data.Result[0].Value {
 		switch value := v.(type) {
 		case string:
-			nodeNum, err = strconv.Atoi(value)
+			num, err = strconv.Atoi(value)
 			if err != nil {
-				return nodeNum, errors.New(fmt.Sprintf("parse error: %s", err))
+				return num, errors.New(fmt.Sprintf("parse error: %s", err))
 			}
 		}
 	}
-	return nodeNum, nil
+	return num, nil
+}
+
+func queryNodeInfo(host string, nodeType string) (instance []string, err error) {
+	queryString := fmt.Sprintf("probe_success{group='%s'}", nodeType)
+	client := &http.Client{}
+	url := host + "api/v1/query"
+	req, _ := http.NewRequest("GET", url, nil)
+
+	q := req.URL.Query()
+	q.Add("query", queryString)
+	req.URL.RawQuery = q.Encode()
+	resp, err := client.Do(req)
+	if err != nil {
+		return instance, errors.New(fmt.Sprintf("bad request: %s", err))
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return instance, errors.New(fmt.Sprintf("parse error: %s", err))
+	}
+	bodyStr := string(body)
+	var jsonMap PrometheusResp
+	if errJson := json.Unmarshal([]byte(bodyStr), &jsonMap); errJson != nil {
+		return instance, errors.New(fmt.Sprintf("parse error: %s", err))
+	}
+	if len(jsonMap.Data.Result) < 1 {
+		return instance, nil
+	}
+
+	for _, v := range jsonMap.Data.Result {
+		instance = append(instance, v.Metrics.Instance)
+	}
+	return instance, nil
 }
