@@ -36,6 +36,7 @@ func Register(engine *gin.Engine) {
 
 	sessionGroup := engine.Group("/session")
 	session := &handler.SessionHandler{
+		Users: map[string]string{},
 		Sessions: make(map[string]*handler.Session, 0),
 	}
 
@@ -51,6 +52,7 @@ func Register(engine *gin.Engine) {
 	}
 
 	clusterGroup := engine.Group("/cluster")
+	//clusterGroup.Use(session.VerifyToken)
 	{
 		cluster := &handler.ClusterHandler{}
 
