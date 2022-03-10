@@ -21,8 +21,8 @@
         :dataSource="data"
       >
         <a-list-item :key="item.id" slot="renderItem" slot-scope="item, index">
-                    <a-list-item-meta>
-            <a slot="title" href="">
+          <a-list-item-meta>
+            <a slot="title" v-on:click="showReadme(item.id)" >
             <a-avatar size="large" v-if="item.file_name.split('.')[1]=='sh'" :src="icon.shell" />
             <a-avatar size="large" v-if="item.file_name.split('.')[1]=='py'" :src="icon.python" />
             {{ item.script_name }}</a>
@@ -40,19 +40,30 @@
         </div>
       </a-list>
     </a-card>
+
+    <a-modal
+      :title="$t('store.page.local.modal.title')"
+      width="880px"
+      :visible="visible"
+      @cancel="handleCancel"
+    >
+      <div class="markdown-body">
+        <vue-markdown :source="readmeText" v-highlight></vue-markdown>
+      </div>
+    </a-modal>
+   
   </div>
 </template>
 
 <script>
-import { TagSelect, ArticleListContent } from '@/components'
-// import IconText from './components/IconText'
-const TagSelectOption = TagSelect.Option
+import { ArticleListContent } from '@/components'
+import VueMarkdown from 'vue-markdown'
+import 'github-markdown-css/github-markdown.css'
 
 export default {
   components: {
-    TagSelect,
-    TagSelectOption,
-    ArticleListContent
+    ArticleListContent,
+    VueMarkdown
   },
   data () {
     return {
@@ -60,6 +71,10 @@ export default {
           python: require('@/assets/icons/python.png'),
           shell: require('@/assets/icons/shell.png')
       },
+      msg:'',
+      key: 0,
+      readmeText: '',
+      visible: false,
       loading: true,
       showMore: true,
       loadingMore: false,
@@ -75,6 +90,16 @@ export default {
     this.getList()
   },
   methods: {
+    showReadme (id) {
+      this.readmeText = ''
+      this.visible = true
+      this.$http.get('/store/local/readme?name='+id).then((response) => {
+         　　this.readmeText = response;
+     　　});
+    },
+    handleCancel (e) {
+      this.visible = false
+    },
     onSearch (value) {
       this.data =[]
       this.page=0

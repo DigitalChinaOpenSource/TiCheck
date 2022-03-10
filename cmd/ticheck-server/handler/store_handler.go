@@ -55,6 +55,21 @@ func (s *StoreHandler) GetLocalScript(c *gin.Context) {
 	s.GetScriptListInDB(c, pg)
 }
 
+func (s *StoreHandler) GetLocalReadme(c *gin.Context) {
+	name := c.Query("name")
+	filePath := "../../probes/local/" + name + "/readme.md"
+	_, err := os.Stat(filePath)
+	if err != nil || os.IsNotExist(err) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to get readme: " + err.Error(),
+		})
+		return
+	}
+	data, _ := ioutil.ReadFile(filePath)
+	c.JSON(http.StatusOK, string(data))
+
+}
+
 func (s *StoreHandler) GetScriptListInDB(c *gin.Context, pg *model.Paginator) {
 
 	tag := c.Query("tag")

@@ -66,7 +66,7 @@ func Register(engine *gin.Engine) {
 		report := &handler.ReportHandler{}
 
 		// 获取历史巡检列表
-		reportGroup.GET("/all/:clusterID", report. GetReportList)
+		reportGroup.GET("/all/:clusterID", report.GetReportList)
 
 		// 通过id获得某次巡检结果
 		reportGroup.GET("/id/:id", report.GetReport)
@@ -98,6 +98,7 @@ func Register(engine *gin.Engine) {
 
 		// 查看所有本地脚本
 		storeGroup.GET("/local", sh.GetLocalScript)
+		storeGroup.GET("/local/readme", sh.GetLocalReadme)
 
 		// 查看所有的远程仓库脚本，获取列表
 		storeGroup.GET("/remote", sh.GetAllRemoteScript)
