@@ -36,7 +36,7 @@ func Register(engine *gin.Engine) {
 
 	sessionGroup := engine.Group("/session")
 	session := &handler.SessionHandler{
-		Users: map[string]string{},
+		Users:    map[string]string{},
 		Sessions: make(map[string]*handler.Session, 0),
 	}
 
@@ -61,6 +61,8 @@ func Register(engine *gin.Engine) {
 		clusterGroup.GET("/info/:id", cluster.GetClusterInfo)
 		// Add cluster
 		clusterGroup.POST("/add", cluster.PostClusterInfo)
+		// Update cluster by id
+		clusterGroup.POST("/update/:id", cluster.UpdateClusterInfo)
 	}
 
 	reportGroup := engine.Group("/cluster/report")
@@ -69,7 +71,7 @@ func Register(engine *gin.Engine) {
 		report := &handler.ReportHandler{}
 
 		// 获取历史巡检列表
-		reportGroup.GET("/all/:clusterID", report. GetReportList)
+		reportGroup.GET("/all/:clusterID", report.GetReportList)
 
 		// 通过id获得某次巡检结果
 		reportGroup.GET("/id/:id", report.GetReport)

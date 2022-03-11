@@ -11,6 +11,7 @@ import dashboard from './en-US/dashboard'
 import form from './en-US/form'
 import result from './en-US/result'
 import account from './en-US/account'
+import cluster from './en-US/cluster'
 
 import store from './en-US/store'
 
@@ -36,5 +37,6 @@ export default {
   ...form,
   ...result,
   ...account,
-  ...store
+  ...store,
+  ...cluster
 }
