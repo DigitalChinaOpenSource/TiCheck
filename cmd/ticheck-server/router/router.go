@@ -61,6 +61,17 @@ func Register(engine *gin.Engine) {
 		clusterGroup.GET("/info/:id", cluster.GetClusterInfo)
 		// Add cluster
 		clusterGroup.POST("/add", cluster.PostClusterInfo)
+
+		// Get the cluster installed probe checklist
+		clusterGroup.GET("/probe/:id", cluster.GetProbeList)
+
+		// Get probe checklist that can be added to the cluster
+		clusterGroup.GET("/probe/add/:id", cluster.GetAddProbeList)
+
+		// Add a probe to the cluster
+		clusterGroup.POST("/probe", cluster.AddProbeForCluster)
+
+		clusterGroup.DELETE("/probe/:id", cluster.DeleteProbeForCluster)
 	}
 
 	reportGroup := engine.Group("/cluster/report")

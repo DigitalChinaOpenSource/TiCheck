@@ -284,6 +284,105 @@ func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 	return
 }
 
+func (ch *ClusterHandler) GetProbeList(c *gin.Context){
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": "cluster id is invalid",
+		})
+		return
+	}
+
+	var cc model.ClusterChecklist
+	cl, err := cc.GetListInfoByClusterID(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": cl,
+	})
+	return
+}
+
+func (ch *ClusterHandler) GetAddProbeList(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": "cluster id is invalid",
+		})
+		return
+	}
+
+	var probe model.Probe
+	probes, err := probe.GetNotAddedProveListByClusterID(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": probes,
+	})
+	return
+}
+
+func (ch *ClusterHandler) AddProbeForCluster(c *gin.Context) {
+	cc := &model.ClusterChecklist{}
+	err := c.BindJSON(cc)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = cc.AddCheckProbe()
+
+	if err  != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+}
+
+func (ch *ClusterHandler) DeleteProbeForCluster(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	cc := &model.ClusterChecklist{
+		ID: uint(id),
+	}
+	err = cc.DeleteCheckProbe()
+
+	if err  != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+}
+
 func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, err error) {
 	queryHelper := QueryHelper{
 		Url: url,
