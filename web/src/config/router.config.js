@@ -59,7 +59,19 @@ export const asyncRouterMap = [
                 path: '/cluster/check/report/:id',
                 name: 'ReportDetail',
                 component: () => import('@/views/check/ReportDetail'),
-                meta: { title: 'menu.cluster.check.history.report', keepAlive: true, permission: ['sham'] }
+                meta: { title: 'menu.cluster.check.report', keepAlive: true, permission: ['sham'] }
+              },
+              {
+                path: '/cluster/check/probe/:id',
+                name: 'ProbeList',
+                component: () => import('@/views/check/ProbeList'),
+                meta: { title: 'menu.cluster.check.probe', keepAlive: true, permission: ['sham'] }
+              },
+              {
+                path: '/cluster/check/probe/add/:id',
+                name: 'ProbeAdd',
+                component: () => import('@/views/check/ProbeAdd'),
+                meta: { title: 'menu.cluster.check.probe.add', keepAlive: true, permission: ['sham'] }
               }
             ]
           }

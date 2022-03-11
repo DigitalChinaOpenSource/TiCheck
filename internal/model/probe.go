@@ -20,7 +20,7 @@ type Probe struct {
 }
 
 func (Probe) TableName() string {
-	return "scripts"
+	return "probes"
 }
 
 type ProbeMeta struct {
@@ -48,4 +48,23 @@ func (p *Probe) GetPager(c *gin.Context, pg *Paginator) *Paginator {
 
 	var rows []Probe
 	return pg.ApplyQuery(DbConn.Model(&Probe{}), &rows)
+}
+
+func (p Probe) GetNotAddedProveListByClusterID(id int) ([]Probe, error) {
+	var probeId []string
+	var probeList []Probe
+
+	// First, finding all installed probes in cluster
+	err := DbConn.Table("cluster_checklist").Select("cluster_checklist.probe_id").Where("cluster_id = ?", id).Find(&probeId).Error
+	if err !=  nil {
+		return probeList, err
+	}
+
+	if len(probeId) > 0 {
+		err = DbConn.Where("id not in ?", probeId).Find(&probeList).Error
+	} else {
+		err = DbConn.Find(&probeList).Error
+	}
+
+	return probeList, err
 }
