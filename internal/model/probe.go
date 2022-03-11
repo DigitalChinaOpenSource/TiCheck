@@ -7,7 +7,7 @@ import (
 )
 
 type Probe struct {
-	ID          uint   `gorm:"primarykey" json:"-"`
+	ID          string `gorm:"primarykey" json:"id"`
 	ScriptName  string `gorm:"not null;unique" json:"script_name"`
 	FileName    string `gorm:"not null;unique" json:"file_name"`
 	Tag         string `gorm:"not null" json:"tag"`
@@ -41,10 +41,6 @@ type ProbeMeta struct {
 type ProbeAuthor struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
-}
-
-func (p *Probe) GetByID() uint {
-	return p.ID
 }
 
 func (p *Probe) GetPager(c *gin.Context, pg *Paginator) *Paginator {

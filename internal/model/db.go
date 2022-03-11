@@ -105,6 +105,7 @@ func SetupSeedData() {
 
 			// transfer to db model
 			p := Probe{
+				ID:          pm.ID,
 				ScriptName:  pm.Name,
 				FileName:    pm.Main,
 				Description: pm.Description,

@@ -103,6 +103,7 @@ func Register(engine *gin.Engine) {
 
 		// 查看所有本地脚本
 		storeGroup.GET("/local", sh.GetLocalScript)
+		storeGroup.GET("/local/readme", sh.GetLocalReadme)
 
 		// 查看所有的远程仓库脚本，获取列表
 		storeGroup.GET("/remote", sh.GetAllRemoteScript)

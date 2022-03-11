@@ -73,6 +73,16 @@ const vueConfig = {
         name: 'assets/[name].[hash:8].[ext]'
       })
 
+    config.module
+      .rule('md')
+      .test(/\.md/)
+      .use('html-loader')
+      .loader('html-loader')
+      .end()
+      .use('markdown-loader')
+      .loader('markdown-loader')
+      .end()
+
     // if prod is on
     // assets require on cdn
     if (isProd) {

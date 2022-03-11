@@ -8,6 +8,8 @@ import router from './router'
 import store from './store/'
 import i18n from './locales'
 import { VueAxios } from './utils/request'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
 import ProLayout, { PageHeaderWrapper } from '@ant-design-vue/pro-layout'
 import themePluginConfig from '../config/themePluginConfig'
 
@@ -21,6 +23,7 @@ import './permission' // permission control
 import './utils/filter' // global filter
 import './global.less' // global style
 
+
 Vue.config.productionTip = false
 
 // mount axios to `Vue.$http` and `this.$http`
@@ -29,6 +32,14 @@ Vue.use(VueAxios)
 Vue.component('pro-layout', ProLayout)
 Vue.component('page-container', PageHeaderWrapper)
 Vue.component('page-header-wrapper', PageHeaderWrapper)
+
+Vue.directive('highlight',function (el) {
+  let blocks = el.querySelectorAll('pre code');
+  blocks.forEach((block)=>{
+    hljs.highlightBlock(block)
+  })
+})
+
 
 window.umi_plugin_ant_themeVar = themePluginConfig.theme
 
