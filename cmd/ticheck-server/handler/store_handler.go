@@ -3,6 +3,7 @@ package handler
 import (
 	"TiCheck/internal/model"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -43,6 +44,18 @@ func (s *StoreHandler) GetCustomScript(c *gin.Context) {
 	pg.AddFilter("is_system = ?", 0)
 
 	s.GetScriptListInDB(c, pg)
+}
+
+func (s *StoreHandler) UploadCustomScript(c *gin.Context) {
+	file, _ := c.FormFile("file")
+	err := c.SaveUploadedFile(file, "../../probes/custom/"+file.Filename)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to upload: " + err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
 }
 
 // GetLocalScript 获取本地所有脚本列表
