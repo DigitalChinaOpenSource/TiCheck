@@ -30,9 +30,9 @@
               </router-link>
             </a-menu-item>
             <a-menu-item key="/cluster/script">
-              <router-link :to="{ name: 'ClusterScript', params: {id: clusrerID}}">
+              <router-link :to="{ name: 'ProbeList', params: {id: clusrerID}}">
                 <a-icon type="folder-open" />
-                {{ $t('menu.cluster.script') }}
+                {{ $t('menu.cluster.check.probe') }}
               </router-link>
             </a-menu-item>
             <a-menu-item key="/cluster/user">
@@ -94,7 +94,6 @@ export default {
       this.selectedKeys = [ routes.pop().path ]
     },
     getCluterId () {
-      debugger
       return this.clusrerID
     }
   },

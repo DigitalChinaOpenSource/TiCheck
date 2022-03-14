@@ -1,57 +1,66 @@
 <template>
   <page-header-wrapper
-    title="CLuster List"
+    :title="$t('cluster.list.cluster-list')"
   >
     <!-- actions -->
     <template v-slot:extra>
       <div>
-        <a-button type="primary" @click="showModal" >Add Cluster</a-button>
-        <a-modal v-model="modalVisible" title="Add Cluster" @ok="handleOk" width="70%">
+        <a-button type="primary" @click="showModal" >{{ $t('cluster.list.add-cluster') }}</a-button>
+        <a-modal v-model="modalVisible" :title="$t('cluster.list.add-cluster')" @ok="handleOk" width="70%">
           <a-form :form="clusterForm">
             <a-form-item
-              label="CLuster Name"
+              :label="$t('cluster.list.name')"
               :labelCol="{lg: {span: 7}, sm: {span: 7}}"
               :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
               <a-input
                 v-decorator="['name',{rules: [{ required: true }]}]"
-                placeholder="input cluster name"
+                :placeholder="$t('cluster.list.input.name')"
                 name="name" />
             </a-form-item>
             <a-form-item
-              label="Prometheus Url"
+              :label="$t('cluster.list.prometheus')"
               :labelCol="{lg: {span: 7}, sm: {span: 7}}"
               :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
               <a-input
                 name="url"
-                placeholder="input prometheus host&port"
-                v-decorator="['url',{rules: [{ required: true }]}]" />
+                addon-before="http://"
+                :placeholder="$t('cluster.list.input.prometheus')"
+                v-decorator="[
+                  'url',
+                  {
+                    rules: [
+                      {
+                        required: true,
+                        message: ''
+                      }]
+                  }]" />
             </a-form-item>
             <a-form-item
-              label="Login User"
+              :label="$t('cluster.list.user')"
               :labelCol="{lg: {span: 7}, sm: {span: 7}}"
               :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
               <a-input
                 name="user"
-                placeholder="input TiDB database user"
+                :placeholder="$t('cluster.list.input.user')"
                 v-decorator="['user',{rules: [{ required: true }]}]" />
             </a-form-item>
             <a-form-item
-              label="Password"
+              :label="$t('cluster.list.passwd')"
               :labelCol="{lg: {span: 7}, sm: {span: 7}}"
               :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
               <a-input-password
                 name="passwd"
-                placeholder="input TiDB database passwd"
+                :placeholder="$t('cluster.list.input.passwd')"
                 v-decorator="['passwd',{rules: [{ required: true }]}]" />
             </a-form-item>
             <a-form-item
-              label="Cluster Description"
+              :label="$t('cluster.list.description')"
               :labelCol="{lg: {span: 7}, sm: {span: 7}}"
               :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
               <a-textarea
                 :auto-size="{ minRows: 4, maxRows: 6 }"
                 name="description"
-                placeholder="input TiDB database description"
+                :placeholder="$t('cluster.list.input.description')"
                 v-decorator="['description']" />
             </a-form-item>
           </a-form>
@@ -74,10 +83,10 @@
             <div>
               <a-row type="flex" justify="space-between">
                 <a-col>
-                  CLuster Name
+                  {{ $t('cluster.list.name') }}
                 </a-col>
                 <a-col>
-                  Add Time :  {{ item.create_time }}
+                  {{ $t('cluster.list.add-time') }} :  {{ item.create_time }}
                 </a-col>
               </a-row>
             </div>
@@ -94,7 +103,7 @@
                 </div>
               </a-row>
               <div style="margin-top: 15px;margin-bottom: 5px">
-                Cluster Description
+                {{ $t('cluster.list.description') }}
               </div>
               <div>
                 <div v-if="item.description">
@@ -103,13 +112,13 @@
                   </div>
                 </div>
                 <div v-else>
-                  暂无项目简介
+                  {{ $t('cluster.list.description.else') }}
                 </div>
               </div>
               <div style="margin-top: 15px">
                 <a-row type="flex" justify="space-between">
                   <a-col>
-                    <span>Node Info</span>
+                    <span>{{ $t('cluster.list.node-info') }}</span>
                   </a-col>
                   <a-col>
                     <span>
@@ -132,7 +141,7 @@
             <div>
               <a-row type="flex" justify="end">
                 <a-col>
-                  Last Check Time: {{ item.last_check_time }}
+                  {{ $t('cluster.list.last-check-time') }}: {{ item.last_check_time }}
                 </a-col>
               </a-row>
             </div>

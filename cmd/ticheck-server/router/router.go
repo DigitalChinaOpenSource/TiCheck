@@ -36,7 +36,7 @@ func Register(engine *gin.Engine) {
 
 	sessionGroup := engine.Group("/session")
 	session := &handler.SessionHandler{
-		Users: map[string]string{},
+		Users:    map[string]string{},
 		Sessions: make(map[string]*handler.Session, 0),
 	}
 
@@ -61,6 +61,20 @@ func Register(engine *gin.Engine) {
 		clusterGroup.GET("/info/:id", cluster.GetClusterInfo)
 		// Add cluster
 		clusterGroup.POST("/add", cluster.PostClusterInfo)
+
+		// Update cluster by id
+		clusterGroup.POST("/update/:id", cluster.UpdateClusterInfo)
+
+		// Get the cluster installed probe checklist
+		clusterGroup.GET("/probe/:id", cluster.GetProbeList)
+
+		// Get probe checklist that can be added to the cluster
+		clusterGroup.GET("/probe/add/:id", cluster.GetAddProbeList)
+
+		// Add a probe to the cluster
+		clusterGroup.POST("/probe", cluster.AddProbeForCluster)
+
+		clusterGroup.DELETE("/probe/:id", cluster.DeleteProbeForCluster)
 	}
 
 	reportGroup := engine.Group("/cluster/report")

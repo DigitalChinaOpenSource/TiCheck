@@ -72,6 +72,14 @@ func (c *Cluster) CreateCluster() (err error) {
 	return nil
 }
 
+func (c *Cluster) UpdateClusterByID() error {
+	err := DbConn.Save(&c).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (chi *CheckHistoryInfo) QueryHistoryInfoByID(id int) (CheckHistoryInfo, error) {
 	var checkHistory CheckHistoryInfo
 	err := DbConn.Model(&CheckHistory{}).

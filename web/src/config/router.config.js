@@ -40,7 +40,13 @@ export const asyncRouterMap = [
                 path: '/cluster/info/detail/:id',
                 name: 'ClusterInfo',
                 component: () => import('@/views/cluster/Info'),
-                meta: { title: 'menu.cluster.check.history', keepAlive: true, permission: ['sham'] }
+                meta: { title: 'menu.cluster.info.detail', keepAlive: true, permission: ['sham'] }
+              },
+              {
+                path: '/cluster/info/setting/:id',
+                name: 'ClusterSet',
+                component: () => import('@/views/cluster/Setting'),
+                meta: { title: 'menu.cluster.info.setting', keepAlive: true, permission: ['sham'] }
               },
               // check
               {
@@ -53,7 +59,19 @@ export const asyncRouterMap = [
                 path: '/cluster/check/report/:id',
                 name: 'ReportDetail',
                 component: () => import('@/views/check/ReportDetail'),
-                meta: { title: 'menu.cluster.check.history.report', keepAlive: true, permission: ['sham'] }
+                meta: { title: 'menu.cluster.check.report', keepAlive: true, permission: ['sham'] }
+              },
+              {
+                path: '/cluster/check/probe/:id',
+                name: 'ProbeList',
+                component: () => import('@/views/check/ProbeList'),
+                meta: { title: 'menu.cluster.check.probe', keepAlive: true, permission: ['sham'] }
+              },
+              {
+                path: '/cluster/check/probe/add/:id',
+                name: 'ProbeAdd',
+                component: () => import('@/views/check/ProbeAdd'),
+                meta: { title: 'menu.cluster.check.probe.add', keepAlive: true, permission: ['sham'] }
               }
             ]
           }
