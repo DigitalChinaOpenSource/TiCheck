@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ClusterHandler struct {
@@ -325,11 +326,11 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) error {
 		GrafanaURL:    grafana,
 		DashboardURL:  dashboard,
 		CreateTime:    time.Now().Local(),
-	
+	}
 	ch.ClusterInfo = cluster
 	return nil
 }
-func (ch *ClusterHandler) GetProbeList(c *gin.Context){
+func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -390,7 +391,7 @@ func (ch *ClusterHandler) AddProbeForCluster(c *gin.Context) {
 
 	err = cc.AddCheckProbe()
 
-	if err  != nil {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -416,7 +417,7 @@ func (ch *ClusterHandler) DeleteProbeForCluster(c *gin.Context) {
 	}
 	err = cc.DeleteCheckProbe()
 
-	if err  != nil {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
