@@ -45,6 +45,7 @@
       :title="$t('store.page.local.modal.title')"
       width="880px"
       :visible="visible"
+      :footer="null"
       @cancel="handleCancel"
     >
       <div class="markdown-body">
