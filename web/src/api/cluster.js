@@ -4,7 +4,8 @@ const clusterApi = {
   getClusterList: '/cluster/list',
   getClusterInfo: '/cluster/info/',
   addCluster: '/cluster/add',
-  updateCluster: '/cluster/update/'
+  updateCluster: '/cluster/update/',
+  getSchedulerList: '/cluster/scheduler/'
 }
 
 export function getClusterList () {
@@ -34,5 +35,12 @@ export function updateCluster (id, parameter) {
     method: 'post',
     url: clusterApi.updateCluster + id,
     data: parameter
+  })
+}
+
+export function getSchedulerList (id) {
+  return request({
+    method: 'get',
+    url: clusterApi.getSchedulerList + id
   })
 }
