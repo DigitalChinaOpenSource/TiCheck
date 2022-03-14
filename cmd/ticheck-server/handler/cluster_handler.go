@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 type ClusterHandler struct {
@@ -230,6 +229,7 @@ func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 		})
 		return
 	}
+	ch.ClusterInfo.CreateTime = time.Now().Local()
 
 	err = ch.ClusterInfo.CreateCluster()
 	if err != nil {
@@ -325,11 +325,11 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) error {
 		TiDBVersion:   version,
 		GrafanaURL:    grafana,
 		DashboardURL:  dashboard,
-		CreateTime:    time.Now().Local(),
 	}
 	ch.ClusterInfo = cluster
 	return nil
 }
+
 func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
