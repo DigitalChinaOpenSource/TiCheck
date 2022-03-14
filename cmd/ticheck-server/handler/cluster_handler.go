@@ -244,6 +244,92 @@ func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 	return
 }
 
+func (ch *ClusterHandler) UpdateClusterInfo(c *gin.Context) {
+	clusterInfoReq := &ClusterInfoReq{}
+	err := c.BindJSON(clusterInfoReq)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "the request body is wrong",
+		})
+		return
+	}
+
+	id := c.Param("id")
+	clusterID, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	clusterInfoReq.ID = uint(clusterID)
+
+	err = ch.BuildClusterInfo(clusterInfoReq)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = ch.ClusterInfo.UpdateClusterByID()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+	})
+	return
+}
+
+func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) error {
+	nodeType := []string{"pd", "grafana"}
+	url := fmt.Sprintf("http://%s/api/v1/query", req.PrometheusUrl)
+	nodes, err := getClusterNodesInfo(url, nodeType)
+	if err != nil {
+		return err
+	}
+
+	var dashboard string
+	var grafana string
+
+	if len(nodes[0].Instance) < 1 {
+		return errors.New("found no pd server in this tidb cluster")
+	}
+
+	dashboard = fmt.Sprintf("http://%s/dashboard", nodes[0].Instance[0])
+
+	pdUrl := fmt.Sprintf("http://%s/pd/api/v1/version", nodes[0].Instance[0])
+	version, err := getClusterVersion(pdUrl)
+	if err != nil {
+		return err
+	}
+
+	if len(nodes[1].Instance) > 0 {
+		grafana = fmt.Sprintf("http://%s", nodes[1].Instance[0])
+	}
+
+	cluster := model.Cluster{
+		ID:            req.ID,
+		Name:          req.Name,
+		PrometheusURL: fmt.Sprintf("http://%s", req.PrometheusUrl),
+		TiDBUsername:  req.LogUser,
+		TiDBPassword:  req.LogPasswd,
+		Description:   req.Description,
+		Owner:         req.Owner,
+		TiDBVersion:   version,
+		GrafanaURL:    grafana,
+		DashboardURL:  dashboard,
+		CreateTime:    time.Now().Local(),
+	}
+	ch.ClusterInfo = cluster
+	return nil
+}
+
 func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -341,92 +427,6 @@ func (ch *ClusterHandler) DeleteProbeForCluster(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",
 	})
-}
-
-func (ch *ClusterHandler) UpdateClusterInfo(c *gin.Context) {
-	clusterInfoReq := &ClusterInfoReq{}
-	err := c.BindJSON(clusterInfoReq)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the request body is wrong",
-		})
-		return
-	}
-
-	id := c.Param("id")
-	clusterID, err := strconv.Atoi(id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-	clusterInfoReq.ID = uint(clusterID)
-
-	err = ch.BuildClusterInfo(clusterInfoReq)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	err = ch.ClusterInfo.UpdateClusterByID()
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-	})
-	return
-}
-
-func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) error {
-	nodeType := []string{"pd", "grafana"}
-	url := fmt.Sprintf("http://%s/api/v1/query", req.PrometheusUrl)
-	nodes, err := getClusterNodesInfo(url, nodeType)
-	if err != nil {
-		return err
-	}
-
-	var dashboard string
-	var grafana string
-
-	if len(nodes[0].Instance) < 1 {
-		return errors.New("found no pd server in this tidb cluster")
-	}
-
-	dashboard = fmt.Sprintf("http://%s/dashboard", nodes[0].Instance[0])
-
-	pdUrl := fmt.Sprintf("http://%s/pd/api/v1/version", nodes[0].Instance[0])
-	version, err := getClusterVersion(pdUrl)
-	if err != nil {
-		return err
-	}
-
-	if len(nodes[1].Instance) > 0 {
-		grafana = fmt.Sprintf("http://%s", nodes[1].Instance[0])
-	}
-
-	cluster := model.Cluster{
-		ID:            req.ID,
-		Name:          req.Name,
-		PrometheusURL: fmt.Sprintf("http://%s", req.PrometheusUrl),
-		TiDBUsername:  req.LogUser,
-		TiDBPassword:  req.LogPasswd,
-		Description:   req.Description,
-		Owner:         req.Owner,
-		TiDBVersion:   version,
-		GrafanaURL:    grafana,
-		DashboardURL:  dashboard,
-		CreateTime:    time.Now().Local(),
-	}
-	ch.ClusterInfo = cluster
-	return nil
 }
 
 func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, err error) {
