@@ -14,5 +14,9 @@ export default {
   'cluster.list.input.prometheus': '请输入Prometheus地址',
   'cluster.list.input.user': '请输入TiDB数据库用户',
   'cluster.list.input.passwd': '请输入TiDB数据库密码',
-  'cluster.list.input.description': '请描述下TiDB数据库'
+  'cluster.list.input.description': '请描述下TiDB数据库',
+  'cluster.list.setting.title': '更新集群',
+  'cluster.list.setting.btn': '更新',
+  'cluster.list.setting.confirm.title': '是否选择更新该集群?',
+  'cluster.list.setting.confirm.content': '一旦按下确认按钮,集群将会得到更新,并且该窗口会在1秒后关闭'
 }

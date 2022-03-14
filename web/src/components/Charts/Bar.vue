@@ -8,7 +8,7 @@
       :padding="['auto', 'auto', '40', '50']">
       <v-tooltip />
       <v-axis />
-      <v-bar position="x*y"/>
+      <v-bar position="time*warnings"/>
     </v-chart>
   </div>
 </template>
@@ -31,11 +31,11 @@ export default {
       type: Array,
       default: () => {
         return [{
-          dataKey: 'x',
+          dataKey: 'time',
           min: 2
         }, {
-          dataKey: 'y',
-          title: '时间',
+          dataKey: 'warnings',
+          title: 'warning items',
           min: 1,
           max: 22
         }]
@@ -45,10 +45,10 @@ export default {
       type: Array,
       default: () => {
         return [
-          'x*y',
-          (x, y) => ({
-            name: x,
-            value: y
+          'time*warnings',
+          (time, warnings) => ({
+            name: time,
+            value: warnings
           })
         ]
       }

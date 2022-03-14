@@ -229,6 +229,7 @@ func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 		})
 		return
 	}
+	ch.ClusterInfo.CreateTime = time.Now().Local()
 
 	err = ch.ClusterInfo.CreateCluster()
 	if err != nil {
@@ -324,7 +325,6 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) error {
 		TiDBVersion:   version,
 		GrafanaURL:    grafana,
 		DashboardURL:  dashboard,
-		CreateTime:    time.Now().Local(),
 	}
 	ch.ClusterInfo = cluster
 	return nil

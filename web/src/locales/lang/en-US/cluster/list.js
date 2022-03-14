@@ -13,5 +13,9 @@ export default {
   'cluster.list.input.prometheus': 'please input Prometheus url',
   'cluster.list.input.user': 'please input TiDB database user',
   'cluster.list.input.passwd': 'please input TiDB database password',
-  'cluster.list.input.description': 'please describe this TiDB cluster'
+  'cluster.list.input.description': 'please describe this TiDB cluster',
+  'cluster.list.setting.title': 'Update Cluster',
+  'cluster.list.setting.btn': 'Update',
+  'cluster.list.setting.confirm.title': 'Do you want to update this cluster?',
+  'cluster.list.setting.confirm.content': 'When you clicked OK button, this cluster will be updated, and this dialog weill closed after 1 second!'
 }

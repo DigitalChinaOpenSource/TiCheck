@@ -190,9 +190,7 @@ export default {
       this.$router.push({ name: 'ClusterInfo', params: { id: item.id } })
     },
     showModal () {
-      console.log('visable=>', this.modalVisible)
       this.modalVisible = true
-      console.log('visable=>', this.modalVisible)
     },
     handleOk () {
       this.clusterForm.validateFields((err, values) => {
@@ -214,6 +212,7 @@ export default {
         message: 'add cluster success',
         description: `success`
       })
+      this.getList()
     },
     addFailed () {
       this.$notification['error']({

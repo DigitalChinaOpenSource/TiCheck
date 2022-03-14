@@ -2,9 +2,9 @@
   <a-page-header
     :ghost="false"
     :style="{ marginTop: '24px'}"
-    :title="$t('cluster.setting.title')">
+    :title="$t('cluster.list.setting.title')">
     <div>
-      <a-form :form="clusterForm">
+      <a-form :form="updateForm">
         <a-form-item
           :label="$t('cluster.list.name')"
           :labelCol="{lg: {span: 2}, sm: {span: 7}}"
@@ -60,8 +60,11 @@
             :placeholder="$t('cluster.list.input.description')"
             v-decorator="['description']" />
         </a-form-item>
-        <a-form-item>
-          <a-button type="primary" @click="handleOk">update</a-button>
+        <a-form-item
+          label=" "
+          :colon="false"
+          :labelCol="{lg: {span: 2}, sm: {span: 7}}">
+          <a-button type="primary" @click="showConfirm">{{ $t('cluster.list.setting.btn') }}</a-button>
         </a-form-item>
       </a-form>
     </div>
@@ -69,9 +72,52 @@
 </template>
 
 <script>
+ import { updateCluster } from '@/api/cluster'
 
 export default {
-  name: 'ClusterSet'
+  name: 'ClusterSet',
+  data () {
+    return {
+      clusterID: this.$route.params.id,
+      updateForm: this.$form.createForm(this)
+    }
+  },
+  methods: {
+    showConfirm () {
+      this.$confirm({
+        title: this.$t('cluster.list.setting.confirm.title'),
+        content: this.$t('cluster.list.setting.confirm.content'),
+        onOk: () => {
+          this.handleUpdate()
+        },
+        onCancel () {}
+      })
+    },
+    handleUpdate () {
+      this.updateForm.validateFields((err, values) => {
+        if (err) {
+          this.updateFailed()
+        }
+        updateCluster(this.clusterID, values)
+          .then(res => this.updateSuccess())
+          .catch(res => this.updateFailed())
+          .finally(() => {
+            this.updateForm = this.$form.createForm(this)
+          })
+      })
+    },
+    updateSuccess () {
+      this.$notification.success({
+        message: 'success',
+        description: 'update'
+      })
+    },
+    updateFailed () {
+      this.$notification['error']({
+        message: 'failed'
+      })
+    }
+  }
 }
 
 </script>
