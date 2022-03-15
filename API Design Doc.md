@@ -1,3 +1,6 @@
+> reference:
+> https://github.com/paypal/api-standards/blob/master/http-api-style-guide.md
+
 ## HTTP Status Codes
 RESTful services use HTTP status codes to specify the outcomes of HTTP method execution. HTTP protocol specifies the outcome of a request execution using an integer and a message. The number is known as the _status code_ and the message as the _reason phrase_. The reason phrase is a human readable message used to clarify the outcome of the response. HTTP protocol categorizes status codes in ranges.
 

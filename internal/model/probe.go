@@ -43,11 +43,21 @@ type ProbeAuthor struct {
 	Email string `json:"email"`
 }
 
+func (p *Probe) Create() error {
+	return DbConn.Create(p).Error
+}
+
 func (p *Probe) GetPager(c *gin.Context, pg *Paginator) *Paginator {
 	pg.SetPager(c.Request, "update_time desc")
 
 	var rows []Probe
 	return pg.ApplyQuery(DbConn.Model(&Probe{}), &rows)
+}
+
+func (p *Probe) IsNotExist() bool {
+	var cnt int64
+	DbConn.Table(p.TableName()).Where("id = ?", p.ID).Count(&cnt)
+	return cnt == 0
 }
 
 func (p Probe) GetNotAddedProveListByClusterID(id int) ([]Probe, error) {
@@ -56,7 +66,7 @@ func (p Probe) GetNotAddedProveListByClusterID(id int) ([]Probe, error) {
 
 	// First, finding all installed probes in cluster
 	err := DbConn.Table("cluster_checklist").Select("cluster_checklist.probe_id").Where("cluster_id = ?", id).Find(&probeId).Error
-	if err !=  nil {
+	if err != nil {
 		return probeList, err
 	}
 

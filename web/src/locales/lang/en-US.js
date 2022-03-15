@@ -27,6 +27,8 @@ export default {
   'layouts.usermenu.dialog.title': 'Message',
   'layouts.usermenu.dialog.content': 'Are you sure you would like to logout?',
   'layouts.userLayout.title': 'TiDB automated checklist for hackathon 2021.',
+  'layouts.list.load-more': 'Load More',
+  'layouts.list.no-more-data': 'no more data',
   ...components,
   ...global,
   ...dictData,

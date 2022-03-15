@@ -16,7 +16,7 @@
           style="margin: 0 16px; width: 272px"
           @search="onSearch"
         />
-        <a-button type="primary" icon="file-add" @click="showModal">
+        <a-button type="primary" icon="file-add" @click="showUploadModal">
           {{ $t("store.page.custom.upload") }}
         </a-button>
       </div>
@@ -32,7 +32,7 @@
       >
         <a-list-item :key="item.id" slot="renderItem" slot-scope="item, index">
           <a-list-item-meta>
-            <a slot="title">
+            <a slot="title"  v-on:click="showReadme(item.id)">
               <a-avatar
                 size="large"
                 v-if="item.file_name.split('.')[1] == 'sh'"
@@ -65,32 +65,41 @@
           style="text-align: center; margin-top: 16px"
         >
           <a-button @click="loadMore" v-if="showMore" :loading="loadingMore"
-            >加载更多</a-button
+            >{{$t('layouts.list.load-more')}}</a-button
           >
           <p v-if="!showMore" class="ant-result-subtitle">
-            ----没有更多数据了----
+            ---- {{$t('layouts.list.no-more-data')}} ----
           </p>
         </div>
       </a-list>
     </a-card>
-
     <a-modal
-      :title="$t('store.page.custom.modal.title')"
+      :title="$t('store.page.custom.readme.title')"
+      width="880px"
+      :visible="readme.visible"
+      :footer="null"
+      @cancel="closeReadme"
+    >
+      <div class="markdown-body">
+        <vue-markdown :source="readme.text" v-highlight></vue-markdown>
+      </div>
+    </a-modal>
+    <a-modal
+      :title="$t('store.page.custom.upload.modal-title')"
       width="680px"
-      :visible="visible"
-      :confirm-loading="confirmLoading"
-      @ok="handleOk"
-      @cancel="handleCancel"
+      :visible="upload.visible"
+      :confirm-loading="upload.confirmLoading"
+      @ok="handleUploadOk"
+      @cancel="handleUploadCancel"
     >
       <a-upload
         accept=".zip"
-        :disabled="disabled"
         :multiple="false"
-        :file-list="fileList"
+        :file-list="upload.fileList"
         :remove="removeFile"
         :before-upload="
           (file) => {
-            if (this.fileList.length > 0) {
+            if (this.upload.fileList.length > 0) {
               this.$message.error('只能上传一个文件');
               return false;
             }
@@ -103,13 +112,13 @@
               this.$message.error('请上传zip文件');
               return false;
             }
-            this.fileList = [...this.fileList, file];
+            this.upload.fileList = [...this.upload.fileList, file];
             return false;
           }
         "
       >
         <a-button>
-          <a-icon type="upload" /> {{ $t("store.page.custom.modal.upload") }}
+          <a-icon type="upload" /> {{ $t("store.page.custom.upload.select-file") }}
         </a-button>
       </a-upload>
       <div class="desc">
@@ -121,26 +130,30 @@
             margin-bottom: 16px;
           "
         >
-          {{ $t("result.fail.error.hint-title") }}
+          {{ $t("store.page.custom.upload.tips-title") }}:
         </div>
         <div style="margin-bottom: 16px">
           <a-icon
-            type="close-circle-o"
+            type="exclamation-circle-o"
             style="color: #f5222d; margin-right: 8px"
           />
-          {{ $t("result.fail.error.hint-text1") }}
-          <a style="margin-left: 16px"
-            >{{ $t("result.fail.error.hint-btn1") }} <a-icon type="right"
-          /></a>
+          {{ $t("store.page.custom.upload.tips-text1") }}
+        </div>
+        <div style="margin-bottom: 16px">
+          <a-icon
+            type="exclamation-circle-o"
+            style="color: #f5222d; margin-right: 8px"
+          />
+          {{ $t("store.page.custom.upload.tips-text2") }}
         </div>
         <div>
           <a-icon
-            type="close-circle-o"
+            type="exclamation-circle-o"
             style="color: #f5222d; margin-right: 8px"
           />
-          {{ $t("result.fail.error.hint-text2") }}
-          <a style="margin-left: 16px"
-            >{{ $t("result.fail.error.hint-btn2") }} <a-icon type="right"
+          {{ $t("store.page.custom.upload.tips-text3") }}
+          <a style="margin-left: 16px" href="https://github.com/DigitalChinaOpenSource/TiCheck" target="_blank"
+            >{{ $t("store.page.custom.upload.tips-more") }} <a-icon type="right"
           /></a>
         </div>
       </div>
@@ -149,15 +162,14 @@
 </template>
 
 <script>
-import { TagSelect, ArticleListContent } from "@/components";
+import { ArticleListContent } from "@/components";
 import request from "@/utils/request";
-// import IconText from './components/IconText'
-const TagSelectOption = TagSelect.Option;
+import VueMarkdown from 'vue-markdown'
+import 'github-markdown-css/github-markdown.css'
 
 export default {
   components: {
-    TagSelect,
-    TagSelectOption,
+    VueMarkdown,
     ArticleListContent,
   },
   data() {
@@ -166,8 +178,15 @@ export default {
         python: require("@/assets/icons/python.png"),
         shell: require("@/assets/icons/shell.png"),
       },
-      visible: false,
-      confirmLoading: false,
+      upload: {
+        visible: false,
+        confirmLoading: false,
+        fileList: [],
+      },
+      readme: {
+        text: "",
+        visible: false,
+      },
       loading: true,
       loadingMore: false,
       data: [],
@@ -176,7 +195,6 @@ export default {
         tag: "all",
         name: "",
       },
-      fileList: [],
     };
   },
   mounted() {
@@ -207,9 +225,9 @@ export default {
             this.search.name
         )
         .then((res) => {
-          this.data = this.data.concat(res.rows);
+          this.data = this.data.concat(res.data.rows);
           this.loadingMore = false;
-          if (res.total <= this.data.length) {
+          if (res.data.total <= this.data.length) {
             this.showMore = false;
           }
         })
@@ -221,15 +239,14 @@ export default {
       this.loadingMore = true;
       this.getList();
     },
-    showModal() {
-      this.visible = true;
+    showUploadModal() {
+      this.upload.visible = true;
     },
-    handleOk(e) {
-      this.confirmLoading = true;
+    handleUploadOk(e) {
+      this.upload.confirmLoading = true;
 
-      const { fileList } = this;
       const formData = new FormData();
-      formData.append("file", fileList[0]);
+      formData.append("file", this.upload.fileList[0]);
 
       request({
         url: "/store/custom",
@@ -238,25 +255,36 @@ export default {
         data: formData,
       })
         .then((res) => {
-          this.visible = false;
-          this.$message.success(`ile uploaded successfully`);
+          if (res.success) {
+            this.upload.visible = false;
+            this.$message.success(res.msg);
+            this.onSearch("");
+          }
         })
-        .catch((err) => {
-          this.$message.error(`upload failed.`);
-        })
+        .catch((err) => {})
         .finally(() => {
-          this.confirmLoading = false;
+          this.upload.confirmLoading = false;
         });
     },
-    handleCancel(e) {
-      this.visible = false;
-      this.fileList =[]; 
+    handleUploadCancel(e) {
+      this.upload.visible = false;
+      this.upload.fileList = [];
     },
     removeFile(file) {
-      const index = this.fileList.indexOf(file);
-      const newFileList = this.fileList.slice();
+      const index = this.upload.fileList.indexOf(file);
+      const newFileList = this.upload.fileList.slice();
       newFileList.splice(index, 1);
-      this.fileList = newFileList;
+      this.upload.fileList = newFileList;
+    },
+    showReadme (id) {
+      this.readme.text = ''
+      this.readme.visible = true
+      this.$http.get('/store/local/readme?name='+id).then((response) => {
+         　　this.readme.text = response.data;
+     　　});
+    },
+    closeReadme (e) {
+      this.readme.visible = false
     },
   },
 };
