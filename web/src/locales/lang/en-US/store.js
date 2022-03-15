@@ -1,4 +1,5 @@
 export default {
+    'store.page.update-time': 'publish at',
     'store.page.local.title': 'Local Store',
     'store.page.local.modal.title': 'ReadMe',
     'store.page.remote.title': 'Remote Store',

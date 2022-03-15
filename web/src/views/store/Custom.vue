@@ -16,7 +16,7 @@
           style="margin: 0 16px; width: 272px"
           @search="onSearch"
         />
-        <a-button type="primary" icon="file-add" @click="showUploadModal">
+        <a-button type="primary" ghost icon="file-add" @click="showUploadModal">
           {{ $t("store.page.custom.upload") }}
         </a-button>
       </div>
@@ -32,7 +32,7 @@
       >
         <a-list-item :key="item.id" slot="renderItem" slot-scope="item, index">
           <a-list-item-meta>
-            <a slot="title"  v-on:click="showReadme(item.id)">
+            <a slot="title" v-on:click="showReadme(item.id)">
               <a-avatar
                 size="large"
                 v-if="item.file_name.split('.')[1] == 'sh'"
@@ -51,24 +51,42 @@
               </span>
             </template>
           </a-list-item-meta>
-          <article-list-content
+          <!-- <article-list-content
             :description="item.description"
             :owner="item.creator"
             avatar=""
             href=""
             :updateAt="item.update_time"
-          />
+          /> -->
+          <div
+            class="antd-pro-components-article-list-content-index-listContent"
+          >
+            <div class="description">
+              <slot>
+                {{ item.description }}
+              </slot>
+            </div>
+            <div class="extra">
+              <!-- <a-avatar :src="avatar" size="small" /> -->
+              <a :href="href">{{ item.creator }}</a> {{$t('store.page.update-time')}}
+              <!-- <a :href="href">{{ href }}</a> -->
+              <em>{{ item.update_time | moment }}</em>
+              <div class="actions">
+                <a-button type="link" icon="delete"> Delete </a-button>
+              </div>
+            </div>
+          </div>
         </a-list-item>
         <div
           slot="footer"
           v-if="data.length > 0"
           style="text-align: center; margin-top: 16px"
         >
-          <a-button @click="loadMore" v-if="showMore" :loading="loadingMore"
-            >{{$t('layouts.list.load-more')}}</a-button
-          >
+          <a-button @click="loadMore" v-if="showMore" :loading="loadingMore">{{
+            $t("layouts.list.load-more")
+          }}</a-button>
           <p v-if="!showMore" class="ant-result-subtitle">
-            ---- {{$t('layouts.list.no-more-data')}} ----
+            ---- {{ $t("layouts.list.no-more-data") }} ----
           </p>
         </div>
       </a-list>
@@ -118,7 +136,8 @@
         "
       >
         <a-button>
-          <a-icon type="upload" /> {{ $t("store.page.custom.upload.select-file") }}
+          <a-icon type="upload" />
+          {{ $t("store.page.custom.upload.select-file") }}
         </a-button>
       </a-upload>
       <div class="desc">
@@ -152,8 +171,12 @@
             style="color: #f5222d; margin-right: 8px"
           />
           {{ $t("store.page.custom.upload.tips-text3") }}
-          <a style="margin-left: 16px" href="https://github.com/DigitalChinaOpenSource/TiCheck" target="_blank"
-            >{{ $t("store.page.custom.upload.tips-more") }} <a-icon type="right"
+          <a
+            style="margin-left: 16px"
+            href="https://github.com/DigitalChinaOpenSource/TiCheck"
+            target="_blank"
+            >{{ $t("store.page.custom.upload.tips-more") }}
+            <a-icon type="right"
           /></a>
         </div>
       </div>
@@ -164,8 +187,8 @@
 <script>
 import { ArticleListContent } from "@/components";
 import request from "@/utils/request";
-import VueMarkdown from 'vue-markdown'
-import 'github-markdown-css/github-markdown.css'
+import VueMarkdown from "vue-markdown";
+import "github-markdown-css/github-markdown.css";
 
 export default {
   components: {
@@ -276,36 +299,64 @@ export default {
       newFileList.splice(index, 1);
       this.upload.fileList = newFileList;
     },
-    showReadme (id) {
-      this.readme.text = ''
-      this.readme.visible = true
-      this.$http.get('/store/local/readme?name='+id).then((response) => {
-         　　this.readme.text = response.data;
-     　　});
+    showReadme(id) {
+      this.readme.text = "";
+      this.readme.visible = true;
+      this.$http.get("/store/local/readme?name=" + id).then((response) => {
+        this.readme.text = response.data;
+      });
     },
-    closeReadme (e) {
-      this.readme.visible = false
+    closeReadme(e) {
+      this.readme.visible = false;
     },
   },
 };
 </script>
 
 <style lang="less" scoped>
-.ant-pro-components-tag-select {
-  /deep/ .ant-pro-tag-select .ant-tag {
-    margin-right: 24px;
-    padding: 0 8px;
-    font-size: 14px;
+@import "../../components/index.less";
+
+.antd-pro-components-article-list-content-index-listContent {
+  .description {
+    // max-width: 720px;
+    line-height: 22px;
+  }
+  .extra {
+    margin-top: 16px;
+    color: @text-color-secondary;
+    line-height: 22px;
+
+    & /deep/ .ant-avatar {
+      position: relative;
+      top: 1px;
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      vertical-align: top;
+    }
+
+    & > em {
+      margin-left: 16px;
+      color: @disabled-color;
+      font-style: normal;
+    }
+
+    .actions {
+      display: inline;
+      float: right;
+    }
   }
 }
 
-.list-articles-trigger {
-  margin-left: 12px;
-}
-
-.desc {
-  margin-top: 24px;
-  padding: 24px 24px;
-  background-color: #fafafa;
+@media screen and (max-width: @screen-xs) {
+  .antd-pro-components-article-list-content-index-listContent {
+    .extra {
+      & > em {
+        display: block;
+        margin-top: 8px;
+        margin-left: 0;
+      }
+    }
+  }
 }
 </style>
