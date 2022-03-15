@@ -21,8 +21,8 @@ type Cluster struct {
 }
 
 type RecentWarnings struct {
-	CheckTime    time.Time `json:"x"`
-	WarningItems int       `json:"y"`
+	CheckTime    time.Time `json:"time"`
+	WarningItems int       `json:"warnings"`
 }
 
 type HistoryWarnings struct {
@@ -73,7 +73,19 @@ func (c *Cluster) CreateCluster() (err error) {
 }
 
 func (c *Cluster) UpdateClusterByID() error {
-	err := DbConn.Save(&c).Error
+	updateData := map[string]interface{}{
+		"prometheus_url": c.PrometheusURL,
+		"ti_db_username": c.TiDBUsername,
+		"ti_db_password": c.TiDBPassword,
+		"ti_db_version":  c.TiDBVersion,
+		"description":    c.Description,
+		"dashboard_url":  c.DashboardURL,
+		"grafana_url":    c.GrafanaURL,
+	}
+	err := DbConn.Model(&c).
+		Where("id = ?", c.ID).
+		Updates(updateData).
+		Error
 	if err != nil {
 		return err
 	}
