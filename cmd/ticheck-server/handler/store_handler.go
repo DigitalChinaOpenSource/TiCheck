@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"TiCheck/cmd/ticheck-server/api"
 	"TiCheck/internal/model"
+	"TiCheck/internal/util"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -50,12 +52,12 @@ func (s *StoreHandler) UploadCustomScript(c *gin.Context) {
 	file, _ := c.FormFile("file")
 	err := c.SaveUploadedFile(file, "../../probes/custom/"+file.Filename)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to upload: " + err.Error(),
-		})
+		api.Fail(c, "failed to upload: "+err.Error(), nil)
 		return
 	}
-	c.JSON(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
+
+	util.DeCompress("../../probes/custom/"+file.Filename, "../../probes/custom/"+file.Filename[:len(file.Filename)-4])
+	api.Success(c, fmt.Sprintf("'%s' uploaded!", file.Filename), nil)
 }
 
 // GetLocalScript 获取本地所有脚本列表

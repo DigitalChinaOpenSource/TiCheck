@@ -1,4 +1,32 @@
-API Design
+## HTTP Status Codes
+RESTful services use HTTP status codes to specify the outcomes of HTTP method execution. HTTP protocol specifies the outcome of a request execution using an integer and a message. The number is known as the _status code_ and the message as the _reason phrase_. The reason phrase is a human readable message used to clarify the outcome of the response. HTTP protocol categorizes status codes in ranges.
+
+<h3 id="status-code-ranges">Status Code Ranges</h3>
+
+When responding to API requests, the following status code ranges MUST be used.
+
+|Range|Meaning|
+|---|---|
+|`2xx`|Successful execution. It is possible for a method execution to succeed in several ways. This status code specifies which way it succeeded.|
+|`4xx`|Usually these are problems with the request, the data in the request, invalid authentication or authorization, etc. In most cases the client can modify their request and resubmit.|
+| `5xx`| Server error: The server was not able to execute the method due to site outage or software defect. 5xx range status codes SHOULD NOT be utilized for validation or logical error handling. |
+
+<h3 id="status-reporting">Status Reporting</h3>
+
+Success and failure apply to the whole operation not just to the SOA framework portion or to the business logic portion of code exectuion. 
+
+Following are the guidelines for status codes and reason phrases.
+
+* Success MUST be reported with a status code in the `2xx` range.
+* HTTP status codes in the `2xx` range MUST be returned only if the complete code execution path is successful. This includes any container/SOA framework code as well as the business logic code execution of the method.
+* Failures MUST be reported in the `4xx` or `5xx` range. This is true for both system errors and application errors.
+* There MUST be a consistent, JSON-formatted error response in the body as defined by the [`error.json`][22] schema. This schema is used to qualify the kind of error. Please refer to [Error Handling](#error-handling) guidelines for more details.
+* A server returning a status code in the `4xx` or `5xx` range MUST return the `error.json` response body.
+* A server returning a status code in the `2xx` range MUST NOT return response following `error.json`, or any kind of error code, as part of the response body.
+* For client errors in the `4xx` code range, the reason phrase SHOULD provide enough information for the client to be able to determine what caused the error and how to fix it.
+* For server errors in the `5xx` code range, the reason phrase and an error response following `error.json` SHOULD limit the amount of information to avoid exposing internal service implementation details to clients. This is true for both external facing and internal APIs. Service developers should use logging and tracking utilities to provide additional information.
+
+## API Design
 | REST verb | URI                          | Note                     |
 | --------- | ---------------------------- | ------------------------ |
 | GET       | /login                       | 进入登陆页面               |
