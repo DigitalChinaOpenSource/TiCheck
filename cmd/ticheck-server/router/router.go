@@ -68,6 +68,9 @@ func Register(engine *gin.Engine) {
 		// Get cluster scheduler list by id
 		clusterGroup.GET("/scheduler/:id", cluster.GetClusterSchedulerList)
 
+		//
+		clusterGroup.POST("/scheduler/add", cluster.PostCLusterScheduler)
+
 		// Get the cluster installed probe checklist
 		clusterGroup.GET("/probe/:id", cluster.GetProbeList)
 

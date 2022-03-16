@@ -102,6 +102,14 @@ type ClusterSchedulerListReps struct {
 	Count      int       `json:"count"`
 }
 
+type ClusterSchedulerReq struct {
+	Name      string `json:"name"`
+	Cron      string `json:"cron"`
+	Status    bool   `json:"status"`
+	Creator   string `json:"creator"`
+	ClusterID string `json:"cluster_id"`
+}
+
 func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 	clusterList, err := ch.ClusterInfo.QueryCLusterList()
 	if err != nil {
@@ -472,6 +480,52 @@ func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",
 		"data":   data,
+	})
+}
+
+func (ch *ClusterHandler) PostCLusterScheduler(c *gin.Context) {
+	schedulerReq := &ClusterSchedulerReq{}
+	err := c.BindJSON(schedulerReq)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "the request body is wrong",
+		})
+		return
+	}
+
+	isEnabled := 0
+	if schedulerReq.Status {
+		isEnabled = 1
+	}
+
+	clusterID, err := strconv.Atoi(schedulerReq.ClusterID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "bad cluster id",
+		})
+		return
+	}
+
+	schedulerInfo := model.Scheduler{
+		Name:           schedulerReq.Name,
+		CronExpression: schedulerReq.Cron,
+		Creator:        schedulerReq.Creator,
+		ClusterID:      uint(clusterID),
+		IsEnabled:      isEnabled,
+		CreateTime:     time.Now().Local(),
+		RunCount:       0,
+	}
+
+	err = schedulerInfo.AddScheduler()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "add scheduler is wrong",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
 	})
 }
 

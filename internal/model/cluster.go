@@ -57,14 +57,6 @@ func (c *Cluster) QueryCLusterList() ([]Cluster, error) {
 }
 
 func (c *Cluster) CreateCluster() (err error) {
-	var cluster Cluster
-	err = DbConn.Last(&cluster).Error
-	if err != nil {
-		return err
-	}
-
-	c.ID = cluster.ID + 1
-
 	err = DbConn.Create(&c).Error
 	if err != nil {
 		return err

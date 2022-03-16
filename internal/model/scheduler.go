@@ -27,3 +27,11 @@ func (s *Scheduler) QuerySchedulersByClusterID(id int) (schedulerList []Schedule
 
 	return schedulerList, nil
 }
+
+func (s *Scheduler) AddScheduler() error {
+	err := DbConn.Create(&s).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
