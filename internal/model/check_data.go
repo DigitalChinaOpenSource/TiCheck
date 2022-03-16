@@ -18,6 +18,10 @@ type CheckData struct {
 	CheckStatus int           `gorm:"not null" json:"check_status"` //0:正常, 1:异常_已有, 2:异常_新增
 }
 
+func (cd *CheckData) TableName() string {
+	return "check_data"
+}
+
 func (cd *CheckData) GetDataByHistoryID(id int) ([]CheckData, error) {
 	var cds []CheckData
 

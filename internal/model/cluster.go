@@ -35,6 +35,20 @@ type CheckHistoryInfo struct {
 	Total int `json:"total"`
 }
 
+func (c *Cluster) TableName() string {
+	return "clusters"
+}
+
+func (c *Cluster) IsClusterExist(id int) bool {
+	var count int64
+	err := DbConn.Model(c).Where("id = ?", id).Count(&count).Error
+	if err != nil || count < 1 {
+		return false
+	} else {
+		return true
+	}
+}
+
 func (c *Cluster) QueryClusterInfoByID(id int) (clusterInfo Cluster, err error) {
 	err = DbConn.First(&clusterInfo, id).Error
 	if err != nil {

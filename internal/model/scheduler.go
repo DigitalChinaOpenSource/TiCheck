@@ -14,3 +14,7 @@ type Scheduler struct {
 	RunCount       int    `gorm:"not null"`
 	CreateTime     time.Time    `gorm:"not null"`
 }
+
+func (s *Scheduler) TableName() string {
+	return "schedulers"
+}
