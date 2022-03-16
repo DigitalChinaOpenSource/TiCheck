@@ -24,7 +24,7 @@
               </router-link>
             </a-menu-item>
             <a-menu-item key="/cluster/scheduler">
-              <router-link :to="{ name: 'Scheduler', params: {id: clusrerID}}">
+              <router-link :to="{ name: 'ClusterScheduler', params: {id: clusrerID}}">
                 <a-icon type="folder-open" />
                 {{ $t('menu.cluster.scheduler') }}
               </router-link>

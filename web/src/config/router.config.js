@@ -48,6 +48,12 @@ export const asyncRouterMap = [
                 component: () => import('@/views/cluster/Setting'),
                 meta: { title: 'menu.cluster.info.setting', keepAlive: true, permission: ['sham'] }
               },
+              {
+                path: '/cluster/info/scheduler/:id',
+                name: 'ClusterScheduler',
+                component: () => import('@/views/cluster/Scheduler'),
+                meta: { title: 'menu.cluster.info.scheduler', keepAlive: true, permission: ['sham'] }
+              },
               // check
               {
                 path: '/cluster/check/history/:id',
