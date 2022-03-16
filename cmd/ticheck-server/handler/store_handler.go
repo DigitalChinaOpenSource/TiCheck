@@ -1,14 +1,18 @@
 package handler
 
 import (
+	"TiCheck/cmd/ticheck-server/api"
 	"TiCheck/internal/model"
+	"TiCheck/internal/util"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -44,6 +48,77 @@ func (s *StoreHandler) GetCustomScript(c *gin.Context) {
 
 	s.GetScriptListInDB(c, pg)
 }
+func (s *StoreHandler) GetCustomReadme(c *gin.Context) {
+	name := c.Query("name")
+	s.getreadme(c, "custom", name)
+}
+
+func (s *StoreHandler) UploadCustomScript(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		api.BadWithMsg(c, "file not found: "+err.Error())
+		return
+	}
+
+	prefix := "../../probes/custom/"
+	dst := fmt.Sprintf("%s%s", prefix, file.Filename)
+
+	if err := c.SaveUploadedFile(file, dst); err != nil {
+		api.Fail(c, "failed to upload: "+err.Error(), nil)
+		return
+	}
+	defer os.Remove(dst)
+
+	pkg := file.Filename[:len(file.Filename)-4]
+	dir := fmt.Sprintf("%s%s", prefix, pkg)
+	if err := util.DeCompress(dst, dir); err != nil {
+		api.FailWithMsg(c, "failed to decompress: "+err.Error())
+		return
+	}
+
+	// resolver metadata file
+	packageJSON := fmt.Sprintf("%s/package.json", dir)
+	bytes, err := ioutil.ReadFile(packageJSON)
+	if err != nil {
+		defer os.RemoveAll(dir)
+		api.FailWithMsg(c, "failed to read package.json: "+err.Error())
+		return
+	}
+	pm := &model.ProbeMeta{}
+	if err = json.Unmarshal(bytes, pm); err != nil || pkg != pm.ID {
+		defer os.RemoveAll(dir)
+		api.FailWithMsg(c, "failed to parse package.json: ")
+		return
+	}
+	// verify probe ID
+	p := model.Probe{
+		ID: pm.ID,
+	}
+	if !p.IsNotExist() {
+		defer os.RemoveAll(dir)
+		api.FailWithMsg(c, "failed to upload: ID already exists")
+		return
+	}
+	p.ScriptName = pm.Name
+	p.FileName = pm.Main
+	p.Description = pm.Description
+	p.IsSystem = 0
+	p.Creator = pm.Author.Name
+	p.CreateTime = time.Time(pm.CreateTime).Local()
+	p.UpdateTime = time.Time(pm.UpdateTime).Local()
+	if len(pm.Tags) > 0 {
+		p.Tag = pm.Tags[0]
+	}
+	if len(pm.Comparators) > 0 {
+		p.Comparator = *pm.Comparators[0]
+	}
+	if err := p.Create(); err != nil {
+		defer os.RemoveAll(dir)
+		api.FailWithMsg(c, "failed to create probe: "+err.Error())
+		return
+	}
+	api.Success(c, fmt.Sprintf("'%s' uploaded!", file.Filename), nil)
+}
 
 // GetLocalScript 获取本地所有脚本列表
 func (s *StoreHandler) GetLocalScript(c *gin.Context) {
@@ -57,17 +132,18 @@ func (s *StoreHandler) GetLocalScript(c *gin.Context) {
 
 func (s *StoreHandler) GetLocalReadme(c *gin.Context) {
 	name := c.Query("name")
-	filePath := "../../probes/local/" + name + "/readme.md"
+	s.getreadme(c, "local", name)
+}
+
+func (s *StoreHandler) getreadme(c *gin.Context, path, name string) {
+	filePath := fmt.Sprintf("../../probes/%s/%s/readme.md", path, name)
 	_, err := os.Stat(filePath)
 	if err != nil || os.IsNotExist(err) {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to get readme: " + err.Error(),
-		})
+		api.BadWithMsg(c, "failed to get readme: "+err.Error())
 		return
 	}
 	data, _ := ioutil.ReadFile(filePath)
-	c.JSON(http.StatusOK, string(data))
-
+	api.Success(c, "success", string(data))
 }
 
 func (s *StoreHandler) GetScriptListInDB(c *gin.Context, pg *model.Paginator) {
@@ -87,13 +163,10 @@ func (s *StoreHandler) GetScriptListInDB(c *gin.Context, pg *model.Paginator) {
 	p.GetPager(c, pg)
 
 	if pg.Err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": pg.Err.Error(),
-		})
+		api.BadWithMsg(c, "failed to get list: "+pg.Err.Error())
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{
+	api.Success(c, "success", gin.H{
 		"total": pg.Total,
 		"rows":  pg.Rows,
 	})

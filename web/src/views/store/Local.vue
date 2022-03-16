@@ -35,8 +35,8 @@
           <article-list-content :description="item.description" :owner="item.creator" avatar="" href="" :updateAt="item.update_time" />
         </a-list-item>
         <div slot="footer" v-if="data.length > 0" style="text-align: center; margin-top: 16px;">
-          <a-button @click="loadMore" v-if="showMore" :loading="loadingMore">加载更多</a-button>
-          <p v-if="!showMore" class="ant-result-subtitle">----没有更多数据了----</p>
+          <a-button @click="loadMore" v-if="showMore" :loading="loadingMore">{{$t('layouts.list.load-more')}}</a-button>
+          <p v-if="!showMore" class="ant-result-subtitle">---- {{$t('layouts.list.no-more-data')}} ----</p>
         </div>
       </a-list>
     </a-card>
@@ -45,6 +45,7 @@
       :title="$t('store.page.local.modal.title')"
       width="880px"
       :visible="visible"
+      :footer="null"
       @cancel="handleCancel"
     >
       <div class="markdown-body">
@@ -94,7 +95,7 @@ export default {
       this.readmeText = ''
       this.visible = true
       this.$http.get('/store/local/readme?name='+id).then((response) => {
-         　　this.readmeText = response;
+         　　this.readmeText = response.data;
      　　});
     },
     handleCancel (e) {
@@ -116,10 +117,10 @@ export default {
       this.showMore = true
       this.$http.get(
         '/store/local?page='+this.page+'&page_size=10&tag='+this.search.tag+"&name="+this.search.name).then(res => {
-        this.data = this.data.concat(res.rows)
+        this.data = this.data.concat(res.data.rows)
         this.loading = false
         this.loadingMore = false
-        if (res.total <= this.data.length) {
+        if (res.data.total <= this.data.length) {
           this.showMore = false
         }
       })

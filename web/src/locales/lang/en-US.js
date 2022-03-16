@@ -11,6 +11,7 @@ import dashboard from './en-US/dashboard'
 import form from './en-US/form'
 import result from './en-US/result'
 import account from './en-US/account'
+import cluster from './en-US/cluster'
 
 import store from './en-US/store'
 
@@ -26,6 +27,8 @@ export default {
   'layouts.usermenu.dialog.title': 'Message',
   'layouts.usermenu.dialog.content': 'Are you sure you would like to logout?',
   'layouts.userLayout.title': 'TiDB automated checklist for hackathon 2021.',
+  'layouts.list.load-more': 'Load More',
+  'layouts.list.no-more-data': 'no more data',
   ...components,
   ...global,
   ...dictData,
@@ -36,5 +39,6 @@ export default {
   ...form,
   ...result,
   ...account,
-  ...store
+  ...store,
+  ...cluster
 }

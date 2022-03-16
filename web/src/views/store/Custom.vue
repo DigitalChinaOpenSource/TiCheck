@@ -1,19 +1,28 @@
 <template>
   <div>
-    <a-card :bordered="false" class="ant-pro-components-tag-select" :title="$t('store.page.custom.title')">
-         <div slot="extra">
+    <a-card
+      :bordered="false"
+      class="ant-pro-components-tag-select"
+      :title="$t('store.page.custom.title')"
+    >
+      <div slot="extra">
         <a-radio-group default-value="all" @change="onSearch">
           <a-radio-button value="all">全部分类</a-radio-button>
           <a-radio-button value="集群">集群</a-radio-button>
           <a-radio-button value="网络">网络</a-radio-button>
           <a-radio-button value="运行状态">运行状态</a-radio-button>
         </a-radio-group>
-        <a-input-search style="margin:0 16px; width: 272px;" @search="onSearch" />
-        <a-button type="primary" icon="file-add" @click="showModal"> {{ $t('store.page.custom.upload') }} </a-button>
+        <a-input-search
+          style="margin: 0 16px; width: 272px"
+          @search="onSearch"
+        />
+        <a-button type="primary" ghost icon="file-add" @click="showUploadModal">
+          {{ $t("store.page.custom.upload") }}
+        </a-button>
       </div>
     </a-card>
 
-    <a-card style="margin-top: 10px;" :bordered="false">
+    <a-card style="margin-top: 10px" :bordered="false">
       <a-list
         size="large"
         rowKey="id"
@@ -23,49 +32,152 @@
       >
         <a-list-item :key="item.id" slot="renderItem" slot-scope="item, index">
           <a-list-item-meta>
-            <a slot="title" >
-            <a-avatar size="large" v-if="item.file_name.split('.')[1]=='sh'" :src="icon.shell" />
-            <a-avatar size="large" v-if="item.file_name.split('.')[1]=='py'" :src="icon.python" />
-            {{ item.script_name }}</a>
+            <a slot="title" v-on:click="showReadme(item.id)">
+              <a-avatar
+                size="large"
+                v-if="item.file_name.split('.')[1] == 'sh'"
+                :src="icon.shell"
+              />
+              <a-avatar
+                size="large"
+                v-if="item.file_name.split('.')[1] == 'py'"
+                :src="icon.python"
+              />
+              {{ item.script_name }}</a
+            >
             <template slot="description">
               <span>
                 <a-tag color="blue">{{ item.tag }}</a-tag>
               </span>
             </template>
           </a-list-item-meta>
-          <article-list-content :description="item.description" :owner="item.creator" avatar="" href="" :updateAt="item.update_time" />
+          <!-- <article-list-content
+            :description="item.description"
+            :owner="item.creator"
+            avatar=""
+            href=""
+            :updateAt="item.update_time"
+          /> -->
+          <div
+            class="antd-pro-components-article-list-content-index-listContent"
+          >
+            <div class="description">
+              <slot>
+                {{ item.description }}
+              </slot>
+            </div>
+            <div class="extra">
+              <!-- <a-avatar :src="avatar" size="small" /> -->
+              <a :href="href">{{ item.creator }}</a> {{$t('store.page.update-time')}}
+              <!-- <a :href="href">{{ href }}</a> -->
+              <em>{{ item.update_time | moment }}</em>
+              <div class="actions">
+                <a-button type="link" icon="delete"> Delete </a-button>
+              </div>
+            </div>
+          </div>
         </a-list-item>
-        <div slot="footer" v-if="data.length > 0" style="text-align: center; margin-top: 16px;">
-          <a-button @click="loadMore" v-if="showMore" :loading="loadingMore">加载更多</a-button>
-          <p v-if="!showMore" class="ant-result-subtitle">----没有更多数据了----</p>
+        <div
+          slot="footer"
+          v-if="data.length > 0"
+          style="text-align: center; margin-top: 16px"
+        >
+          <a-button @click="loadMore" v-if="showMore" :loading="loadingMore">{{
+            $t("layouts.list.load-more")
+          }}</a-button>
+          <p v-if="!showMore" class="ant-result-subtitle">
+            ---- {{ $t("layouts.list.no-more-data") }} ----
+          </p>
         </div>
       </a-list>
     </a-card>
-
     <a-modal
-      :title="$t('store.page.custom.modal.title')"
-      width="680px"
-      :visible="visible"
-      :confirm-loading="confirmLoading"
-      @ok="handleOk"
-      @cancel="handleCancel"
+      :title="$t('store.page.custom.readme.title')"
+      width="880px"
+      :visible="readme.visible"
+      :footer="null"
+      @cancel="closeReadme"
     >
-      <a-upload :file-list="fileList" :remove="removeFile" :before-upload="(file)=>{this.fileList = [...this.fileList, file];return false;}">
-      <a-button> <a-icon type="upload" /> {{ $t('store.page.custom.modal.upload') }} </a-button>
-    </a-upload>
+      <div class="markdown-body">
+        <vue-markdown :source="readme.text" v-highlight></vue-markdown>
+      </div>
+    </a-modal>
+    <a-modal
+      :title="$t('store.page.custom.upload.modal-title')"
+      width="680px"
+      :visible="upload.visible"
+      :confirm-loading="upload.confirmLoading"
+      @ok="handleUploadOk"
+      @cancel="handleUploadCancel"
+    >
+      <a-upload
+        accept=".zip"
+        :multiple="false"
+        :file-list="upload.fileList"
+        :remove="removeFile"
+        :before-upload="
+          (file) => {
+            if (this.upload.fileList.length > 0) {
+              this.$message.error('只能上传一个文件');
+              return false;
+            }
+            if (file.size > 1024 * 1024 * 10) {
+              this.$message.error('文件大小不能超过10M');
+              return false;
+            }
+            const isZip = file.type.includes('zip');
+            if (!isZip) {
+              this.$message.error('请上传zip文件');
+              return false;
+            }
+            this.upload.fileList = [...this.upload.fileList, file];
+            return false;
+          }
+        "
+      >
+        <a-button>
+          <a-icon type="upload" />
+          {{ $t("store.page.custom.upload.select-file") }}
+        </a-button>
+      </a-upload>
       <div class="desc">
-        <div style="font-size: 16px; color: rgba(0, 0, 0, 0.85); font-weight: 500; margin-bottom: 16px">
-          {{ $t('result.fail.error.hint-title') }}
+        <div
+          style="
+            font-size: 16px;
+            color: rgba(0, 0, 0, 0.85);
+            font-weight: 500;
+            margin-bottom: 16px;
+          "
+        >
+          {{ $t("store.page.custom.upload.tips-title") }}:
         </div>
         <div style="margin-bottom: 16px">
-          <a-icon type="close-circle-o" style="color: #f5222d; margin-right: 8px"/>
-          {{ $t('result.fail.error.hint-text1') }}
-          <a style="margin-left: 16px">{{ $t('result.fail.error.hint-btn1') }} <a-icon type="right" /></a>
+          <a-icon
+            type="exclamation-circle-o"
+            style="color: #f5222d; margin-right: 8px"
+          />
+          {{ $t("store.page.custom.upload.tips-text1") }}
+        </div>
+        <div style="margin-bottom: 16px">
+          <a-icon
+            type="exclamation-circle-o"
+            style="color: #f5222d; margin-right: 8px"
+          />
+          {{ $t("store.page.custom.upload.tips-text2") }}
         </div>
         <div>
-          <a-icon type="close-circle-o" style="color: #f5222d; margin-right: 8px"/>
-          {{ $t('result.fail.error.hint-text2') }}
-          <a style="margin-left: 16px">{{ $t('result.fail.error.hint-btn2') }} <a-icon type="right" /></a>
+          <a-icon
+            type="exclamation-circle-o"
+            style="color: #f5222d; margin-right: 8px"
+          />
+          {{ $t("store.page.custom.upload.tips-text3") }}
+          <a
+            style="margin-left: 16px"
+            href="https://github.com/DigitalChinaOpenSource/TiCheck"
+            target="_blank"
+            >{{ $t("store.page.custom.upload.tips-more") }}
+            <a-icon type="right"
+          /></a>
         </div>
       </div>
     </a-modal>
@@ -73,108 +185,178 @@
 </template>
 
 <script>
-import { TagSelect, ArticleListContent } from '@/components'
-// import IconText from './components/IconText'
-const TagSelectOption = TagSelect.Option
+import { ArticleListContent } from "@/components";
+import request from "@/utils/request";
+import VueMarkdown from "vue-markdown";
+import "github-markdown-css/github-markdown.css";
 
 export default {
   components: {
-    TagSelect,
-    TagSelectOption,
-    ArticleListContent
+    VueMarkdown,
+    ArticleListContent,
   },
-  data () {
+  data() {
     return {
       icon: {
-          python: require('@/assets/icons/python.png'),
-          shell: require('@/assets/icons/shell.png')
+        python: require("@/assets/icons/python.png"),
+        shell: require("@/assets/icons/shell.png"),
       },
-      visible: false,
-      confirmLoading: false,
+      upload: {
+        visible: false,
+        confirmLoading: false,
+        fileList: [],
+      },
+      readme: {
+        text: "",
+        visible: false,
+      },
       loading: true,
       loadingMore: false,
       data: [],
-      page:0,
-      search:{
-        tag:'all',
-        name:''
+      page: 0,
+      search: {
+        tag: "all",
+        name: "",
       },
-      fileList: []
-    }
+    };
   },
-  mounted () {
-    this.getList()
+  mounted() {
+    this.getList();
   },
   methods: {
-    onSearch (value) {
-      this.data =[]
-      this.page=0
-      if (value.target){
-        this.search.tag=value.target.value
-      }else{
-        this.search.name=value
+    onSearch(value) {
+      this.data = [];
+      this.page = 0;
+      if (value.target) {
+        this.search.tag = value.target.value;
+      } else {
+        this.search.name = value;
       }
-      this.getList()
+      this.getList();
     },
-    getList () {
-      this.page++
-      this.loading = true
-      this.showMore = true
-      this.$http.get(
-        '/store/custom?page='+this.page+'&page_size=10&tag='+this.search.tag+"&name="+this.search.name).then(res => {
-        this.data = this.data.concat(res.rows)
-        this.loadingMore = false
-        if (res.total <= this.data.length) {
-          this.showMore = false
-        }
-      }).finally(() => {
-        this.loading = false
+    getList() {
+      this.page++;
+      this.loading = true;
+      this.showMore = true;
+      this.$http
+        .get(
+          "/store/custom?page=" +
+            this.page +
+            "&page_size=10&tag=" +
+            this.search.tag +
+            "&name=" +
+            this.search.name
+        )
+        .then((res) => {
+          this.data = this.data.concat(res.data.rows);
+          this.loadingMore = false;
+          if (res.data.total <= this.data.length) {
+            this.showMore = false;
+          }
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    loadMore() {
+      this.loadingMore = true;
+      this.getList();
+    },
+    showUploadModal() {
+      this.upload.visible = true;
+    },
+    handleUploadOk(e) {
+      this.upload.confirmLoading = true;
+
+      const formData = new FormData();
+      formData.append("file", this.upload.fileList[0]);
+
+      request({
+        url: "/store/custom",
+        method: "post",
+        processData: false,
+        data: formData,
       })
+        .then((res) => {
+          if (res.success) {
+            this.upload.visible = false;
+            this.$message.success(res.msg);
+            this.onSearch("");
+          }
+        })
+        .catch((err) => {})
+        .finally(() => {
+          this.upload.confirmLoading = false;
+        });
     },
-    loadMore () {
-      this.loadingMore = true
-      this.getList()
+    handleUploadCancel(e) {
+      this.upload.visible = false;
+      this.upload.fileList = [];
     },
-    showModal () {
-      this.visible = true
+    removeFile(file) {
+      const index = this.upload.fileList.indexOf(file);
+      const newFileList = this.upload.fileList.slice();
+      newFileList.splice(index, 1);
+      this.upload.fileList = newFileList;
     },
-    handleOk (e) {
-      this.ModalText = 'The modal will be closed after two seconds'
-      this.confirmLoading = true
-      setTimeout(() => {
-        this.visible = false
-        this.confirmLoading = false
-      }, 2000)
+    showReadme(id) {
+      this.readme.text = "";
+      this.readme.visible = true;
+      this.$http.get("/store/local/readme?name=" + id).then((response) => {
+        this.readme.text = response.data;
+      });
     },
-    handleCancel (e) {
-      this.visible = false
+    closeReadme(e) {
+      this.readme.visible = false;
     },
-    removeFile (file) {
-      const index = this.fileList.indexOf(file)
-      const newFileList = this.fileList.slice()
-      newFileList.splice(index, 1)
-      this.fileList = newFileList
-    }
-  }
-}
+  },
+};
 </script>
 
 <style lang="less" scoped>
-.ant-pro-components-tag-select {
-  /deep/ .ant-pro-tag-select .ant-tag {
-    margin-right: 24px;
-    padding: 0 8px;
-    font-size: 14px;
+@import "../../components/index.less";
+
+.antd-pro-components-article-list-content-index-listContent {
+  .description {
+    // max-width: 720px;
+    line-height: 22px;
+  }
+  .extra {
+    margin-top: 16px;
+    color: @text-color-secondary;
+    line-height: 22px;
+
+    & /deep/ .ant-avatar {
+      position: relative;
+      top: 1px;
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      vertical-align: top;
+    }
+
+    & > em {
+      margin-left: 16px;
+      color: @disabled-color;
+      font-style: normal;
+    }
+
+    .actions {
+      display: inline;
+      float: right;
+    }
   }
 }
 
-.list-articles-trigger {
-  margin-left: 12px;
-}
-
-.desc{
-    margin-top: 24px;
-    padding: 24px 24px;
-    background-color: #fafafa;
+@media screen and (max-width: @screen-xs) {
+  .antd-pro-components-article-list-content-index-listContent {
+    .extra {
+      & > em {
+        display: block;
+        margin-top: 8px;
+        margin-left: 0;
+      }
+    }
+  }
 }
 </style>
