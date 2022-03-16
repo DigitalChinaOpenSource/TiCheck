@@ -125,6 +125,8 @@ func Register(engine *gin.Engine) {
 
 		// 查看所有自定义脚本
 		storeGroup.GET("/custom", sh.GetCustomScript)
+		storeGroup.GET("/custom/readme", sh.GetCustomReadme)
+		storeGroup.POST("/custom", sh.UploadCustomScript)
 
 		// 查看指定远程脚本的介绍
 		storeGroup.GET("/remote/readme/:name", sh.GetReadMe)
