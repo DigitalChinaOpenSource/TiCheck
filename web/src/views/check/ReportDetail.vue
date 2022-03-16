@@ -112,7 +112,6 @@ export default {
   },
   methods: {
     getReport () {
-      debugger
       getReportDetail(this.reportID).then(response => {
         console.log(this.reportID)
         this.report = response

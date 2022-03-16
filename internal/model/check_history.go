@@ -15,6 +15,10 @@ type CheckHistory struct {
 	Duration     time.Duration `gorm:"not null" json:"duration"`
 }
 
+func (ch *CheckHistory) TableName() string {
+	return "check_histories"
+}
+
 func (ch *CheckHistory) GetHistoryByClusterID(id int, pageSize int, pageNum int, startTime string, endTime string) (map[string]interface{}, error) {
 	var chs []CheckHistory
 	var total int64
