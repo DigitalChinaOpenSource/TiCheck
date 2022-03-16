@@ -19,8 +19,8 @@ const errorHandler = (error) => {
     const data = error.response.data;
     // 从 localstorage 获取 token
     const token = storage.get(ACCESS_TOKEN);
-    if (error.response.status === 400 && response.data.msg) {
-      message.error(response.data.msg);
+    if (error.response.status === 400 && error.response.data.msg) {
+      message.error(error.response.data.msg);
     }
     if (error.response.status === 403) {
       notification.error({

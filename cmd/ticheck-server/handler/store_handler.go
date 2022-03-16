@@ -17,6 +17,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	custom_prefix = "../../probes/custom/"
+)
+
 type StoreHandler struct {
 }
 
@@ -48,9 +52,27 @@ func (s *StoreHandler) GetCustomScript(c *gin.Context) {
 
 	s.GetScriptListInDB(c, pg)
 }
+
 func (s *StoreHandler) GetCustomReadme(c *gin.Context) {
-	name := c.Query("name")
-	s.getreadme(c, "custom", name)
+	id := c.Param("id")
+	s.getreadme(c, "custom", id)
+}
+
+func (s *StoreHandler) DeleteCustomReadme(c *gin.Context) {
+	id := c.Param("id")
+	p := model.Probe{
+		ID: id,
+	}
+	if err := p.GetByID(); err != nil || p.IsSystem != 0 {
+		api.BadWithMsg(c, "probe not found: "+id)
+		return
+	}
+	if p.Delete() != nil {
+		api.BadWithMsg(c, "probe can not be deleted")
+		return
+	}
+	os.RemoveAll(fmt.Sprintf("%s%s", custom_prefix, id))
+	api.Success(c, "probe deleted", nil)
 }
 
 func (s *StoreHandler) UploadCustomScript(c *gin.Context) {
@@ -60,8 +82,7 @@ func (s *StoreHandler) UploadCustomScript(c *gin.Context) {
 		return
 	}
 
-	prefix := "../../probes/custom/"
-	dst := fmt.Sprintf("%s%s", prefix, file.Filename)
+	dst := fmt.Sprintf("%s%s", custom_prefix, file.Filename)
 
 	if err := c.SaveUploadedFile(file, dst); err != nil {
 		api.Fail(c, "failed to upload: "+err.Error(), nil)
@@ -70,7 +91,7 @@ func (s *StoreHandler) UploadCustomScript(c *gin.Context) {
 	defer os.Remove(dst)
 
 	pkg := file.Filename[:len(file.Filename)-4]
-	dir := fmt.Sprintf("%s%s", prefix, pkg)
+	dir := fmt.Sprintf("%s%s", custom_prefix, pkg)
 	if err := util.DeCompress(dst, dir); err != nil {
 		api.FailWithMsg(c, "failed to decompress: "+err.Error())
 		return

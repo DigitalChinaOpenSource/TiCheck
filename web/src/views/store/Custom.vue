@@ -68,11 +68,16 @@
             </div>
             <div class="extra">
               <!-- <a-avatar :src="avatar" size="small" /> -->
-              <a :href="href">{{ item.creator }}</a> {{$t('store.page.update-time')}}
+              <a>{{ item.creator }}</a> {{ $t("store.page.update-time") }}
               <!-- <a :href="href">{{ href }}</a> -->
               <em>{{ item.update_time | moment }}</em>
               <div class="actions">
-                <a-button type="link" icon="delete"> Delete </a-button>
+                <a-popconfirm
+                  :title="$t('store.page.custom.delete-tip')"
+                  @confirm="deleteOne(item.id)"
+                >
+                  <a-button type="link" icon="delete"> Delete </a-button>
+                </a-popconfirm>
               </div>
             </div>
           </div>
@@ -262,6 +267,17 @@ export default {
       this.loadingMore = true;
       this.getList();
     },
+    deleteOne(id) {
+        request({
+        url: "/store/custom/" + id,
+        method: "delete",
+        }).then((res) => {
+          if (res.success) {
+            this.data = this.data.filter((item) => item.id !== id);
+          }
+        })
+        .catch((err) => {});
+    },
     showUploadModal() {
       this.upload.visible = true;
     },
@@ -302,7 +318,7 @@ export default {
     showReadme(id) {
       this.readme.text = "";
       this.readme.visible = true;
-      this.$http.get("/store/local/readme?name=" + id).then((response) => {
+      this.$http.get("/store/custom/readme/" + id).then((response) => {
         this.readme.text = response.data;
       });
     },
@@ -358,5 +374,23 @@ export default {
       }
     }
   }
+}
+
+.ant-pro-components-tag-select {
+  /deep/ .ant-pro-tag-select .ant-tag {
+    margin-right: 24px;
+    padding: 0 8px;
+    font-size: 14px;
+  }
+}
+
+.list-articles-trigger {
+  margin-left: 12px;
+}
+
+.desc {
+  margin-top: 24px;
+  padding: 24px 24px;
+  background-color: #fafafa;
 }
 </style>

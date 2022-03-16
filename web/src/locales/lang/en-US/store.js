@@ -4,6 +4,7 @@ export default {
     'store.page.local.modal.title': 'ReadMe',
     'store.page.remote.title': 'Remote Store',
     'store.page.custom.title': 'Custom Store',
+    'store.page.custom.delete-tip': 'Are you sure delete this Probe?',
     'store.page.custom.upload': 'Upload',
     'store.page.custom.upload.modal-title': 'Upload Porbe',
     'store.page.custom.upload.select-file': 'Select File',

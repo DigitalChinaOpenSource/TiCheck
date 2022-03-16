@@ -54,6 +54,14 @@ func (p *Probe) GetPager(c *gin.Context, pg *Paginator) *Paginator {
 	return pg.ApplyQuery(DbConn.Model(&Probe{}), &rows)
 }
 
+func (p *Probe) GetByID() error {
+	return DbConn.Where("id = ?", p.ID).First(p).Error
+}
+
+func (p *Probe)  Delete() error {
+	return DbConn.Delete(p).Error 
+}
+
 func (p *Probe) IsNotExist() bool {
 	var cnt int64
 	DbConn.Table(p.TableName()).Where("id = ?", p.ID).Count(&cnt)
