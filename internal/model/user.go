@@ -17,6 +17,11 @@ type User struct {
 	CreateTime   time.Time `gorm:"not null"`
 }
 
+func (u *User) TableName() string {
+	return "users"
+}
+
+
 // VerifyUser Check the login permission of the user
 func (u *User) VerifyUser() bool {
 	var total int64

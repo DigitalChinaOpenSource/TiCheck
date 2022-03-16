@@ -63,10 +63,11 @@ func (p *Probe) IsNotExist() bool {
 func (p Probe) GetNotAddedProveListByClusterID(id int) ([]Probe, error) {
 	var probeId []string
 	var probeList []Probe
+	var cc ClusterChecklist
 
 	// First, finding all installed probes in cluster
-	err := DbConn.Table("cluster_checklist").Select("cluster_checklist.probe_id").Where("cluster_id = ?", id).Find(&probeId).Error
-	if err != nil {
+	err := DbConn.Table(cc.TableName()).Select("probe_id").Where("cluster_id = ?", id).Find(&probeId).Error
+	if err !=  nil {
 		return probeList, err
 	}
 

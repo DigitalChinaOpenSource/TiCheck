@@ -35,3 +35,7 @@ func (s *Scheduler) AddScheduler() error {
 	}
 	return nil
 }
+
+func (s *Scheduler) TableName() string {
+	return "schedulers"
+}

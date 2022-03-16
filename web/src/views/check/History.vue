@@ -94,9 +94,11 @@ export default {
       },
       start_time: "",
       end_time: "",
+      clusterID: this.$route.params.id,
     };
   },
-  mounted() {
+  activated() {
+    this.clusterID = this.$route.params.id;
     this.getHistoryList();
   },
   methods: {
@@ -110,8 +112,9 @@ export default {
         pageSize: 10,
       }
     ) {
-      getCheckHistoryByClusterID(1, pagination.current, pagination.pageSize, this.start_time, this.end_time).then(
+      getCheckHistoryByClusterID(this.clusterID, pagination.current, pagination.pageSize, this.start_time, this.end_time).then(
         (res) => {
+          debugger
           this.data = res.data;
           this.pagination = {
             ...this.pagination,

@@ -80,6 +80,12 @@ func Register(engine *gin.Engine) {
 		// Add a probe to the cluster
 		clusterGroup.POST("/probe", cluster.AddProbeForCluster)
 
+		// Update probe operator and threshold in the cluster checklist
+		clusterGroup.PUT("/probe/config", cluster.UpdateProbeConfig)
+
+		// Change status for probe, open or close a check probe
+		clusterGroup.PUT("/probe/status", cluster.ChangeProbeStatus)
+
 		clusterGroup.DELETE("/probe/:id", cluster.DeleteProbeForCluster)
 	}
 

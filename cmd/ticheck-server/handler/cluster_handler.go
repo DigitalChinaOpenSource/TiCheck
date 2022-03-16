@@ -381,6 +381,15 @@ func (ch *ClusterHandler) GetAddProbeList(c *gin.Context) {
 		return
 	}
 
+	var cluster model.Cluster
+
+	if !cluster.IsClusterExist(id) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": "cluster does not exist",
+		})
+		return
+	}
+
 	var probe model.Probe
 	probes, err := probe.GetNotAddedProveListByClusterID(id)
 	if err != nil {
@@ -410,6 +419,56 @@ func (ch *ClusterHandler) AddProbeForCluster(c *gin.Context) {
 	err = cc.AddCheckProbe()
 
 	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+}
+
+func (ch *ClusterHandler) ChangeProbeStatus(c *gin.Context) {
+	cc := &model.ClusterChecklist{}
+	err := c.BindJSON(cc)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = cc.ChangeProbeStatus()
+
+	if err  != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+}
+
+func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context){
+	cc := &model.ClusterChecklist{}
+	err := c.BindJSON(cc)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = cc.UpdateProbeConfig()
+
+	if err  != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
