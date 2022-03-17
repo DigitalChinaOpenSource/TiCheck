@@ -115,13 +115,16 @@ export default {
       getCheckHistoryByClusterID(this.clusterID, pagination.current, pagination.pageSize, this.start_time, this.end_time).then(
         (res) => {
           debugger
-          this.data = res.data;
+          const result = res.data;
+          this.data = result.data;
           this.pagination = {
             ...this.pagination,
-            total: res.total
+            total: result.total
           }
         }
-      );
+      ).catch(err => {
+        this.$router.push({ name: "cluster" });
+      });
     },
     downloadReport(reportID) {
       console.log(reportID);

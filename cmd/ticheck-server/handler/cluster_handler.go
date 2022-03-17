@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"TiCheck/cmd/ticheck-server/api"
 	"TiCheck/internal/model"
 	"encoding/json"
 	"errors"
@@ -351,57 +352,46 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) error {
 func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"err": "cluster id is invalid",
-		})
+		api.BadWithMsg(c, "cluster id is invalid")
+		return
+	}
+
+	if !model.IsClusterExist(id) {
+		api.BadWithMsg(c, "cluster does not exist")
 		return
 	}
 
 	var cc model.ClusterChecklist
 	cl, err := cc.GetListInfoByClusterID(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"err": err.Error(),
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": cl,
-	})
+	api.Success(c, "", cl)
 	return
 }
 
 func (ch *ClusterHandler) GetAddProbeList(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"err": "cluster id is invalid",
-		})
+		api.BadWithMsg(c, "cluster id is invalid")
 		return
 	}
 
-	var cluster model.Cluster
-
-	if !cluster.IsClusterExist(id) {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"err": "cluster does not exist",
-		})
+	if !model.IsClusterExist(id) {
+		api.BadWithMsg(c, "cluster does not exist")
 		return
 	}
 
 	var probe model.Probe
 	probes, err := probe.GetNotAddedProveListByClusterID(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"err": err,
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": probes,
-	})
+	api.Success(c, "", probes)
 	return
 }
 
@@ -410,24 +400,19 @@ func (ch *ClusterHandler) AddProbeForCluster(c *gin.Context) {
 	err := c.BindJSON(cc)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	err = cc.AddCheckProbe()
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-	})
+	api.S(c)
+	return
 }
 
 func (ch *ClusterHandler) ChangeProbeStatus(c *gin.Context) {
@@ -435,57 +420,45 @@ func (ch *ClusterHandler) ChangeProbeStatus(c *gin.Context) {
 	err := c.BindJSON(cc)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	err = cc.ChangeProbeStatus()
 
-	if err  != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+	if err != nil {
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-	})
+	api.S(c)
+	return
 }
 
-func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context){
+func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context) {
 	cc := &model.ClusterChecklist{}
 	err := c.BindJSON(cc)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	err = cc.UpdateProbeConfig()
 
-	if err  != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+	if err != nil {
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-	})
+	api.S(c)
+	return
 }
 
 func (ch *ClusterHandler) DeleteProbeForCluster(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
@@ -495,31 +468,24 @@ func (ch *ClusterHandler) DeleteProbeForCluster(c *gin.Context) {
 	err = cc.DeleteCheckProbe()
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-	})
+	api.S(c)
+	return
 }
 
 func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 	id := c.Param("id")
 	clusterID, err := strconv.Atoi(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 	schedulerList, err := ch.Scheduler.QuerySchedulersByClusterID(clusterID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
@@ -536,10 +502,8 @@ func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 		data = append(data, item)
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-		"data":   data,
-	})
+	api.Success(c, "", data)
+	return
 }
 
 func (ch *ClusterHandler) PostCLusterScheduler(c *gin.Context) {

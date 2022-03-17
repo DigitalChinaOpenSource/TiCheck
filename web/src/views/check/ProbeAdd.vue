@@ -255,6 +255,8 @@ export default {
     getAddProbeList() {
       getAddProbeList(this.clusterID).then((res) => {
         this.data = res.data;
+      }).catch(err => {
+        this.$router.push({ name: "cluster" });
       });
     },
     back() {

@@ -296,6 +296,8 @@ export default {
     getProbeListByClusterID() {
       getProbeList(this.clusterID).then((res) => {
         this.data = res.data;
+      }).catch(err => {
+        this.$router.push({ name: "cluster" });
       });
     },
     addProbe() {

@@ -1,18 +1,18 @@
 package handler
 
 import (
+	"TiCheck/cmd/ticheck-server/api"
 	"TiCheck/internal/model"
 	"bytes"
 	"crypto/rand"
 	"math/big"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const DefaultTokenLife =  time.Hour
+const DefaultTokenLife = time.Hour
 
 type SessionHandler struct {
 	// token : user_name
@@ -42,10 +42,7 @@ func (sh *SessionHandler) AuthenticatedUser(c *gin.Context) {
 	userReq := &UserReq{}
 	err := c.BindJSON(userReq)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "the request body is wrong",
-		})
-
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
@@ -57,10 +54,7 @@ func (sh *SessionHandler) AuthenticatedUser(c *gin.Context) {
 	}
 
 	if !se.User.VerifyUser() {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "the User name or password is wrong.",
-		})
-
+		api.AuthenticationFailed(c)
 		return
 	}
 
@@ -76,18 +70,15 @@ func (sh *SessionHandler) AuthenticatedUser(c *gin.Context) {
 	//c.SetCookie("TiCheckerToken", se.Token, 3600, "/", "", false, true)
 	//c.SetCookie("TiCheckerUser", userReq.UserName, 3600, "/", "", false, false)
 
-	c.JSON(http.StatusOK, gin.H{
+	api.Success(c, "", map[string]string{
 		"token": se.Token,
 	})
 	return
-
 }
 
 func (sh *SessionHandler) Logout(c *gin.Context) {
 	defer func() {
-		c.JSON(http.StatusOK, gin.H{
-			"status": "ok",
-		})
+		api.S(c)
 	}()
 
 	//user, _ := c.Cookie("TiCheckerUser")
@@ -113,33 +104,29 @@ func (sh *SessionHandler) GetUserInfo(c *gin.Context) {
 
 	token, ok := c.Request.Header["Access-Token"]
 	if !ok || len(token) < 1 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the token is invalid",
-		})
+		api.BadWithMsg(c, "the token is invalid")
 		return
 	}
 
 	se := sh.getSessionByToken(token[0])
 	if se == nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the token is invalid",
-		})
+		api.BadWithMsg(c, "the token is invalid")
 		return
 	}
 
 	err := se.User.GetUserInfoByName()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "user does not exist",
-		})
+		api.BadWithMsg(c, "user does not exist")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	api.Success(c, "", map[string]string{
 		"user_name": se.User.UserName,
-		"email": se.User.Email,
+		"email":     se.User.Email,
 		"full_name": se.User.FullName,
 	})
+
+	return
 }
 
 // UpdateToken 更新Token, 同时重置token过期时间
@@ -174,9 +161,7 @@ func (sh *SessionHandler) VerifyToken(c *gin.Context) {
 	}
 
 	c.Abort()
-	c.JSON(http.StatusBadRequest, gin.H{
-		"error": "the token is invalid",
-	})
+	api.AuthenticationFailed(c)
 	return
 }
 
@@ -212,7 +197,7 @@ func (sh *SessionHandler) clearSession(se *Session) {
 }
 
 func (sh *SessionHandler) getSessionByToken(token string) *Session {
-	if token == ""{
+	if token == "" {
 		return nil
 	}
 	userName, ok := sh.Users[token]

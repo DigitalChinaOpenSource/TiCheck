@@ -85,10 +85,10 @@ const user = {
     Login ({ commit }, userInfo) {
       return new Promise((resolve, reject) => {
         login(userInfo).then(response => {
-          const result = response
+          const result = response.data
           storage.set(ACCESS_TOKEN, result.token, 60 * 1000)
           commit('SET_TOKEN', result.token)
-          resolve()
+          resolve(result)
         }).catch(error => {
           reject(error)
         })
@@ -100,8 +100,9 @@ const user = {
       return new Promise((resolve, reject) => {
         getInfo().then(response => {
           const role = roleObj
+          const userInfo = response.data
           const result = {
-            ...response,
+            ...userInfo,
             role: roleObj,
             avatar: '/avatar2.jpg'
           }
