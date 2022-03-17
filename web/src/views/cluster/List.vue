@@ -6,7 +6,7 @@
     <template v-slot:extra>
       <div>
         <a-button type="primary" @click="showModal" >{{ $t('cluster.list.add-cluster') }}</a-button>
-        <a-modal v-model="modalVisible" :title="$t('cluster.list.add-cluster')" @ok="handleOk" width="70%">
+        <a-modal v-model="modalVisible" :title="$t('cluster.list.add-cluster')" @ok="handleOk" @cancel="modalCancel" width="70%">
           <a-form :form="clusterForm">
             <a-form-item
               :label="$t('cluster.list.name')"
@@ -172,9 +172,15 @@ export default {
   },
   data () {
     return {
+      owner: {},
       dataSource,
       modalVisible: false,
       clusterForm: this.$form.createForm(this)
+    }
+  },
+  computed: {
+    userInfo () {
+      return this.$store.getters.userInfo
     }
   },
   mounted () {
@@ -192,12 +198,16 @@ export default {
     showModal () {
       this.modalVisible = true
     },
+    modalCancel () {
+      this.modalVisible = false
+      this.clusterForm.resetFields()
+    },
     handleOk () {
       this.clusterForm.validateFields((err, values) => {
         if (err) {
           this.addFailed()
         }
-        values.owner = 'test'
+        values.owner = this.owner.user_name
         addCluster(values)
         .then(res => this.addSuccess())
         .catch(res => this.addFailed())
@@ -223,6 +233,7 @@ export default {
     }
   },
   created () {
+    this.owner = this.userInfo
     setTimeout(() => {
       this.loading = !this.loading
     }, 1000)

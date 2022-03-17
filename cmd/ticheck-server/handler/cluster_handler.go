@@ -94,6 +94,7 @@ type ClusterInfoReps struct {
 }
 
 type ClusterSchedulerListReps struct {
+	Index      int       `json:"index"`
 	ID         uint      `json:"id"`
 	Name       string    `json:"name"`
 	CreateTime time.Time `json:"create_time"`
@@ -103,6 +104,7 @@ type ClusterSchedulerListReps struct {
 }
 
 type ClusterSchedulerReq struct {
+	ID        int    `json:"id"`
 	Name      string `json:"name"`
 	Cron      string `json:"cron"`
 	Status    bool   `json:"status"`
@@ -443,7 +445,7 @@ func (ch *ClusterHandler) ChangeProbeStatus(c *gin.Context) {
 
 	err = cc.ChangeProbeStatus()
 
-	if err  != nil {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -455,7 +457,7 @@ func (ch *ClusterHandler) ChangeProbeStatus(c *gin.Context) {
 	})
 }
 
-func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context){
+func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context) {
 	cc := &model.ClusterChecklist{}
 	err := c.BindJSON(cc)
 
@@ -468,7 +470,7 @@ func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context){
 
 	err = cc.UpdateProbeConfig()
 
-	if err  != nil {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -524,8 +526,9 @@ func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 	}
 
 	var data []ClusterSchedulerListReps
-	for _, v := range schedulerList {
+	for k, v := range schedulerList {
 		item := ClusterSchedulerListReps{
+			Index:      k + 1,
 			ID:         v.ID,
 			Name:       v.Name,
 			CreateTime: v.CreateTime,
@@ -542,7 +545,7 @@ func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 	})
 }
 
-func (ch *ClusterHandler) PostCLusterScheduler(c *gin.Context) {
+func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 	schedulerReq := &ClusterSchedulerReq{}
 	err := c.BindJSON(schedulerReq)
 	if err != nil {
@@ -579,6 +582,66 @@ func (ch *ClusterHandler) PostCLusterScheduler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "add scheduler is wrong",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+}
+
+func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
+	schedulerReq := &ClusterSchedulerReq{}
+	err := c.BindJSON(schedulerReq)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "the request body is wrong",
+		})
+		return
+	}
+
+	isEnabled := 0
+	if schedulerReq.Status {
+		isEnabled = 1
+	}
+
+	schedulerInfo := model.Scheduler{
+		ID:             uint(schedulerReq.ID),
+		Name:           schedulerReq.Name,
+		CronExpression: schedulerReq.Cron,
+		IsEnabled:      isEnabled,
+	}
+
+	err = schedulerInfo.UpdateScheduler()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "add scheduler is wrong",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+}
+
+func (ch *ClusterHandler) DeleteScheduler(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	s := model.Scheduler{
+		ID: uint(id),
+	}
+	err = s.DeleteScheduler()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
