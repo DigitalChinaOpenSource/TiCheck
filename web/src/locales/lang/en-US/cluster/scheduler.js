@@ -10,8 +10,9 @@ export default {
   'cluster.scheduler.table.status.yes': 'active',
   'cluster.scheduler.table.status.null': 'NA',
   'cluster.scheduler.table.count': 'Count',
-  'cluster.scheduler.table.action': 'action',
+  'cluster.scheduler.table.action': 'View Details',
   'cluster.scheduler.table.action.history': 'history',
+  'cluster.scheduler.table.operation': 'Operation',
   'cluster.scheduler.modal.title': 'Add Scheduler',
   'cluster.scheduler.modal.name': 'Name',
   'cluster.scheduler.modal.place.name': 'Please enter a name',
@@ -21,5 +22,11 @@ export default {
   'cluster.scheduler.switch.child.yes': 'yes',
   'cluster.scheduler.switch.child.no': 'no',
   'cluster.scheduler.modal.active': 'Active now',
-  'cluster.scheduler.modal.cron': 'Cron'
+  'cluster.scheduler.modal.cron': 'Cron',
+  'cluster.scheduler.modal.edit.title': 'Edit Scheduler',
+  'cluster.scheduler.btn.edit': 'edit',
+  'cluster.scheduler.btn.delete': 'delete',
+  'cluster.scheduler.delete.msg': 'Are you sure delete this scheduler?',
+  'cluster.scheduler.delete.ok': 'YES',
+  'cluster.scheduler.delete.cancel': 'NO'
 }

@@ -44,7 +44,7 @@
           :wrapperCol="{lg: {span: 15}, sm: {span: 17} }">
           <a-switch
             v-decorator="['status', {initialValue: true}]"
-            default-checked
+            :checked="isChecked"
             @change="switchOnChange"
             :checked-children="$t('cluster.scheduler.switch.child.yes')"
             :un-checked-children="$t('cluster.scheduler.switch.child.no')" />
@@ -65,15 +65,15 @@
         <a @click="jump2History(scheduler.id)" target="_blank" style="color: #40a9ff">{{ $t('cluster.scheduler.table.action.history') }}</a>
       </span>
       <span slot="operation" slot-scope="text, record">
-        <a @click="showEditModal(record)">Edit</a>
+        <a @click="showEditModal(record)">{{ $t('cluster.scheduler.btn.edit') }}</a>
         <a-divider type="vertical" />
         <a-popconfirm
-          title="Are you sure delete this task?"
-          ok-text="Yes"
-          cancel-text="No"
+          :title="$t('cluster.scheduler.delete.msg')"
+          :ok-text="$t('cluster.scheduler.delete.ok')"
+          :cancel-text="$t('cluster.scheduler.delete.cancel')"
           @confirm="handleDelete(record)"
         >
-          <a href="#">Delete</a>
+          <a href="#">{{ $t('cluster.scheduler.btn.delete') }}</a>
         </a-popconfirm>
       </span>
     </a-table>
@@ -117,7 +117,7 @@
           :wrapperCol="{lg: {span: 15}, sm: {span: 17} }">
           <a-switch
             v-decorator="['status', {initialValue: true}]"
-            default-checked
+            :checked="isChecked"
             @change="editSwitchOnChange"
             :checked-children="$t('cluster.scheduler.switch.child.yes')"
             :un-checked-children="$t('cluster.scheduler.switch.child.no')" />
@@ -150,6 +150,7 @@ export default {
       clusterID: this.$route.params.id?.toString(),
       editModalVisible: false,
       scheModalVisible: false,
+      isChecked: true,
       radioValue: 1,
       schedulerForm: this.$form.createForm(this, { name: 'addForm' }),
       editSchedulerForm: this.$form.createForm(this, { name: 'editForm' })
@@ -186,6 +187,7 @@ export default {
       this.scheModalVisible = true
     },
     switchOnChange (checked) {
+      this.isChecked = checked
       this.schedulerForm.setFieldsValue({
         status: checked
       })
@@ -211,6 +213,7 @@ export default {
       this.radioValue = 1
     },
     editSwitchOnChange (checked) {
+      this.isChecked = checked
       this.editSchedulerForm.setFieldsValue({
         status: checked
       })
@@ -247,6 +250,8 @@ export default {
         .catch(res => this.addFailed())
         .finally(() => {
           this.scheModalVisible = false
+          this.radioValue = 1
+          this.isChecked = true
           this.schedulerForm.resetFields()
         })
       })
@@ -290,6 +295,8 @@ export default {
           .catch(res => this.addFailed())
           .finally(() => {
             this.editModalVisible = false
+            this.isChecked = true
+            this.radioValue = 1
             this.editSchedulerForm.resetFields()
           })
       })
@@ -350,7 +357,7 @@ export default {
         scopedSlots: { customRender: 'action' }
       },
       {
-        title: 'operation',
+        title: this.$t('cluster.scheduler.table.operation'),
         key: 'operation',
         scopedSlots: { customRender: 'operation' }
       }
