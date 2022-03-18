@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"TiCheck/cmd/ticheck-server/api"
 	"TiCheck/internal/model"
 	"fmt"
 	"net/http"
@@ -56,30 +57,30 @@ func (r *ReportHandler) GetReportList(c *gin.Context) {
 	ch := &model.CheckHistory{}
 	clusterID, err := strconv.Atoi(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
+
+	if !model.IsClusterExist(clusterID) {
+		api.BadWithMsg(c, "cluster does not exist")
+		return
+	}
+
 	res, err := ch.GetHistoryByClusterID(clusterID, pageSize, pageNum, startTime, endTime)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	api.Success(c, "", res)
 	return
 }
 
 func (r *ReportHandler) GetReport(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
-	if err !=nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+	if err != nil {
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
@@ -87,15 +88,12 @@ func (r *ReportHandler) GetReport(c *gin.Context) {
 	data, err := cd.GetDataByHistoryID(id)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": data,
-	})
+	api.Success(c, "", data)
+	return
 }
 
 func (r *ReportHandler) GetLastReport(c *gin.Context) {
@@ -171,7 +169,7 @@ func (r *ReportHandler) DownloadAllReport(c *gin.Context) {
 
 // DownloadReport 下载指定报告
 func (r *ReportHandler) DownloadReport(c *gin.Context) {
-	c.JSON(http.StatusOK, nil)
+	api.S(c)
 
 	//reportId := c.Param("id")
 	//fileName := reportId + ".csv"

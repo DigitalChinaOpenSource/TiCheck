@@ -36,6 +36,31 @@ func (s *Scheduler) AddScheduler() error {
 	return nil
 }
 
+func (s *Scheduler) UpdateScheduler() error {
+	updateData := map[string]interface{}{
+		"name":            s.Name,
+		"is_enabled":      s.IsEnabled,
+		"cron_expression": s.CronExpression,
+	}
+
+	err := DbConn.Model(&s).
+		Updates(updateData).
+		Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Scheduler) DeleteScheduler() error {
+	err := DbConn.Delete(&s).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Scheduler) TableName() string {
 	return "schedulers"
 }

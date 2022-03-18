@@ -33,7 +33,7 @@ func (ch *CheckHistory) GetHistoryByClusterID(id int, pageSize int, pageNum int,
 		return nil, err
 	}
 
-	DbConn.Model(&chs).Count(&total)
+	DbConn.Model(&chs).Where("cluster_id = ?", id).Count(&total)
 
 	return map[string]interface{}{
 		"page_size": pageSize,

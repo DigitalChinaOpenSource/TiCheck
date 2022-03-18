@@ -63,13 +63,19 @@ func Register(engine *gin.Engine) {
 		clusterGroup.POST("/add", cluster.PostClusterInfo)
 
 		// Update cluster by id
-		clusterGroup.POST("/update/:id", cluster.UpdateClusterInfo)
+		clusterGroup.PUT("/update/:id", cluster.UpdateClusterInfo)
 
 		// Get cluster scheduler list by id
 		clusterGroup.GET("/scheduler/:id", cluster.GetClusterSchedulerList)
 
 		//
-		clusterGroup.POST("/scheduler/add", cluster.PostCLusterScheduler)
+		clusterGroup.POST("/scheduler/add", cluster.PostClusterScheduler)
+
+		//
+		clusterGroup.PUT("/scheduler/update", cluster.UpdateScheduler)
+
+		//
+		clusterGroup.DELETE("/scheduler/delete/:id", cluster.DeleteScheduler)
 
 		// Get the cluster installed probe checklist
 		clusterGroup.GET("/probe/:id", cluster.GetProbeList)

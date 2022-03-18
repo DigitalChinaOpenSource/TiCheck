@@ -12,6 +12,7 @@ export default {
   'cluster.scheduler.table.count': '巡检次数',
   'cluster.scheduler.table.action': '查看详情',
   'cluster.scheduler.table.action.history': '巡检历史',
+  'cluster.scheduler.table.operation': '操作',
   'cluster.scheduler.modal.title': '添加自动巡检',
   'cluster.scheduler.modal.name': '说明',
   'cluster.scheduler.modal.place.name': '请输入名称',
@@ -21,5 +22,11 @@ export default {
   'cluster.scheduler.switch.child.yes': '是',
   'cluster.scheduler.switch.child.no': '否',
   'cluster.scheduler.modal.active': '是否启用',
-  'cluster.scheduler.modal.cron': '定时器'
+  'cluster.scheduler.modal.cron': '定时器',
+  'cluster.scheduler.modal.edit.title': '编辑自动巡检',
+  'cluster.scheduler.btn.edit': '编辑',
+  'cluster.scheduler.btn.delete': '删除',
+  'cluster.scheduler.delete.msg': '你确定要删除这条规则吗？',
+  'cluster.scheduler.delete.ok': '确定',
+  'cluster.scheduler.delete.cancel': '取消'
 }

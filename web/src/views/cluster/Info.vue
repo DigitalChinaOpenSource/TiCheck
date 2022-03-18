@@ -114,9 +114,11 @@ export default {
   },
   methods: {
     localClusterInfo () {
-      getClusterInfo(this.clusterID).then(res => {
-        this.clusterInfo = res.data
-      })
+      getClusterInfo(this.clusterID)
+        .then(res => { this.clusterInfo = res.data })
+        .catch(() => {
+          this.$router.push({ path: '/' })
+        })
     }
   }
 }

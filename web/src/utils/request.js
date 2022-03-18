@@ -22,20 +22,22 @@ const errorHandler = (error) => {
     if (error.response.status === 400 && error.response.data.msg) {
       message.error(error.response.data.msg);
     }
-    if (error.response.status === 403) {
-      notification.error({
-        message: "Forbidden",
-        description: data.message,
-      });
+    if (error.response.status === 403 && error.response.data.msg) {
+      message.error(error.response.data.msg);
+      // notification.error({
+      //   message: "Forbidden",
+      //   description: data.message,
+      // });
     }
     if (
       error.response.status === 401 &&
       !(data.result && data.result.isLogin)
     ) {
-      notification.error({
-        message: "Unauthorized",
-        description: "Authorization verification failed",
-      });
+      message.error(error.response.data.msg);
+      // notification.error({
+      //   message: "Unauthorized",
+      //   description: "Authorization verification failed",
+      // });
       if (token) {
         store.dispatch("Logout").then(() => {
           setTimeout(() => {
