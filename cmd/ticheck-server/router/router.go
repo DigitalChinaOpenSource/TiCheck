@@ -87,6 +87,9 @@ func Register(engine *gin.Engine) {
 		clusterGroup.PUT("/probe/status", cluster.ChangeProbeStatus)
 
 		clusterGroup.DELETE("/probe/:id", cluster.DeleteProbeForCluster)
+
+		// execute check
+		clusterGroup.POST("/check", cluster.ExecuteCheck)
 	}
 
 	reportGroup := engine.Group("/cluster/report")

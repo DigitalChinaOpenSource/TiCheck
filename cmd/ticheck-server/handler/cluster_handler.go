@@ -1,15 +1,18 @@
 package handler
 
 import (
+	"TiCheck/executor"
 	"TiCheck/internal/model"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ClusterHandler struct {
@@ -443,7 +446,7 @@ func (ch *ClusterHandler) ChangeProbeStatus(c *gin.Context) {
 
 	err = cc.ChangeProbeStatus()
 
-	if err  != nil {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -455,7 +458,7 @@ func (ch *ClusterHandler) ChangeProbeStatus(c *gin.Context) {
 	})
 }
 
-func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context){
+func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context) {
 	cc := &model.ClusterChecklist{}
 	err := c.BindJSON(cc)
 
@@ -468,7 +471,7 @@ func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context){
 
 	err = cc.UpdateProbeConfig()
 
-	if err  != nil {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -675,4 +678,29 @@ func (h QueryHelper) queryWithPD() (pdResp map[string]interface{}, err error) {
 	}
 
 	return pdResp, nil
+}
+
+func (ch *ClusterHandler) ExecuteCheck(c *gin.Context) {
+	exe := executor.Create(executor.LocalExecutorType, "id")
+
+	resultCh := make(chan executor.CheckResult, 10)
+	ctx := context.WithValue(context.Background(), "", "")
+	go exe.ExecuteCheck(ctx, resultCh)
+
+	for {
+		select {
+		case result := <-resultCh:
+			fmt.Printf("%+v\n", result)
+			if result.Err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": result.Err.Error(),
+				})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{
+				"status": "ok",
+			})
+			return
+		}
+	}
 }
