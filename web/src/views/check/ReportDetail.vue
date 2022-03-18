@@ -113,9 +113,9 @@ export default {
   methods: {
     getReport () {
       getReportDetail(this.reportID).then(response => {
-        console.log(this.reportID)
-        this.report = response
-        this.data = response.data
+        const result = response.data
+        this.report = result
+        this.data = result.data
       })
     },
     back () {
@@ -126,7 +126,6 @@ export default {
       this.loading = true
       console.log('downloading' + this.reportID)   
       downloadReport(this.reportID).then(response => {
-        console.log(response)
         this.loading = false
       })
     },

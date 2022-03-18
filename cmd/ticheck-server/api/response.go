@@ -6,19 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/// gin api return object, for example:
-/// c.JSON(http.StatusOK, &ApiResp{})
+// RespBody
+// gin api return object, for example:
+// c.JSON(http.StatusOK, &ApiResp{})
 type RespBody struct {
 	Success bool        `json:"success"` // business success or not
 	Msg     string      `json:"msg"`
 	Data    interface{} `json:"data"`
 }
 
-/*
-*** request and bussiness both success, return
-*** Front-end suggestion mode `message.success(content, [duration], onClose)`
- */
-/// api success return with empty body
+// S api success return with empty body
+// request and bussiness both success, return
+// Front-end suggestion mode `message.success(content, [duration], onClose)`
 func S(c *gin.Context) {
 	c.JSON(http.StatusOK, &RespBody{
 		Success: true,
@@ -27,7 +26,7 @@ func S(c *gin.Context) {
 	})
 }
 
-/// api success return with message
+// SuccessWithMsg api success return with message
 func SuccessWithMsg(c *gin.Context, msg string) {
 	c.JSON(http.StatusOK, &RespBody{
 		Success: true,
@@ -36,7 +35,7 @@ func SuccessWithMsg(c *gin.Context, msg string) {
 	})
 }
 
-/// api success return with message and data
+// Success api success return with message and data
 func Success(c *gin.Context, msg string, data interface{}) {
 	c.JSON(http.StatusOK, &RespBody{
 		Success: true,
@@ -45,12 +44,10 @@ func Success(c *gin.Context, msg string, data interface{}) {
 	})
 }
 
-/*
-*** request successed but bussiness failed, return
-*** example: balance not enough...
-*** Front-end suggestion mode `message.info(content, [duration], onClose)`
- */
-/// api fail return with empty body, the request is ok, but the business is fail
+// F api fail return with empty body, the request is ok, but the business is fail
+// request successed but bussiness failed, return
+// example: balance not enough...
+// Front-end suggestion mode `message.info(content, [duration], onClose)`
 func F(c *gin.Context) {
 	c.JSON(http.StatusAccepted, &RespBody{
 		Success: false,
@@ -59,7 +56,7 @@ func F(c *gin.Context) {
 	})
 }
 
-/// api fail return with message, the request is ok, but the business is fail
+// FailWithMsg api fail return with message, the request is ok, but the business is fail
 func FailWithMsg(c *gin.Context, msg string) {
 	c.JSON(http.StatusAccepted, &RespBody{
 		Success: false,
@@ -68,7 +65,7 @@ func FailWithMsg(c *gin.Context, msg string) {
 	})
 }
 
-/// api fail return with message and data, the request is ok, but the business is fail
+// Fail api fail return with message and data, the request is ok, but the business is fail
 func Fail(c *gin.Context, msg string, data interface{}) {
 	c.JSON(http.StatusAccepted, &RespBody{
 		Success: false,
@@ -77,12 +74,10 @@ func Fail(c *gin.Context, msg string, data interface{}) {
 	})
 }
 
-/*
-*** request and bussiness both failed, return
-*** example: user not exist, page not found...
-*** Front-end suggestion mode `message.warning(content, [duration], onClose)`
- */
-/// api BadRequest return with empty body
+// B api BadRequest return with empty body
+// request and bussiness both failed, return
+// example: user not exist, page not found...
+// Front-end suggestion mode `message.warning(content, [duration], onClose)`
 func B(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, &RespBody{
 		Success: false,
@@ -91,7 +86,7 @@ func B(c *gin.Context) {
 	})
 }
 
-/// api BadRequest return with message
+// BadWithMsg api BadRequest return with message
 func BadWithMsg(c *gin.Context, msg string) {
 	c.JSON(http.StatusBadRequest, &RespBody{
 		Success: false,
@@ -100,7 +95,7 @@ func BadWithMsg(c *gin.Context, msg string) {
 	})
 }
 
-/// api BadRequest return with message and data
+// Bad api BadRequest return with message and data
 func Bad(c *gin.Context, msg string, data interface{}) {
 	c.JSON(http.StatusBadRequest, &RespBody{
 		Success: false,
@@ -109,12 +104,10 @@ func Bad(c *gin.Context, msg string, data interface{}) {
 	})
 }
 
-/*
-*** server exception, return
-*** example: nil pointer reference, slice out of index...
-*** Front-end suggestion mode `message.error(content, [duration], onClose)`
- */
-/// api error return with empty body
+// E api error return with empty body
+// server exception, return
+// example: nil pointer reference, slice out of index...
+// Front-end suggestion mode `message.error(content, [duration], onClose)`
 func E(c *gin.Context) {
 	c.JSON(http.StatusInternalServerError, &RespBody{
 		Success: false,
@@ -123,7 +116,7 @@ func E(c *gin.Context) {
 	})
 }
 
-/// api error return  with message
+// ErrorWithMsg api error return  with message
 func ErrorWithMsg(c *gin.Context, msg string) {
 	c.JSON(http.StatusInternalServerError, &RespBody{
 		Success: false,
@@ -132,11 +125,20 @@ func ErrorWithMsg(c *gin.Context, msg string) {
 	})
 }
 
-/// api error return with message and data
+// Error api error return with message and data
 func Error(c *gin.Context, msg string, data interface{}) {
 	c.JSON(http.StatusInternalServerError, &RespBody{
 		Success: false,
 		Msg:     msg,
 		Data:    data,
+	})
+}
+
+// AuthenticationFailed failed to verify token or password
+func AuthenticationFailed(c *gin.Context) {
+	c.JSON(http.StatusUnauthorized, &RespBody{
+		Success: false,
+		Msg:     "authentication failed",
+		Data:    nil,
 	})
 }

@@ -39,9 +39,9 @@ func (c *Cluster) TableName() string {
 	return "clusters"
 }
 
-func (c *Cluster) IsClusterExist(id int) bool {
+func IsClusterExist(id int) bool {
 	var count int64
-	err := DbConn.Model(c).Where("id = ?", id).Count(&count).Error
+	err := DbConn.Model(&Cluster{}).Where("id = ?", id).Count(&count).Error
 	if err != nil || count < 1 {
 		return false
 	} else {
