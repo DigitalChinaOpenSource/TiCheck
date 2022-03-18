@@ -95,6 +95,7 @@ type ClusterInfoReps struct {
 }
 
 type ClusterSchedulerListReps struct {
+	Index      int       `json:"index"`
 	ID         uint      `json:"id"`
 	Name       string    `json:"name"`
 	CreateTime time.Time `json:"create_time"`
@@ -104,6 +105,7 @@ type ClusterSchedulerListReps struct {
 }
 
 type ClusterSchedulerReq struct {
+	ID        int    `json:"id"`
 	Name      string `json:"name"`
 	Cron      string `json:"cron"`
 	Status    bool   `json:"status"`
@@ -114,9 +116,7 @@ type ClusterSchedulerReq struct {
 func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 	clusterList, err := ch.ClusterInfo.QueryCLusterList()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
@@ -134,78 +134,66 @@ func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 		}
 		nodeType := []string{"pd", "tidb", "tikv", "tiflash"}
 		url := cluster.PrometheusURL + "/api/v1/query"
-		nodesInfo, err := getClusterNodesInfo(url, nodeType)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
+		nodesInfo, e := getClusterNodesInfo(url, nodeType)
+		if e != nil {
+			api.ErrorWithMsg(c, e.Error())
 			return
 		}
 		reps.NodesInfo = nodesInfo
 		clusterListReps = append(clusterListReps, reps)
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-		"data":   clusterListReps,
-	})
+	api.Success(c, "", clusterListReps)
+	return
 }
 
 func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 	id := c.Param("id")
 	clusterID, err := strconv.Atoi(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.BadWithMsg(c, "cluster id is invalid")
 		return
 	}
+
+	if !model.IsClusterExist(clusterID) {
+		api.BadWithMsg(c, "cluster does not exist")
+		return
+	}
+
 	clusterInfo, err := ch.ClusterInfo.QueryClusterInfoByID(clusterID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
 	checkHistoryInfo, err := ch.CheckHistoryInfo.QueryHistoryInfoByID(clusterID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
 	var recentWarnings []model.RecentWarnings
 	recentWarnings, err = ch.RecentWarnings.QueryRecentWarningsByID(clusterID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
 	weekly, err := ch.HistoryWarnings.QueryHistoryWarningByID(clusterID, -7)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
 	monthly, err := ch.HistoryWarnings.QueryHistoryWarningByID(clusterID, -30)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
 	yearly, err := ch.HistoryWarnings.QueryHistoryWarningByID(clusterID, -365)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
@@ -225,42 +213,32 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 		YearlyHistoryWarnings:  yearly,
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-		"data":   clusterInfoReps,
-	})
+	api.Success(c, "", clusterInfoReps)
+	return
 }
 
 func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 	clusterInfoReq := &ClusterInfoReq{}
 	err := c.BindJSON(clusterInfoReq)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the request body is wrong",
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	err = ch.BuildClusterInfo(clusterInfoReq)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 	ch.ClusterInfo.CreateTime = time.Now().Local()
 
 	err = ch.ClusterInfo.CreateCluster()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-	})
+	api.S(c)
 	return
 }
 
@@ -268,41 +246,37 @@ func (ch *ClusterHandler) UpdateClusterInfo(c *gin.Context) {
 	clusterInfoReq := &ClusterInfoReq{}
 	err := c.BindJSON(clusterInfoReq)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the request body is wrong",
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	id := c.Param("id")
 	clusterID, err := strconv.Atoi(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.BadWithMsg(c, "cluster id is invalid")
 		return
 	}
+
+	if !model.IsClusterExist(clusterID) {
+		api.BadWithMsg(c, "cluster does not exist")
+		return
+	}
+
 	clusterInfoReq.ID = uint(clusterID)
 
 	err = ch.BuildClusterInfo(clusterInfoReq)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	err = ch.ClusterInfo.UpdateClusterByID()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-	})
+	api.S(c)
 	return
 }
 
@@ -490,8 +464,9 @@ func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 	}
 
 	var data []ClusterSchedulerListReps
-	for _, v := range schedulerList {
+	for k, v := range schedulerList {
 		item := ClusterSchedulerListReps{
+			Index:      k + 1,
 			ID:         v.ID,
 			Name:       v.Name,
 			CreateTime: v.CreateTime,
@@ -506,13 +481,11 @@ func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 	return
 }
 
-func (ch *ClusterHandler) PostCLusterScheduler(c *gin.Context) {
+func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 	schedulerReq := &ClusterSchedulerReq{}
 	err := c.BindJSON(schedulerReq)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the request body is wrong",
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
@@ -523,9 +496,7 @@ func (ch *ClusterHandler) PostCLusterScheduler(c *gin.Context) {
 
 	clusterID, err := strconv.Atoi(schedulerReq.ClusterID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "bad cluster id",
-		})
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
@@ -541,15 +512,62 @@ func (ch *ClusterHandler) PostCLusterScheduler(c *gin.Context) {
 
 	err = schedulerInfo.AddScheduler()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "add scheduler is wrong",
-		})
+		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-	})
+	api.S(c)
+	return
+}
+
+func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
+	schedulerReq := &ClusterSchedulerReq{}
+	err := c.BindJSON(schedulerReq)
+	if err != nil {
+		api.BadWithMsg(c, err.Error())
+		return
+	}
+
+	isEnabled := 0
+	if schedulerReq.Status {
+		isEnabled = 1
+	}
+
+	schedulerInfo := model.Scheduler{
+		ID:             uint(schedulerReq.ID),
+		Name:           schedulerReq.Name,
+		CronExpression: schedulerReq.Cron,
+		IsEnabled:      isEnabled,
+	}
+
+	err = schedulerInfo.UpdateScheduler()
+	if err != nil {
+		api.ErrorWithMsg(c, err.Error())
+		return
+	}
+
+	api.S(c)
+	return
+}
+
+func (ch *ClusterHandler) DeleteScheduler(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		api.BadWithMsg(c, err.Error())
+		return
+	}
+
+	s := model.Scheduler{
+		ID: uint(id),
+	}
+	err = s.DeleteScheduler()
+	if err != nil {
+		api.ErrorWithMsg(c, err.Error())
+		return
+	}
+
+	api.S(c)
+	return
 }
 
 func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, err error) {

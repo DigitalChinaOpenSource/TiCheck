@@ -6,7 +6,9 @@ const clusterApi = {
   addCluster: '/cluster/add',
   updateCluster: '/cluster/update/',
   getSchedulerList: '/cluster/scheduler/',
-  addScheduler: '/cluster/scheduler/add'
+  addScheduler: '/cluster/scheduler/add',
+  updateScheduler: '/cluster/scheduler/update',
+  deleteScheduler: '/cluster/scheduler/delete/'
 }
 
 export function getClusterList () {
@@ -51,5 +53,20 @@ export function addScheduler (parameter) {
     url: clusterApi.addScheduler,
     method: 'post',
     data: parameter
+  })
+}
+
+export function updateScheduler (parameter) {
+  return request({
+    method: 'put',
+    url: clusterApi.updateScheduler,
+    data: parameter
+  })
+}
+
+export function deleteScheduler (id) {
+  return request({
+    method: 'delete',
+    url: clusterApi.deleteScheduler + id
   })
 }
