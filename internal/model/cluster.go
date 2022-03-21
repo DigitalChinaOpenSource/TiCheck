@@ -10,6 +10,7 @@ type Cluster struct {
 	PrometheusURL string    `gorm:"not null"`
 	TiDBUsername  string    `gorm:"not null"`
 	TiDBPassword  string    `gorm:"not null"`
+	LoginPath     string    `gorm:"not null"`
 	CreateTime    time.Time `gorm:"not null"`
 	Description   string
 	Owner         string `gorm:"not null"`
