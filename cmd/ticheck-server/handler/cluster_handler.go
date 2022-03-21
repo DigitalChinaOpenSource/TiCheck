@@ -1,11 +1,8 @@
 package handler
 
 import (
-<<<<<<< HEAD
-	"TiCheck/executor"
-=======
 	"TiCheck/cmd/ticheck-server/api"
->>>>>>> c931667d9275e7532dd33fab37114c90600f6ab4
+	"TiCheck/executor"
 	"TiCheck/internal/model"
 	"context"
 	"encoding/json"
@@ -427,13 +424,7 @@ func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context) {
 	err = cc.UpdateProbeConfig()
 
 	if err != nil {
-<<<<<<< HEAD
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-=======
 		api.ErrorWithMsg(c, err.Error())
->>>>>>> c931667d9275e7532dd33fab37114c90600f6ab4
 		return
 	}
 
