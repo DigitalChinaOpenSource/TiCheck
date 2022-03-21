@@ -20,7 +20,7 @@ func InitDB() error {
 	newDB := false
 	if DbConn == nil {
 
-		dbFile := "store/ticheck.db"
+		dbFile := "../../store/ticheck.db"
 
 		_, err := os.Stat(dbFile)
 		if os.IsNotExist(err) {
@@ -56,14 +56,14 @@ func InitDB() error {
 	}
 
 	if newDB {
-		SetupSeedData()
+		setupSeedData()
 	}
 
 	return nil
 }
 
 // init seed data, such as admin user/local script...
-func SetupSeedData() {
+func setupSeedData() {
 
 	// admin user
 	admin := User{

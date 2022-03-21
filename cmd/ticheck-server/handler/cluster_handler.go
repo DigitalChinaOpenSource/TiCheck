@@ -4,7 +4,6 @@ import (
 	"TiCheck/cmd/ticheck-server/api"
 	"TiCheck/executor"
 	"TiCheck/internal/model"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -663,11 +662,11 @@ func (h QueryHelper) queryWithPD() (pdResp map[string]interface{}, err error) {
 }
 
 func (ch *ClusterHandler) ExecuteCheck(c *gin.Context) {
-	exe := executor.Create(executor.LocalExecutorType, "id")
+	exe := executor.CreateClusterExecutor(0)
 
 	resultCh := make(chan executor.CheckResult, 10)
-	ctx := context.WithValue(context.Background(), "", "")
-	go exe.ExecuteCheck(ctx, resultCh)
+	// ctx := context.WithValue(context.Background(), "", "")
+	go exe.Execute(resultCh)
 
 	for {
 		select {
