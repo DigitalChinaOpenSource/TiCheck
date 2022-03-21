@@ -210,7 +210,7 @@ export default {
         values.owner = this.owner.user_name
         addCluster(values)
         .then(res => this.addSuccess())
-        .catch(res => this.addFailed())
+        .catch(res => this.addFailed(res))
         .finally(() => {
           this.modalVisible = false
           this.clusterForm = this.$form.createForm(this)
@@ -224,10 +224,10 @@ export default {
       })
       this.getList()
     },
-    addFailed () {
+    addFailed (res) {
       this.$notification['error']({
         message: 'error',
-        description: `error`,
+        description: res.error.message,
         duration: 4
       })
     }
