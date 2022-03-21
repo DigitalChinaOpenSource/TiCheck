@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"time"
 )
 
@@ -72,6 +73,7 @@ func (c *Cluster) QueryCLusterList() ([]Cluster, error) {
 }
 
 func (c *Cluster) CreateCluster() (err error) {
+	c.CreateTime = time.Now().Local()
 	err = DbConn.Create(&c).Error
 	if err != nil {
 		return err
@@ -96,6 +98,21 @@ func (c *Cluster) UpdateClusterByID() error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (c *Cluster) CheckConn(path string) error {
+	DB, err := sql.Open("mysql", path)
+	if err != nil {
+		return err
+	}
+
+	if err = DB.Ping(); err != nil {
+		return err
+	}
+
+	defer DB.Close()
+
 	return nil
 }
 
