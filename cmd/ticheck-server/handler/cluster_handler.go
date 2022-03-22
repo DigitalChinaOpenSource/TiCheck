@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -227,14 +228,13 @@ func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 		return
 	}
 
-	err = ch.BuildClusterInfo(clusterInfoReq)
+	cluster, err := ch.BuildClusterInfo(clusterInfoReq)
 	if err != nil {
 		api.BadWithMsg(c, err.Error())
 		return
 	}
-	ch.ClusterInfo.CreateTime = time.Now().Local()
 
-	err = ch.ClusterInfo.CreateCluster()
+	err = cluster.CreateCluster()
 	if err != nil {
 		api.BadWithMsg(c, err.Error())
 		return
@@ -266,13 +266,13 @@ func (ch *ClusterHandler) UpdateClusterInfo(c *gin.Context) {
 
 	clusterInfoReq.ID = uint(clusterID)
 
-	err = ch.BuildClusterInfo(clusterInfoReq)
+	cluster, err := ch.BuildClusterInfo(clusterInfoReq)
 	if err != nil {
 		api.BadWithMsg(c, err.Error())
 		return
 	}
 
-	err = ch.ClusterInfo.UpdateClusterByID()
+	err = cluster.UpdateClusterByID()
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())
 		return
@@ -282,19 +282,23 @@ func (ch *ClusterHandler) UpdateClusterInfo(c *gin.Context) {
 	return
 }
 
-func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) error {
-	nodeType := []string{"pd", "grafana"}
+func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) (cluster model.Cluster, err error) {
+	nodeType := []string{"pd", "grafana", "tidb"}
 	url := fmt.Sprintf("http://%s/api/v1/query", req.PrometheusUrl)
 	nodes, err := getClusterNodesInfo(url, nodeType)
 	if err != nil {
-		return err
+		return cluster, err
 	}
 
 	var dashboard string
 	var grafana string
 
 	if len(nodes[0].Instance) < 1 {
-		return errors.New("found no pd server in this tidb cluster")
+		return cluster, errors.New("found no pd server in this tidb cluster")
+	}
+
+	if len(nodes[2].Instance) < 1 {
+		return cluster, errors.New("found no tidb server in this tidb cluster")
 	}
 
 	dashboard = fmt.Sprintf("http://%s/dashboard", nodes[0].Instance[0])
@@ -302,14 +306,26 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) error {
 	pdUrl := fmt.Sprintf("http://%s/pd/api/v1/version", nodes[0].Instance[0])
 	version, err := getClusterVersion(pdUrl)
 	if err != nil {
-		return err
+		return cluster, err
+	}
+
+	tidbUrl := fmt.Sprintf("http://%s/info", nodes[2].Instance[0])
+	host, portStr, err := getClusterConnectPath(tidbUrl)
+	if err != nil {
+		return cluster, err
 	}
 
 	if len(nodes[1].Instance) > 0 {
 		grafana = fmt.Sprintf("http://%s", nodes[1].Instance[0])
 	}
 
-	cluster := model.Cluster{
+	path := strings.Join([]string{req.LogUser, ":", req.LogPasswd, "@tcp(", host, ":", portStr, ")/information_schema"}, "")
+	err = cluster.CheckConn(path)
+	if err != nil {
+		return cluster, errors.New("tidb database username or password is wrong")
+	}
+
+	cluster = model.Cluster{
 		ID:            req.ID,
 		Name:          req.Name,
 		PrometheusURL: fmt.Sprintf("http://%s", req.PrometheusUrl),
@@ -321,8 +337,7 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) error {
 		GrafanaURL:    grafana,
 		DashboardURL:  dashboard,
 	}
-	ch.ClusterInfo = cluster
-	return nil
+	return cluster, nil
 }
 
 func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
@@ -604,13 +619,29 @@ func getClusterVersion(url string) (version string, err error) {
 		Url: url,
 	}
 
-	jsonMap, err := queryHelper.queryWithPD()
+	jsonMap, err := queryHelper.queryWithUrl()
 	if err != nil {
 		return version, errors.New(fmt.Sprintf("bad request: %s", err))
 	}
 
 	version = fmt.Sprintf("%v", jsonMap["version"])
 	return version, nil
+}
+
+func getClusterConnectPath(url string) (host string, portStr string, err error) {
+	queryHelper := QueryHelper{
+		Url: url,
+	}
+
+	jsonMap, err := queryHelper.queryWithUrl()
+	if err != nil {
+		return host, portStr, errors.New(fmt.Sprintf("bad request: %s", err))
+	}
+
+	host = fmt.Sprintf("%v", jsonMap["ip"])
+	portStr = fmt.Sprintf("%v", jsonMap["listening_port"])
+
+	return host, portStr, nil
 }
 
 func (h QueryHelper) queryWithPrometheus() (proResp PrometheusResp, err error) {
@@ -642,23 +673,23 @@ func (h QueryHelper) queryWithPrometheus() (proResp PrometheusResp, err error) {
 	return proResp, nil
 }
 
-func (h QueryHelper) queryWithPD() (pdResp map[string]interface{}, err error) {
+func (h QueryHelper) queryWithUrl() (result map[string]interface{}, err error) {
 	resp, err := http.Get(h.Url)
 	if err != nil {
-		return pdResp, errors.New(fmt.Sprintf("bad request: %s", err))
+		return result, errors.New(fmt.Sprintf("bad request: %s", err))
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return pdResp, errors.New(fmt.Sprintf("parse error: %s", err))
+		return result, errors.New(fmt.Sprintf("parse error: %s", err))
 	}
 
 	bodyStr := string(body)
-	if errJson := json.Unmarshal([]byte(bodyStr), &pdResp); errJson != nil {
-		return pdResp, errors.New(fmt.Sprintf("parse error: %s", err))
+	if errJson := json.Unmarshal([]byte(bodyStr), &result); errJson != nil {
+		return result, errors.New(fmt.Sprintf("parse error: %s", err))
 	}
 
-	return pdResp, nil
+	return result, nil
 }
 
 func (ch *ClusterHandler) ExecuteCheck(c *gin.Context) {
