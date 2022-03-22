@@ -9,11 +9,12 @@ type ClusterChecklist struct {
 }
 
 type CheckListInfo struct {
-	ID			uint   `gorm:"primary" json:"id"`
+	ID          uint   `gorm:"primary" json:"id"`
 	ProbeID     string `gorm:"not null" json:"probe_id"`
 	ScriptName  string `gorm:"not null" json:"script_name"`
 	FileName    string `json:"file_name"`
 	Tag         string `json:"tag"`
+	Source      string `json:"source"` // source is one of ["local","remote","custom"]
 	Description string `json:"description"`
 	Operator    int    `json:"operator"`
 	Threshold   string `json:"threshold"`
@@ -27,9 +28,9 @@ func (cc *ClusterChecklist) TableName() string {
 func (cc *ClusterChecklist) GetListInfoByClusterID(id int) ([]CheckListInfo, error) {
 	var cl []CheckListInfo
 	var probe Probe
-	err := DbConn.Table(cc.TableName() + " as cc").Select("cc.id, cc.probe_id, p.script_name, p.file_name, " +
+	err := DbConn.Table(cc.TableName()+" as cc").Select("cc.id, cc.probe_id, p.script_name, p.file_name, "+
 		"p.tag, p.description, cc.operator, cc.Threshold, cc.is_enabled").
-		Joins("join " + probe.TableName() + " as p on cc.probe_id = p.id").
+		Joins("join "+probe.TableName()+" as p on cc.probe_id = p.id").
 		Where("cc.cluster_id = ?", id).Find(&cl).Error
 
 	return cl, err
@@ -54,7 +55,7 @@ func (cc *ClusterChecklist) ChangeProbeStatus() error {
 // UpdateProbeConfig only update operator and threshold by id
 func (cc *ClusterChecklist) UpdateProbeConfig() error {
 	err := DbConn.Model(cc).Updates(map[string]interface{}{
-		"operator": cc.Operator,
+		"operator":  cc.Operator,
 		"threshold": cc.Threshold,
 	}).Error
 	return err
