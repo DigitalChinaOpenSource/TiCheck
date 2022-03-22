@@ -67,7 +67,7 @@ func CreateClusterExecutor(cluster_id int) Executor {
 	return ce
 }
 
-func applyProbe(file string) CheckResult {
+func applyProbe(file string, info *model.CheckListInfo, cluster *ClusterExecutor) CheckResult {
 	result := CheckResult{}
 
 	_, err := os.Stat(file)
@@ -77,21 +77,26 @@ func applyProbe(file string) CheckResult {
 		return result
 	}
 
+	args := []string{file}                  // sh file
+	args = append(args, cluster.Prometheus) //promethous url
+	args = append(args, cluster.LoginPath)  //login path
+	args = append(args, info.Arg)           //probe custom args
+
 	switch path.Ext(file) {
 	case ".sh":
-		result = applyShellProbe(file)
+		result = applyShellProbe(args)
 	case ".py":
-		result = applyPythonProbe(file)
+		result = applyPythonProbe(args)
 	default:
 		fmt.Println("applyProbe Error, invalid file extension:", file)
-		result.Err = err
+		result.Err = fmt.Errorf("invalid file extension: %s", path.Ext(file))
 	}
 
 	return result
 }
 
-func applyShellProbe(file string, args ...string) CheckResult {
-	cmd := exec.Command(file, args...)
+func applyShellProbe(args []string) CheckResult {
+	cmd := exec.Command("sh", args...)
 	err := cmd.Run()
 	if err != nil {
 		print(err)
@@ -103,8 +108,8 @@ func applyShellProbe(file string, args ...string) CheckResult {
 	return CheckResult{}
 }
 
-func applyPythonProbe(file string, args ...string) CheckResult {
-	cmd := exec.Command(file, args...)
+func applyPythonProbe(args []string) CheckResult {
+	cmd := exec.Command("python", args...)
 	err := cmd.Run()
 	if err != nil {
 		print(err)
@@ -128,7 +133,7 @@ type LocalExecutor struct {
 func (le *LocalExecutor) ExecuteCheck(res CheckResult) {
 
 	file := fmt.Sprintf("%s/%s/%s/%s", probe_prefix, le.LocalExecutorType, le.Info.ProbeID, le.Info.FileName)
-	res = applyProbe(file)
+	res = applyProbe(file, le.Info, le.Cluster)
 }
 
 type RemoteExecutor struct {
@@ -139,7 +144,7 @@ type RemoteExecutor struct {
 
 func (re *RemoteExecutor) ExecuteCheck(res CheckResult) {
 	file := fmt.Sprintf("%s/%s/%s/%s", probe_prefix, re.RemoteExecutorType, re.Info.ProbeID, re.Info.FileName)
-	res = applyProbe(file)
+	res = applyProbe(file, re.Info, re.Cluster)
 }
 
 type CustomExecutor struct {
@@ -150,7 +155,7 @@ type CustomExecutor struct {
 
 func (ce *CustomExecutor) ExecuteCheck(res CheckResult) {
 	file := fmt.Sprintf("%s/%s/%s/%s", probe_prefix, ce.CustomExecutorType, ce.Info.ProbeID, ce.Info.FileName)
-	res = applyProbe(file)
+	res = applyProbe(file, ce.Info, ce.Cluster)
 }
 
 func createExecutor(info *model.CheckListInfo, cluster *ClusterExecutor) ProbeExecutor {

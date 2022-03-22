@@ -19,6 +19,7 @@ type CheckListInfo struct {
 	Operator    int    `json:"operator"`
 	Threshold   string `json:"threshold"`
 	IsEnabled   int    `json:"is_enabled"`
+	Arg         string `json:"arg,omitempty"`
 }
 
 func (cc *ClusterChecklist) TableName() string {
@@ -29,7 +30,7 @@ func (cc *ClusterChecklist) GetListInfoByClusterID(id int) ([]CheckListInfo, err
 	var cl []CheckListInfo
 	var probe Probe
 	err := DbConn.Table(cc.TableName()+" as cc").Select("cc.id, cc.probe_id, p.script_name, p.file_name, "+
-		"p.tag, p.description, cc.operator, cc.Threshold, cc.is_enabled").
+		"p.tag, case p.is_system when 1 then 'local' when 0 then 'custom' else 'remote' end as source, p.description, cc.operator, cc.threshold, cc.is_enabled, cc.arg").
 		Joins("join "+probe.TableName()+" as p on cc.probe_id = p.id").
 		Where("cc.cluster_id = ?", id).Find(&cl).Error
 
