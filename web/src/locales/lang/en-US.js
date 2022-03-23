@@ -12,6 +12,7 @@ import form from './en-US/form'
 import result from './en-US/result'
 import account from './en-US/account'
 import cluster from './en-US/cluster'
+import check from './en-US/check'
 
 import store from './en-US/store'
 
@@ -40,5 +41,6 @@ export default {
   ...result,
   ...account,
   ...store,
-  ...cluster
+  ...cluster,
+  ...check
 }

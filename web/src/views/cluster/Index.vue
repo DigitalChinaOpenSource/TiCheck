@@ -23,28 +23,10 @@
                 {{ $t('menu.cluster.check.history') }}
               </router-link>
             </a-menu-item>
-            <a-menu-item key="/cluster/scheduler">
-              <router-link :to="{ name: 'ClusterScheduler', params: {id: clusrerID}}">
-                <a-icon type="folder-open" />
-                {{ $t('menu.cluster.scheduler') }}
-              </router-link>
-            </a-menu-item>
             <a-menu-item key="/cluster/script">
               <router-link :to="{ name: 'ProbeList', params: {id: clusrerID}}">
                 <a-icon type="folder-open" />
                 {{ $t('menu.cluster.check.probe') }}
-              </router-link>
-            </a-menu-item>
-            <a-menu-item key="/cluster/user">
-              <router-link :to="{ name: 'ClusterUser', params: {id: clusrerID}}">
-                <a-icon type="folder-open" />
-                {{ $t('menu.cluster.user') }}
-              </router-link>
-            </a-menu-item>
-            <a-menu-item key="/cluster/set">
-              <router-link :to="{ name: 'ClusterSet', params: {id: clusrerID}}">
-                <a-icon type="folder-open" />
-                {{ $t('menu.cluster.set') }}
               </router-link>
             </a-menu-item>
             <a-menu-item key="/cluster/check/execute">
@@ -53,6 +35,24 @@
                 {{ $t('menu.cluster.check.execute') }}
               </router-link>
             </a-menu-item>
+            <a-menu-item key="/cluster/scheduler">
+              <router-link :to="{ name: 'ClusterScheduler', params: {id: clusrerID}}">
+                <a-icon type="folder-open" />
+                {{ $t('menu.cluster.scheduler') }}
+              </router-link>
+            </a-menu-item>
+            <a-menu-item key="/cluster/set">
+              <router-link :to="{ name: 'ClusterSet', params: {id: clusrerID}}">
+                <a-icon type="folder-open" />
+                {{ $t('menu.cluster.set') }}
+              </router-link>
+            </a-menu-item>
+            <!-- <a-menu-item key="/cluster/user">
+              <router-link :to="{ name: 'ClusterUser', params: {id: clusrerID}}">
+                <a-icon type="folder-open" />
+                {{ $t('menu.cluster.user') }}
+              </router-link>
+            </a-menu-item> -->
           </a-menu>
         </div>
         <div class="account-settings-info-right">
