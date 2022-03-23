@@ -41,10 +41,10 @@
                 {{ $t('menu.cluster.scheduler') }}
               </router-link>
             </a-menu-item>
-            <a-menu-item key="/cluster/set">
-              <router-link :to="{ name: 'ClusterSet', params: {id: clusrerID}}">
+            <a-menu-item key="/cluster/setting">
+              <router-link :to="{ name: 'ClusterSetting', params: {id: clusrerID}}">
                 <a-icon type="folder-open" />
-                {{ $t('menu.cluster.set') }}
+                {{ $t('menu.cluster.settings') }}
               </router-link>
             </a-menu-item>
             <!-- <a-menu-item key="/cluster/user">

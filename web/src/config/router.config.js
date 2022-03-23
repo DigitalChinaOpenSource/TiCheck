@@ -44,7 +44,7 @@ export const asyncRouterMap = [
               },
               {
                 path: '/cluster/info/setting/:id',
-                name: 'ClusterSet',
+                name: 'ClusterSetting',
                 component: () => import('@/views/cluster/Setting'),
                 meta: { title: 'menu.cluster.info.setting', keepAlive: true, permission: ['sham'] }
               },
@@ -66,6 +66,12 @@ export const asyncRouterMap = [
                 name: 'ReportDetail',
                 component: () => import('@/views/check/ReportDetail'),
                 meta: { title: 'menu.cluster.check.report', keepAlive: true, permission: ['sham'] }
+              },
+              {
+                path: '/cluster/check/execute/:id',
+                name: 'ExecuteCheck',
+                component: () => import('@/views/check/ExecuteCheck'),
+                meta: { title: 'menu.cluster.check.execute', keepAlive: true, permission: ['sham'] }
               },
               {
                 path: '/cluster/check/probe/:id',
