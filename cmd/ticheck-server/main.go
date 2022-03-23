@@ -2,7 +2,6 @@ package main
 
 import (
 	"TiCheck/cmd/ticheck-server/router"
-	"TiCheck/executor"
 	"TiCheck/internal/model"
 	"context"
 	"log"
@@ -43,11 +42,11 @@ func main() {
 		}
 	}()
 
-	exe := executor.CreateClusterExecutor(1)
+	// exe := executor.CreateClusterExecutor(1, 0)
 
-	resultCh := make(chan executor.CheckResult, 10)
-	// ctx := context.WithValue(context.Background(), "", "")
-	exe.Execute(resultCh)
+	// resultCh := make(chan executor.CheckResult, 10)
+	// // ctx := context.WithValue(context.Background(), "", "")
+	// exe.Execute(resultCh)
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.

@@ -2,11 +2,15 @@ package executor
 
 import (
 	"TiCheck/internal/model"
-	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
 )
 
 var (
@@ -15,7 +19,7 @@ var (
 
 type CheckResult struct {
 	Err  error // script level error
-	Data model.CheckData
+	Data []model.CheckData
 }
 
 type Executor interface {
@@ -23,41 +27,91 @@ type Executor interface {
 }
 
 type ClusterExecutor struct {
-	ClusterID  int
-	Prometheus string
-	LoginPath  string
-	CheckList  []model.CheckListInfo
+	ClusterID   uint
+	SchedulerID uint
+	Prometheus  string
+	LoginPath   string
+	HistoryID   uint
+	CheckList   []model.CheckListInfo
+}
+
+type ExecutorContext struct {
+	cluster   *ClusterExecutor
+	checkInfo *model.CheckListInfo
+
+	wg      *sync.WaitGroup
+	counter *ExecutorCounter
+}
+
+type ExecutorCounter struct {
+	mutex sync.Mutex
+
+	normalItems  uint
+	warningItems uint
 }
 
 func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 
-	for _, task := range ce.CheckList {
-
+	begin := time.Now()
+	his := model.CheckHistory{
+		CheckTime:   begin,
+		ClusterID:   ce.ClusterID,
+		SchedulerID: ce.SchedulerID,
+	}
+	if err := model.DbConn.Create(&his).Error; err != nil {
 		result := CheckResult{}
-		executor := createExecutor(&task, ce)
+		result.Err = fmt.Errorf("create check history error: %s", err.Error())
+		rc <- result
+		return
+	}
+
+	ce.HistoryID = his.ID
+
+	wg := &sync.WaitGroup{}
+	counter := &ExecutorCounter{}
+
+	for _, task := range ce.CheckList {
+		result := &CheckResult{}
+
+		ctx := ExecutorContext{
+			cluster:   ce,
+			checkInfo: &task,
+			wg:        wg,
+			counter:   counter,
+		}
+		executor := createExecutor(ctx)
 		if executor == nil {
 			result.Err = fmt.Errorf("create executor error, invalide source: %s", task.Source)
 			continue
 		} else {
-			executor.ExecuteCheck(result)
+			wg.Add(1)
+			go executor.ExecuteCheck(result)
 		}
-		rc <- result
+		rc <- *result
 	}
+	wg.Wait()
+	// update history result
+	his.Duration = time.Since(begin).Milliseconds()
+	his.NormalItems = counter.normalItems
+	his.WarningItems = counter.warningItems
+	his.TotalItems = counter.normalItems + counter.warningItems
+	model.DbConn.Save(&his)
 }
 
-func CreateClusterExecutor(cluster_id int) Executor {
-	c, err := (&model.Cluster{}).QueryClusterInfoByID(cluster_id)
+func CreateClusterExecutor(cluster_id, scheduler_id uint) Executor {
+	c, err := (&model.Cluster{}).QueryClusterInfoByID(int(cluster_id))
 	if err != nil {
 		fmt.Println("CreateClusterExecutor Error:", err.Error())
 		return nil
 	}
 	ce := &ClusterExecutor{
-		ClusterID:  cluster_id,
-		Prometheus: c.PrometheusURL,
-		LoginPath:  c.LoginPath,
+		ClusterID:   cluster_id,
+		SchedulerID: scheduler_id,
+		Prometheus:  c.PrometheusURL,
+		LoginPath:   c.LoginPath,
 	}
 
-	tasks, err := (&model.ClusterChecklist{}).GetListInfoByClusterID(cluster_id)
+	tasks, err := (&model.ClusterChecklist{}).GetEnabledCheckListByClusterID(int(cluster_id))
 	if err != nil {
 		fmt.Println("CreateClusterExecutor Error:", err.Error())
 		return nil
@@ -67,109 +121,252 @@ func CreateClusterExecutor(cluster_id int) Executor {
 	return ce
 }
 
-func applyProbe(info *model.CheckListInfo, cluster *ClusterExecutor) CheckResult {
-	result := CheckResult{}
+func applyProbe(ctx ExecutorContext, result *CheckResult) {
+	// result := CheckResult{}
 
-	file := fmt.Sprintf("%s/%s/%s/%s", probe_prefix, info.Source, info.ProbeID, info.FileName)
-	_, err := os.Stat(file)
-	if os.IsNotExist(err) {
-		fmt.Println("applyProbe Error, file not found:", err.Error())
-		result.Err = err
-		return result
+	file := fmt.Sprintf("%s/%s/%s/%s", probe_prefix, ctx.checkInfo.Source, ctx.checkInfo.ProbeID, ctx.checkInfo.FileName)
+	_, e := os.Stat(file)
+	if os.IsNotExist(e) {
+		fmt.Println("applyProbe Error, file not found:", e.Error())
+		result.Err = e
+		return
 	}
 
-	args := []string{file}                  // sh file
-	args = append(args, cluster.Prometheus) //promethous url
-	args = append(args, cluster.LoginPath)  //login path
-	args = append(args, info.Arg)           //probe custom args
+	f, e := filepath.Abs(file)
+	if e != nil {
+		fmt.Println("applyProbe Error, file abs not found:", e.Error())
+		result.Err = e
+		return
+	}
+	args := []string{f} // script file absolute path
+	args = append(args, "baepath")
+	args = append(args, ctx.cluster.Prometheus) //promethous url
+	args = append(args, ctx.cluster.LoginPath)  //login path
+	args = append(args, ctx.checkInfo.Arg)      //probe custom args
 
+	var output []string
+	var err error
+	begin := time.Now()
 	switch path.Ext(file) {
 	case ".sh":
-		result = applyShellProbe(args)
+		output, err = applyShellProbe(args)
 	case ".py":
-		result = applyPythonProbe(args)
+		output, err = applyPythonProbe(args)
 	default:
 		fmt.Println("applyProbe Error, invalid file extension:", file)
 		result.Err = fmt.Errorf("invalid file extension: %s", path.Ext(file))
+		return
 	}
-
-	return result
+	normal, warning, data := compareThreshold(ctx, begin, output)
+	result.Data = data
+	result.Err = err
+	if len(data) > 0 {
+		model.DbConn.Create(&data)
+	}
+	ctx.counter.mutex.Lock()
+	ctx.counter.normalItems += normal
+	ctx.counter.warningItems += warning
+	ctx.counter.mutex.Unlock()
 }
 
-func applyShellProbe(args []string) CheckResult {
+func compareThreshold(
+	ctx ExecutorContext,
+	begin time.Time,
+	output []string) (normal, warning uint, data []model.CheckData) {
+	// fmt.Println(len(output))
+	duration := time.Since(begin).Milliseconds()
+	if len(output) == 0 {
+		cd := model.CheckData{
+			Duration:  duration,
+			CheckTag:  ctx.checkInfo.Tag,
+			CheckTime: begin,
+			CheckName: ctx.checkInfo.ScriptName,
+			ClusterID: ctx.cluster.ClusterID,
+			HistoryID: ctx.cluster.HistoryID,
+		}
+		cd.Operator = ctx.checkInfo.Operator
+		cd.Threshold = ctx.checkInfo.Threshold
+		cd.Arg = ctx.checkInfo.Arg
+		cd.CheckItem = ctx.checkInfo.ScriptName
+		cd.CheckValue = "NA"
+		cd.CheckStatus = 0
+		data = append(data, cd)
+		return
+	}
+
+	var thd float64
+	if t, e := strconv.ParseFloat(ctx.checkInfo.Threshold, 32); e == nil {
+		thd = t
+	}
+	for i := 0; i < len(output); i++ {
+		op := output[i]
+		if strings.HasPrefix(op, "tck_result:") {
+			row := strings.Split(strings.TrimPrefix(op, "tck_result:"), "=")
+			if len(row) < 2 {
+				fmt.Printf("error to skipped: invald probe %s", op)
+				continue
+			}
+
+			cd := model.CheckData{
+				Duration:  duration,
+				CheckTag:  ctx.checkInfo.Tag,
+				CheckTime: begin,
+				CheckName: ctx.checkInfo.ScriptName,
+				ClusterID: ctx.cluster.ClusterID,
+				HistoryID: ctx.cluster.HistoryID,
+			}
+			cd.Operator = ctx.checkInfo.Operator
+			cd.Threshold = ctx.checkInfo.Threshold
+			cd.Arg = ctx.checkInfo.Arg
+			cd.CheckItem = row[0]
+			cd.CheckValue = row[1]
+
+			var val float64
+			if t, e := strconv.ParseFloat(row[1], 32); e == nil {
+				val = t
+			}
+
+			is_normal := true
+			switch ctx.checkInfo.Operator {
+			case Comparator_Eq:
+				{
+					is_normal = val == thd
+				}
+			case Comparator_Gt:
+				{
+					is_normal = val > thd
+				}
+			case Comparator_Ge:
+				{
+					is_normal = val >= thd
+				}
+			case Comparator_Le:
+				{
+					is_normal = val < thd
+				}
+			case Comparator_Lt:
+				{
+					is_normal = val <= thd
+				}
+			case Comparator_NA:
+				{
+					is_normal = true
+				}
+			default:
+				{
+					fmt.Printf("error to skipped: comparator: %v not supported", ctx.checkInfo.Operator)
+					continue
+				}
+			}
+			if is_normal {
+				normal = normal + 1
+				cd.CheckStatus = 0
+			} else {
+				warning = warning + 1
+				cd.CheckStatus = 1
+			}
+			data = append(data, cd)
+
+		} else if strings.HasPrefix(op, "tck_log:") {
+			// TODO: save check log of a script in furtuer
+			fmt.Printf("probe %s", op)
+		}
+	}
+	return
+}
+
+func applyShellProbe(args []string) (output []string, err error) {
 	cmd := exec.Command("sh", args...)
-	err := cmd.Run()
-	if err != nil {
-		print(err)
+
+	// var output bytes.Buffer
+	// cmd.Stdout = &output
+	// err := cmd.Run()
+	// if err != nil {
+	// 	print(err)
+	// }
+	// fmt.Printf("%s", output.String())
+
+	op, e := cmd.CombinedOutput()
+	if e != nil {
+		print(e)
+		err = e
+	} else {
+		output = strings.Split(strings.Trim(string(op), "\n"), "\n")
+		fmt.Println(output)
 	}
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	output, err := cmd.CombinedOutput()
-	fmt.Printf("%s", out.String())
-	fmt.Printf("%s", string(output))
-	// sleep for 10 seconds before sending done signal
-	// time.Sleep(time.Second * 10)
-	return CheckResult{}
+	return
 }
 
-func applyPythonProbe(args []string) CheckResult {
+func applyPythonProbe(args []string) (output []string, err error) {
 	cmd := exec.Command("python", args...)
-	err := cmd.Run()
-	if err != nil {
-		print(err)
+	op, e := cmd.CombinedOutput()
+	if e != nil {
+		print(e)
+		err = e
+	} else {
+		output = strings.Split(strings.Trim(string(op), "\n"), "\n")
+		fmt.Println(output)
 	}
-
-	// sleep for 10 seconds before sending done signal
-	// time.Sleep(time.Second * 10)
-	return CheckResult{}
+	return
 }
 
 type ProbeExecutor interface {
-	ExecuteCheck(res CheckResult)
+	ExecuteCheck(res *CheckResult)
 }
 
-type LocalExecutor struct {
-	LocalExecutorType ExecutorType
-	Info              *model.CheckListInfo
-	Cluster           *ClusterExecutor
+// type LocalExecutor struct {
+// 	LocalExecutorType ExecutorType
+// 	Info              *model.CheckListInfo
+// 	Cluster           *ClusterExecutor
+// }
+
+// func (le *LocalExecutor) ExecuteCheck(res *CheckResult) {
+// 	applyProbe(le.Info, le.Cluster, res)
+// }
+
+// type RemoteExecutor struct {
+// 	RemoteExecutorType ExecutorType
+// 	Info               *model.CheckListInfo
+// 	Cluster            *ClusterExecutor
+// }
+
+// func (re *RemoteExecutor) ExecuteCheck(res *CheckResult) {
+// 	applyProbe(re.Info, re.Cluster, res)
+// }
+
+// type CustomExecutor struct {
+// 	CustomExecutorType ExecutorType
+// 	Info               *model.CheckListInfo
+// 	Cluster            *ClusterExecutor
+// }
+
+// func (ce *CustomExecutor) ExecuteCheck(res *CheckResult) {
+// 	applyProbe(ce.Info, ce.Cluster, res)
+// }
+
+type CommonExecutor struct {
+	context ExecutorContext
 }
 
-func (le *LocalExecutor) ExecuteCheck(res CheckResult) {
-	res = applyProbe(le.Info, le.Cluster)
+func (ce *CommonExecutor) ExecuteCheck(res *CheckResult) {
+	time.Sleep(time.Second * 3)
+	applyProbe(ce.context, res)
+	ce.context.wg.Done()
 }
 
-type RemoteExecutor struct {
-	RemoteExecutorType ExecutorType
-	Info               *model.CheckListInfo
-	Cluster            *ClusterExecutor
-}
-
-func (re *RemoteExecutor) ExecuteCheck(res CheckResult) {
-	res = applyProbe(re.Info, re.Cluster)
-}
-
-type CustomExecutor struct {
-	CustomExecutorType ExecutorType
-	Info               *model.CheckListInfo
-	Cluster            *ClusterExecutor
-}
-
-func (ce *CustomExecutor) ExecuteCheck(res CheckResult) {
-	res = applyProbe(ce.Info, ce.Cluster)
-}
-
-func createExecutor(info *model.CheckListInfo, cluster *ClusterExecutor) ProbeExecutor {
-	fmt.Println("Create ProbeExecutor:", info.ScriptName, info.Source)
-	switch info.Source {
-	case string(LocalExecutorType):
-		return &LocalExecutor{Info: info, Cluster: cluster}
-	case string(RemoteExecutorType):
-		return &RemoteExecutor{Info: info, Cluster: cluster}
-	case string(CustomExecutorType):
-		return &CustomExecutor{Info: info, Cluster: cluster}
-	default:
-		return nil
-	}
+func createExecutor(ctx ExecutorContext) ProbeExecutor {
+	return &CommonExecutor{context: ctx}
+	// fmt.Println("Create ProbeExecutor:", info.ScriptName, info.Source)
+	// switch info.Source {
+	// case string(LocalExecutorType):
+	// 	return &LocalExecutor{Info: info, Cluster: cluster}
+	// case string(RemoteExecutorType):
+	// 	return &RemoteExecutor{Info: info, Cluster: cluster}
+	// case string(CustomExecutorType):
+	// 	return &CustomExecutor{Info: info, Cluster: cluster}
+	// default:
+	// 	return nil
+	// }
 }
 
 type ExecutorType string
@@ -178,4 +375,13 @@ const (
 	LocalExecutorType  ExecutorType = "local"
 	RemoteExecutorType ExecutorType = "remote"
 	CustomExecutorType ExecutorType = "custom"
+)
+
+const (
+	Comparator_NA = iota
+	Comparator_Eq
+	Comparator_Gt
+	Comparator_Ge
+	Comparator_Lt
+	Comparator_Le
 )

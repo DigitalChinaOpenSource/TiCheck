@@ -693,7 +693,7 @@ func (h QueryHelper) queryWithUrl() (result map[string]interface{}, err error) {
 }
 
 func (ch *ClusterHandler) ExecuteCheck(c *gin.Context) {
-	exe := executor.CreateClusterExecutor(0)
+	exe := executor.CreateClusterExecutor(1, 0)
 
 	resultCh := make(chan executor.CheckResult, 10)
 	// ctx := context.WithValue(context.Background(), "", "")
