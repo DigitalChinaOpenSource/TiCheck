@@ -35,5 +35,12 @@ export default {
     'menu.account.center': '个人中心',
     'menu.account.settings': '个人设置',
     'menu.account.trigger': '触发报错',
-    'menu.account.logout': '退出登录'
+    'menu.account.logout': '退出登录',
+    'menu.cluster.info': '集群信息',
+    'menu.cluster.check.history': '巡检历史',
+    'menu.cluster.check.probe': '巡检指标',
+    'menu.cluster.check.execute': '执行巡检',
+    'menu.cluster.scheduler': '定时任务',
+    'menu.cluster.set': '集群设置',
+    'menu.cluster.user': '用户管理'
 }

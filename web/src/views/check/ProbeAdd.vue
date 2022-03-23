@@ -2,14 +2,28 @@
   <div>
     <a-page-header
       style="border: 1px solid rgb(235, 237, 240); margin-bottom: 20px"
-      title="$t('cluster.detail.check.probe.add.title')"
+      :title="$t('check.probe.add.title')"
       @back="back"
     />
-
+    <div style="float: right">
+      <a-radio-group default-value="local" button-style="solid" size="large">
+        <a-radio-button value="local" @click="getLocalData">
+          {{ $t("check.probe.add.local") }}
+        </a-radio-button>
+        <a-radio-button value="remote" @click="getRemoteData">
+          {{ $t("check.probe.add.remote") }}
+        </a-radio-button>
+        <a-radio-button value="custom" @click="getCustomData">
+          {{ $t("check.probe.add.custom") }}
+        </a-radio-button>
+      </a-radio-group>
+    </div>
     <a-table
       :columns="columns"
       :data-source="data"
       :rowKey="(record) => record.id"
+      :pagination="pagination"
+      style="padding-top: 50px"
     >
       <div
         slot="filterDropdown"
@@ -41,18 +55,21 @@
           style="width: 90px; margin-right: 8px"
           @click="() => handleSearch(selectedKeys, confirm, column.dataIndex)"
         >
-          Search
+          {{ $t("check.probe.add.search") }}
         </a-button>
         <a-button
           size="small"
           style="width: 90px"
           @click="() => handleReset(clearFilters)"
         >
-          Reset
+          {{ $t("check.probe.add.reset") }}
         </a-button>
       </div>
       <span slot="operator" slot-scope="operator">
         {{ mapOperatorValue(operator) }}
+      </span>
+      <span slot="update_time" slot-scope="update_time">
+        {{ update_time | moment }}
       </span>
       <a-button
         type="primary"
@@ -60,13 +77,13 @@
         slot-scope="record"
         @click="addProbe(record)"
       >
-        {{ $t("add") }}
+        {{ $t("check.probe.add.table.add") }}
       </a-button>
     </a-table>
 
     <div>
       <a-modal
-        title="Add Check Item"
+        :title="$t('check.probe.module.title')"
         :visible="modalVisible"
         :confirm-loading="confirmLoading"
         :footer="null"
@@ -78,17 +95,17 @@
           :wrapper-col="{ span: 12 }"
           @submit="(e) => handleAddProbe(e)"
         >
-          <a-form-item label="Probe ID">
+          <a-form-item :label="$t('check.probe.module.id')">
             <span class="ant-form-text" v-decorator="['probe_id', {}]">
               {{ form.getFieldValue("probe_id") }}
             </span>
           </a-form-item>
-          <a-form-item label="Script Name">
+          <a-form-item :label="$t('check.probe.module.name')">
             <span class="ant-form-text" v-decorator="['script_name', {}]">
               {{ form.getFieldValue("script_name") }}
             </span>
           </a-form-item>
-          <a-form-item label="Operator">
+          <a-form-item :label="$t('check.probe.module.operator')">
             <a-select
               v-decorator="[
                 'operator',
@@ -101,7 +118,6 @@
                   ],
                 },
               ]"
-              placeholder="Select a operator"
             >
               <a-select-option value="0">
                 {{ mapOperatorValue(0) }}
@@ -123,13 +139,13 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item label="Threshold">
+          <a-form-item :label="$t('check.probe.module.threshold')">
             <a-input
               v-decorator="[
                 'threshold',
                 {
                   rules: [
-                    { required: true, message: 'Please input probe threshold' },
+                    { required: true, message: 'Please input a number' },
                   ],
                 },
               ]"
@@ -137,14 +153,14 @@
           </a-form-item>
           <a-form-item :wrapper-col="{ span: 16, offset: 7 }">
             <a-button :loading="confirmLoading" html-type="submit">
-              Submit
+              {{ $t("check.probe.module.submit") }}
             </a-button>
             <a-button
               key="back"
               @click="handleCancel"
               style="margin-left: 50px"
             >
-              Cannel
+              {{ $t("check.probe.module.cancel") }}
             </a-button>
           </a-form-item>
         </a-form>
@@ -154,80 +170,8 @@
 </template>
 <script>
 import { getAddProbeList, mapOperatorValue, addProbe } from "@/api/check";
-const columns = [
-  {
-    title: "ID",
-    dataIndex: "id",
-    key: "id",
-    slots: { title: "customTitle" },
-    scopedSlots: { customRender: "id" },
-  },
-  {
-    title: "script_name",
-    dataIndex: "script_name",
-    key: "script_name",
-    scopedSlots: {
-      filterDropdown: "filterDropdown",
-      filterIcon: "filterIcon",
-      customRender: "customRender",
-    },
-    onFilter: (value, record) =>
-      record.script_name.toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownVisibleChange: (visible) => {
-      if (visible) {
-        setTimeout(() => {
-          this.searchInput.focus();
-        }, 0);
-      }
-    },
-  },
-  {
-    title: "file_name",
-    dataIndex: "file_name",
-    key: "file_name",
-  },
-  {
-    title: "tag",
-    key: "tag",
-    dataIndex: "tag",
-    scopedSlots: { customRender: "tag" },
-    filters: [
-      { text: "集群", value: "集群" },
-      { text: "网络", value: "网络" },
-      { text: "运行状态", value: "运行状态" },
-    ],
-    filterMultiple: false,
-    onFilter: (value, record) => record.tag.indexOf(value) === 0,
-  },
-  {
-    title: "operator",
-    key: "operator",
-    dataIndex: "operator",
-    scopedSlots: { customRender: "operator" },
-  },
-  {
-    title: "threshold",
-    key: "threshold",
-    dataIndex: "threshold",
-    scopedSlots: { customRender: "threshold" },
-  },
-  {
-    title: "creator",
-    key: "creator",
-    dataIndex: "creator",
-  },
-  {
-    title: "update_time",
-    key: "update_time",
-    dataIndex: "update_time",
-  },
-  {
-    title: "action",
-    key: "action",
-    scopedSlots: { customRender: "action" },
-  },
-];
 
+const columns = [];
 const data = [];
 
 export default {
@@ -235,6 +179,11 @@ export default {
     return {
       data,
       columns,
+      pagination: {
+        showTotal: (total) => `Total ${total} items`,
+        showSizeChanger: true,
+        pageSizeOptions: ["10", "20", "30", "40"],
+      },
       clusterID: this.$route.params.id,
 
       // search
@@ -253,11 +202,13 @@ export default {
   },
   methods: {
     getAddProbeList() {
-      getAddProbeList(this.clusterID).then((res) => {
-        this.data = res.data;
-      }).catch(err => {
-        this.$router.push({ name: "cluster" });
-      });
+      getAddProbeList(this.clusterID)
+        .then((res) => {
+          this.data = res.data;
+        })
+        .catch((err) => {
+          this.$router.push({ name: "cluster" });
+        });
     },
     back() {
       console.log("back");
@@ -314,6 +265,75 @@ export default {
       clearFilters();
       this.searchText = "";
     },
+  },
+  beforeUpdate() {
+    this.columns = [
+      {
+        title: this.$t("check.probe.add.table.probeID"),
+        dataIndex: "id",
+        key: "id",
+        slots: { title: "customTitle" },
+        scopedSlots: { customRender: "id" },
+      },
+      {
+        title: this.$t("check.probe.add.table.name"),
+        dataIndex: "script_name",
+        key: "script_name",
+        scopedSlots: {
+          filterDropdown: "filterDropdown",
+          filterIcon: "filterIcon",
+          customRender: "customRender",
+        },
+        onFilter: (value, record) =>
+          record.script_name
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase()),
+        onFilterDropdownVisibleChange: (visible) => {
+          if (visible) {
+            setTimeout(() => {
+              this.searchInput.focus();
+            }, 0);
+          }
+        },
+      },
+      {
+        title: this.$t("check.probe.table.tag"),
+        key: "tag",
+        dataIndex: "tag",
+        scopedSlots: { customRender: "tag" },
+        filters: [
+          { text: this.$t("check.probe.table.tag.cluster"), value: "集群" },
+          { text: this.$t("check.probe.table.tag.network"), value: "网络" },
+          { text: this.$t("check.probe.table.tag.state"), value: "运行状态" },
+        ],
+        filterMultiple: false,
+        onFilter: (value, record) => record.tag.indexOf(value) === 0,
+      },
+      {
+        title: this.$t("check.probe.add.table.operator"),
+        key: "operator",
+        dataIndex: "operator",
+        scopedSlots: { customRender: "operator" },
+      },
+      {
+        title: this.$t("check.probe.add.table.threshold"),
+        key: "threshold",
+        dataIndex: "threshold",
+        scopedSlots: { customRender: "threshold" },
+      },
+      {
+        title: this.$t("check.probe.add.table.updateTime"),
+        key: "update_time",
+        dataIndex: "update_time",
+        scopedSlots: { customRender: "update_time" },
+      },
+      {
+        title: this.$t("check.probe.add.table.action"),
+        key: "action",
+        scopedSlots: { customRender: "action" },
+      },
+    ];
   },
 };
 </script>

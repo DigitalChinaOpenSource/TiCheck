@@ -2,18 +2,18 @@
   <div>
     <a-page-header
       style="border: 1px solid rgb(235, 237, 240); margin-bottom: 20px"
-      title="$t('cluster.detail.check.probe.title')"
+      :title="$t('check.probe.title')"
     />
     <a-button type="primary" @click="addProbe" style="float: right">
-      {{ $t("cluster.detail.check.probe.add") }}
+      {{ $t("check.probe.add") }}
     </a-button>
 
     <a-table
       :columns="columns"
       :data-source="data"
       :rowKey="(record) => record.id"
-      :pagination="paginationOpt"
-      style="padding-top: 60px"
+      :pagination="pagination"
+      style="padding-top: 50px"
     >
       <div
         slot="filterDropdown"
@@ -45,14 +45,14 @@
           style="width: 90px; margin-right: 8px"
           @click="() => handleSearch(selectedKeys, confirm, column.dataIndex)"
         >
-          Search
+          {{ $t("check.probe.table.search") }}
         </a-button>
         <a-button
           size="small"
           style="width: 90px"
           @click="() => handleReset(clearFilters)"
         >
-          Reset
+          {{ $t("check.probe.table.reset") }}
         </a-button>
       </div>
       <span slot="operator" slot-scope="operator">
@@ -66,9 +66,13 @@
         @change="() => onEnableChange(record, index)"
       />
       <span slot="action" slot-scope="text, record">
-        <a @click="handleEdit(record)">Edit</a>
+        <a @click="handleEdit(record)">
+          {{ $t("check.probe.table.edit") }}
+        </a>
         <a-divider type="vertical" />
-        <a @click="handleDelete(record)">Delete</a>
+        <a @click="handleDelete(record)">
+          {{ $t("check.probe.table.delete") }}
+        </a>
       </span>
     </a-table>
 
@@ -86,17 +90,17 @@
           :wrapper-col="{ span: 12 }"
           @submit="(e) => handleUpdateProbe(e)"
         >
-          <a-form-item label="Probe ID">
+          <a-form-item :label="$t('check.probe.module.id')">
             <span class="ant-form-text" v-decorator="['probe_id', {}]">
               {{ form.getFieldValue("probe_id") }}
             </span>
           </a-form-item>
-          <a-form-item label="Script Name">
+          <a-form-item :label="$t('check.probe.module.name')">
             <span class="ant-form-text" v-decorator="['script_name', {}]">
               {{ form.getFieldValue("script_name") }}
             </span>
           </a-form-item>
-          <a-form-item label="Operator">
+          <a-form-item :label="$t('check.probe.module.operator')">
             <a-select
               v-decorator="[
                 'operator',
@@ -131,13 +135,13 @@
               </a-select-option>
             </a-select>
           </a-form-item>
-          <a-form-item label="Threshold">
+          <a-form-item :label="$t('check.probe.module.threshold')">
             <a-input
               v-decorator="[
                 'threshold',
                 {
                   rules: [
-                    { required: true, message: 'Please input probe threshold' },
+                    { required: true, message: 'Please input a number' },
                   ],
                 },
               ]"
@@ -145,14 +149,14 @@
           </a-form-item>
           <a-form-item :wrapper-col="{ span: 16, offset: 7 }">
             <a-button :loading="confirmLoading" html-type="submit">
-              Submit
+              {{ $t("check.probe.module.submit") }}
             </a-button>
             <a-button
               key="back"
               @click="handleCancel"
               style="margin-left: 50px"
             >
-              Cannel
+              {{ $t("check.probe.module.cancel") }}
             </a-button>
           </a-form-item>
         </a-form>
@@ -170,91 +174,7 @@ import {
   deleteProbe,
 } from "@/api/check";
 
-const columns = [
-  {
-    title: "ID",
-    dataIndex: "id",
-    key: "id",
-    hide: true,
-  },
-  {
-    title: "probe_id",
-    dataIndex: "probe_id",
-    key: "probe_id",
-    slots: { title: "customTitle" },
-    scopedSlots: { customRender: "probe_id" },
-  },
-  {
-    title: "script_name",
-    dataIndex: "script_name",
-    key: "script_name",
-    scopedSlots: {
-      filterDropdown: "filterDropdown",
-      filterIcon: "filterIcon",
-      customRender: "customRender",
-    },
-    onFilter: (value, record) =>
-      record.script_name.toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownVisibleChange: (visible) => {
-      if (visible) {
-        setTimeout(() => {
-          this.searchInput.focus();
-        }, 0);
-      }
-    },
-  },
-  {
-    title: "file_name",
-    dataIndex: "file_name",
-    key: "file_name",
-  },
-  {
-    title: "tag",
-    key: "tag",
-    dataIndex: "tag",
-    scopedSlots: { customRender: "tag" },
-    filters: [
-      { text: "集群", value: "集群" },
-      { text: "网络", value: "网络" },
-      { text: "运行状态", value: "运行状态" },
-    ],
-    filterMultiple: false,
-    onFilter: (value, record) => record.tag.indexOf(value) === 0,
-  },
-  {
-    title: "description",
-    key: "description",
-    dataIndex: "description",
-  },
-  {
-    title: "operator",
-    key: "operator",
-    dataIndex: "operator",
-    scopedSlots: { customRender: "operator" },
-  },
-  {
-    title: "threshold",
-    key: "threshold",
-    dataIndex: "threshold",
-  },
-  {
-    title: "is_enabled",
-    key: "is_enabled",
-    dataIndex: "is_enabled",
-    scopedSlots: { customRender: "is_enabled" },
-    filters: [
-      { text: "disable", value: 0 },
-      { text: "enable", value: 1 },
-    ],
-    filterMultiple: false,
-    onFilter: (value, record) => record.is_enabled === value,
-  },
-  {
-    title: "Action",
-    key: "action",
-    scopedSlots: { customRender: "action" },
-  },
-];
+const columns = [];
 
 const data = [];
 
@@ -270,7 +190,11 @@ export default {
     return {
       data,
       columns,
-      paginationOpt,
+      pagination: {
+        showTotal: (total) => `Total ${total} items`,
+        showSizeChanger: true,
+        pageSizeOptions: ["10", "20", "30", "40"],
+      },
       start_time: "",
       end_time: "",
       clusterID: this.$route.params.id,
@@ -294,11 +218,13 @@ export default {
   },
   methods: {
     getProbeListByClusterID() {
-      getProbeList(this.clusterID).then((res) => {
-        this.data = res.data;
-      }).catch(err => {
-        this.$router.push({ name: "cluster" });
-      });
+      getProbeList(this.clusterID)
+        .then((res) => {
+          this.data = res.data;
+        })
+        .catch((err) => {
+          this.$router.push({ name: "cluster" });
+        });
     },
     addProbe() {
       this.$router.push({ name: "ProbeAdd", params: { id: this.clusterID } });
@@ -376,6 +302,85 @@ export default {
       clearFilters();
       this.searchText = "";
     },
+  },
+  beforeUpdate() {
+    this.columns = [
+      {
+        title: this.$t("check.probe.table.probeID"),
+        dataIndex: "probe_id",
+        key: "probe_id",
+        slots: { title: "customTitle" },
+        scopedSlots: { customRender: "probe_id" },
+      },
+      {
+        title: this.$t("check.probe.table.name"),
+        dataIndex: "script_name",
+        key: "script_name",
+        scopedSlots: {
+          filterDropdown: "filterDropdown",
+          filterIcon: "filterIcon",
+          customRender: "customRender",
+        },
+        onFilter: (value, record) =>
+          record.script_name
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase()),
+        onFilterDropdownVisibleChange: (visible) => {
+          if (visible) {
+            setTimeout(() => {
+              this.searchInput.focus();
+            }, 0);
+          }
+        },
+      },
+      {
+        title: this.$t("check.probe.table.tag"),
+        key: "tag",
+        dataIndex: "tag",
+        scopedSlots: { customRender: "tag" },
+        filters: [
+          { text: this.$t("check.probe.table.tag.cluster"), value: "集群" },
+          { text: this.$t("check.probe.table.tag.network"), value: "网络" },
+          { text: this.$t("check.probe.table.tag.state"), value: "运行状态" },
+        ],
+        filterMultiple: false,
+        onFilter: (value, record) => record.tag.indexOf(value) === 0,
+      },
+      {
+        title: this.$t("check.probe.table.description"),
+        key: "description",
+        dataIndex: "description",
+      },
+      {
+        title: this.$t("check.probe.table.operator"),
+        key: "operator",
+        dataIndex: "operator",
+        scopedSlots: { customRender: "operator" },
+      },
+      {
+        title: this.$t("check.probe.table.threshold"),
+        key: "threshold",
+        dataIndex: "threshold",
+      },
+      {
+        title: this.$t("check.probe.table.isEnabled"),
+        key: "is_enabled",
+        dataIndex: "is_enabled",
+        scopedSlots: { customRender: "is_enabled" },
+        filters: [
+          { text: this.$t("check.probe.table.isEnabled.disabled"), value: 0 },
+          { text: this.$t("check.probe.table.isEnabled.enabled"), value: 1 },
+        ],
+        filterMultiple: false,
+        onFilter: (value, record) => record.is_enabled === value,
+      },
+      {
+        title: this.$t("check.probe.table.action"),
+        key: "action",
+        scopedSlots: { customRender: "action" },
+      },
+    ];
   },
 };
 </script>

@@ -10,6 +10,7 @@ import form from './zh-CN/form'
 import result from './zh-CN/result'
 import account from './zh-CN/account'
 import cluster from './zh-CN/cluster'
+import check from './zh-CN/check'
 
 const components = {
   antLocale: antd,
@@ -32,5 +33,6 @@ export default {
   ...form,
   ...result,
   ...account,
-  ...cluster
+  ...cluster,
+  ...check
 }

@@ -13,7 +13,7 @@ type Probe struct {
 	Tag         string `gorm:"not null" json:"tag"`
 	Description string `json:"description"`
 	Comparator  `gorm:"embedded"`
-	IsSystem    int       `gorm:"not null" json:"-"`
+	IsSystem    int       `gorm:"not null" json:"is_system"`
 	Creator     string    `gorm:"not null" json:"creator"`
 	CreateTime  time.Time `gorm:"not null" json:"create_time"`
 	UpdateTime  time.Time `gorm:"not null" json:"update_time"`
@@ -58,8 +58,8 @@ func (p *Probe) GetByID() error {
 	return DbConn.Where("id = ?", p.ID).First(p).Error
 }
 
-func (p *Probe)  Delete() error {
-	return DbConn.Delete(p).Error 
+func (p *Probe) Delete() error {
+	return DbConn.Delete(p).Error
 }
 
 func (p *Probe) IsNotExist() bool {
@@ -75,7 +75,7 @@ func (p Probe) GetNotAddedProveListByClusterID(id int) ([]Probe, error) {
 
 	// First, finding all installed probes in cluster
 	err := DbConn.Table(cc.TableName()).Select("probe_id").Where("cluster_id = ?", id).Find(&probeId).Error
-	if err !=  nil {
+	if err != nil {
 		return probeList, err
 	}
 
