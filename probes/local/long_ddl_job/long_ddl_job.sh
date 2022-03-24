@@ -4,9 +4,9 @@ BASE_PATH=$1
 MYSQL_LOGIN_PATH=$2
 PROMETHEUS_ADDRESSES=$3
 
-echo "The first parameter:"$1
+echo "tck_result: The first parameter="$1
 
-echo "The second parameter:"$2
+echo "tck_result: The second parameter="$2
 
 echo "The third parameter:"$3
 

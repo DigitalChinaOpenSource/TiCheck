@@ -5,14 +5,14 @@ import (
 )
 
 type CheckHistory struct {
-	ID           uint          `gorm:"primarykey" json:"id"`
-	CheckTime    time.Time     `gorm:"not null" json:"check_time"`
-	ClusterID    uint          `gorm:"not null" json:"cluster_id"`
-	SchedulerID  uint          `json:"scheduler_id"` // null if run manually
-	NormalItems  int           `gorm:"not null" json:"normal_items"`
-	WarningItems int           `gorm:"not null" json:"warning_items"`
-	TotalItems   int           `gorm:"not null" json:"total_items"`
-	Duration     time.Duration `gorm:"not null" json:"duration"`
+	ID           uint      `gorm:"primarykey" json:"id"`
+	CheckTime    time.Time `gorm:"not null" json:"check_time"`
+	ClusterID    uint      `gorm:"not null" json:"cluster_id"`
+	SchedulerID  uint      `json:"scheduler_id"` // null if run manually
+	NormalItems  uint      `gorm:"not null" json:"normal_items"`
+	WarningItems uint      `gorm:"not null" json:"warning_items"`
+	TotalItems   uint      `gorm:"not null" json:"total_items"`
+	Duration     int64     `gorm:"not null" json:"duration"`
 }
 
 func (ch *CheckHistory) TableName() string {

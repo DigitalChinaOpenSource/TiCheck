@@ -5,6 +5,7 @@ import (
 	"TiCheck/executor"
 	"TiCheck/internal/model"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -42,13 +43,7 @@ func main() {
 			log.Fatalf("listen: %s\n", err)
 		}
 	}()
-
-	exe := executor.CreateClusterExecutor(1)
-
-	resultCh := make(chan executor.CheckResult, 10)
-	// ctx := context.WithValue(context.Background(), "", "")
-	exe.Execute(resultCh)
-
+	testExe()
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
 	quit := make(chan os.Signal, 1)
@@ -68,4 +63,23 @@ func main() {
 	}
 
 	log.Println("Server exiting")
+}
+
+func testExe() {
+
+	exe := executor.CreateClusterExecutor(1, 0)
+
+	resultCh := make(chan executor.CheckResult, 10)
+	// ctx := context.WithValue(context.Background(), "", "")
+	go exe.Execute(resultCh)
+	for {
+		select {
+		case result := <-resultCh:
+			fmt.Printf("%+v\n", result)
+			if result.IsFinished {
+				return
+			}
+		}
+
+	}
 }
