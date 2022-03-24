@@ -56,16 +56,18 @@ type NodesInfo struct {
 	NodeType string   `json:"type"`
 	Instance []string `json:"instance"`
 	Count    int      `json:"count"`
+	Normal   int      `json:"normal"`
 }
 
 type ClusterInfoReq struct {
-	ID            uint   `json:"id"`
-	Owner         string `json:"owner"`
-	Name          string `json:"name"`
-	PrometheusUrl string `json:"url"`
-	LogUser       string `json:"user"`
-	LogPasswd     string `json:"passwd"`
-	Description   string `json:"description"`
+	ID            uint     `json:"id"`
+	Owner         string   `json:"owner"`
+	Name          string   `json:"name"`
+	PrometheusUrl string   `json:"url"`
+	LogUser       string   `json:"user"`
+	LogPasswd     string   `json:"passwd"`
+	Description   string   `json:"description"`
+	CheckItems    []string `json:"check_items"`
 }
 
 type ClusterListReps struct {
@@ -97,6 +99,15 @@ type ClusterInfoReps struct {
 	MonthlyHistoryWarnings []model.HistoryWarnings `json:"monthly_history_warnings"`
 }
 
+type InitialClusterInfoReps struct {
+	Owner         string `json:"owner"`
+	Name          string `json:"name"`
+	PrometheusUrl string `json:"url"`
+	LogUser       string `json:"user"`
+	LogPasswd     string `json:"passwd"`
+	Description   string `json:"description"`
+}
+
 type ClusterSchedulerListReps struct {
 	Index      int       `json:"index"`
 	ID         uint      `json:"id"`
@@ -117,7 +128,7 @@ type ClusterSchedulerReq struct {
 }
 
 func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
-	clusterList, err := ch.ClusterInfo.QueryCLusterList()
+	clusterList, err := ch.ClusterInfo.QueryClusterList()
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())
 		return
@@ -217,6 +228,38 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 	}
 
 	api.Success(c, "", clusterInfoReps)
+	return
+}
+
+func (ch *ClusterHandler) GetInitialClusterInfo(c *gin.Context) {
+	id := c.Param("id")
+	clusterID, err := strconv.Atoi(id)
+	if err != nil {
+		api.BadWithMsg(c, "cluster id is invalid")
+		return
+	}
+
+	if !model.IsClusterExist(clusterID) {
+		api.BadWithMsg(c, "cluster does not exist")
+		return
+	}
+
+	clusterInfo, err := ch.ClusterInfo.QueryClusterInfoByID(clusterID)
+	if err != nil {
+		api.ErrorWithMsg(c, err.Error())
+		return
+	}
+	url := strings.Trim(clusterInfo.PrometheusURL, "http://")
+	var initialCluster = InitialClusterInfoReps{
+		Name:          clusterInfo.Name,
+		Owner:         clusterInfo.Owner,
+		PrometheusUrl: url,
+		Description:   clusterInfo.Description,
+		LogUser:       clusterInfo.TiDBUsername,
+		LogPasswd:     clusterInfo.TiDBPassword,
+	}
+
+	api.Success(c, "", initialCluster)
 	return
 }
 
@@ -593,6 +636,7 @@ func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, 
 	}
 	for k, v := range nodeType {
 		var instances []string
+		var normal = 0
 		queryString := fmt.Sprintf("probe_success{group='%s'}", v)
 		queryHelper.Query = queryString
 		resp, err := queryHelper.queryWithPrometheus()
@@ -601,12 +645,21 @@ func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, 
 		}
 		for _, res := range resp.Data.Result {
 			instances = append(instances, res.Metrics.Instance)
+			if res.Value[1] == "1" {
+				normal = normal + 1
+			}
+		}
+
+		resp, err = queryHelper.queryWithPrometheus()
+		if err != nil {
+			return nodesInfo, err
 		}
 		node := NodesInfo{
 			ID:       k,
 			NodeType: v,
 			Instance: instances,
 			Count:    len(instances),
+			Normal:   normal,
 		}
 		nodesInfo = append(nodesInfo, node)
 	}

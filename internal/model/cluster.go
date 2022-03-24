@@ -59,7 +59,7 @@ func (c *Cluster) QueryClusterInfoByID(id int) (clusterInfo Cluster, err error) 
 	return clusterInfo, nil
 }
 
-func (c *Cluster) QueryCLusterList() ([]Cluster, error) {
+func (c *Cluster) QueryClusterList() ([]Cluster, error) {
 	var clusterList []Cluster
 	err := DbConn.
 		Order("create_time asc").
@@ -83,6 +83,7 @@ func (c *Cluster) CreateCluster() (err error) {
 
 func (c *Cluster) UpdateClusterByID() error {
 	updateData := map[string]interface{}{
+		"name":           c.Name,
 		"prometheus_url": c.PrometheusURL,
 		"ti_db_username": c.TiDBUsername,
 		"ti_db_password": c.TiDBPassword,

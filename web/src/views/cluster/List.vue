@@ -63,6 +63,20 @@
                 :placeholder="$t('cluster.list.input.description')"
                 v-decorator="['description']" />
             </a-form-item>
+            <a-form-item
+              :label="$t('cluster.list.checkItem')"
+              :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+              :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+              <a-select
+                mode="multiple"
+                placeholder="please select default check item"
+                v-decorator="['check_items',{rules: [{ required: true }]}]"
+              >
+                <a-select-option v-for="i in checkItems" :key="i" :value="i">
+                  {{ i }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
           </a-form>
         </a-modal>
       </div>
@@ -86,7 +100,7 @@
                   {{ $t('cluster.list.name') }}
                 </a-col>
                 <a-col>
-                  {{ $t('cluster.list.add-time') }} :  {{ item.create_time }}
+                  {{ $t('cluster.list.add-time') }} :  {{ item.create_time | moment }}
                 </a-col>
               </a-row>
             </div>
@@ -133,7 +147,7 @@
               <a-list :grid="{ gutter: 16, column: 4 }" :data-source="item.nodes" style="margin-top: 25px">
                 <a-list-item slot="renderItem" slot-scope="node">
                   <a-card :title="node.type" style="text-align: center">
-                    {{ node.count }}
+                    {{ node.normal }} / {{ node.count }}
                   </a-card>
                 </a-list-item>
               </a-list>
@@ -141,7 +155,7 @@
             <div>
               <a-row type="flex" justify="end">
                 <a-col>
-                  {{ $t('cluster.list.last-check-time') }}: {{ item.last_check_time }}
+                  {{ $t('cluster.list.last-check-time') }}: {{ item.last_check_time | moment }}
                 </a-col>
               </a-row>
             </div>
@@ -162,7 +176,18 @@ import {
 // import { getClusterInfo } from '@/api/manage'
 
 const dataSource = []
-
+const checkItems = [
+  'alive_pd_number',
+  'alive_tidb_number',
+  'alive_tikv_number',
+  'available_memory',
+  'failed_query_type',
+  'long_ddl_job',
+  'no_primary_key',
+  'tidb_connections',
+  'running_sql_5min',
+  'tikv_region_number'
+]
 export default {
   name: 'ClusterList',
   components: {
@@ -172,6 +197,7 @@ export default {
   },
   data () {
     return {
+      checkItems,
       owner: {},
       dataSource,
       modalVisible: false,
@@ -208,6 +234,7 @@ export default {
           this.addFailed()
         }
         values.owner = this.owner.user_name
+        console.log('values =>', values)
         addCluster(values)
         .then(res => this.addSuccess())
         .catch(res => this.addFailed(res))

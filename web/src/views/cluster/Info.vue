@@ -12,7 +12,7 @@
         <a-descriptions title="" size="middle">
           <a-descriptions-item :label="$t('cluster.info.name')">{{ clusterInfo.name }}</a-descriptions-item>
           <a-descriptions-item :label="$t('cluster.info.version')">{{ clusterInfo.version }}</a-descriptions-item>
-          <a-descriptions-item :label="$t('cluster.info.create-time')">{{ clusterInfo.create_time }}</a-descriptions-item>
+          <a-descriptions-item :label="$t('cluster.info.create-time')">{{ clusterInfo.create_time | moment }}</a-descriptions-item>
           <a-descriptions-item :label="$t('cluster.info.owner')" span="3">{{ clusterInfo.owner }}</a-descriptions-item>
           <a-descriptions-item :label="$t('cluster.info.description')">{{ clusterInfo.description }}</a-descriptions-item>
         </a-descriptions>
@@ -40,7 +40,7 @@
         <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '4px' }">
           <a-card :title="$t('cluster.info.status.last')" style="text-align: center">
             <span>
-              {{ clusterInfo.last_check_time }}
+              {{ clusterInfo.last_check_time | moment }}
             </span>
           </a-card>
         </a-col>

@@ -59,6 +59,8 @@ func Register(engine *gin.Engine) {
 		clusterGroup.GET("/list", cluster.GetClusterList)
 		// Get cluster information by id
 		clusterGroup.GET("/info/:id", cluster.GetClusterInfo)
+
+		clusterGroup.GET("/initial/:id", cluster.GetInitialClusterInfo)
 		// Add cluster
 		clusterGroup.POST("/add", cluster.PostClusterInfo)
 

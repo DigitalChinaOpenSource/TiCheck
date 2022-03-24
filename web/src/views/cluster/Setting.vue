@@ -10,7 +10,7 @@
           :labelCol="{lg: {span: 2}, sm: {span: 7}}"
           :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
           <a-input
-            v-decorator="['name',{rules: [{ required: true }]}]"
+            v-decorator="['name',{rules: [{ required: true }], initialValue: this.initialCluster.name }]"
             :placeholder="$t('cluster.list.input.name')"
             name="name" />
         </a-form-item>
@@ -29,7 +29,8 @@
                   {
                     required: true,
                     message: ''
-                  }]
+                  }],
+                initialValue: this.initialCluster.url
               }]" />
         </a-form-item>
         <a-form-item
@@ -39,7 +40,7 @@
           <a-input
             name="user"
             :placeholder="$t('cluster.list.input.user')"
-            v-decorator="['user',{rules: [{ required: true }]}]" />
+            v-decorator="['user',{rules: [{ required: true }], initialValue: this.initialCluster.user}]" />
         </a-form-item>
         <a-form-item
           :label="$t('cluster.list.passwd')"
@@ -58,7 +59,7 @@
             :auto-size="{ minRows: 4, maxRows: 6 }"
             name="description"
             :placeholder="$t('cluster.list.input.description')"
-            v-decorator="['description']" />
+            v-decorator="['description', {initialValue: this.initialCluster.description}]" />
         </a-form-item>
         <a-form-item
           label=" "
@@ -72,14 +73,21 @@
 </template>
 
 <script>
- import { updateCluster } from '@/api/cluster'
-
+import { updateCluster, getInitialCluster } from '@/api/cluster'
+const initialCluster = {}
 export default {
   name: 'ClusterSet',
+  clusterID: '',
   data () {
     return {
-      clusterID: this.$route.params.id,
+      initialCluster,
+      owner: {},
       updateForm: this.$form.createForm(this)
+    }
+  },
+  computed: {
+    userInfo () {
+      return this.$store.getters.userInfo
     }
   },
   methods: {
@@ -98,10 +106,12 @@ export default {
         if (err) {
           this.updateFailed()
         }
+        values.owner = this.owner.user_name
         updateCluster(this.clusterID, values)
           .then(res => this.updateSuccess())
           .catch(res => this.updateFailed())
           .finally(() => {
+            this.InitialClusterInfo()
             this.updateForm = this.$form.createForm(this)
           })
       })
@@ -116,7 +126,21 @@ export default {
       this.$notification['error']({
         message: 'failed'
       })
+    },
+    InitialClusterInfo () {
+      console.log('test')
+      getInitialCluster(this.clusterID)
+        .then(res => { this.initialCluster = res.data })
+        .catch(() => {
+          this.$router.push({ path: '/' })
+        })
     }
+  },
+  created () {
+    this.clusterID = this.$route.params.id
+    this.owner = this.userInfo
+    this.InitialClusterInfo()
+    console.log(this.initialCluster)
   }
 }
 
