@@ -692,8 +692,23 @@ func (h QueryHelper) queryWithUrl() (result map[string]interface{}, err error) {
 	return result, nil
 }
 
+// run once check task, response by realtime
 func (ch *ClusterHandler) ExecuteCheck(c *gin.Context) {
-	exe := executor.CreateClusterExecutor(1, 0)
+	id := c.Param("id")
+	cluster_id, err := strconv.Atoi(id)
+	if err != nil {
+		api.BadWithMsg(c, "cluster id is invalid")
+		return
+	}
+
+	ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		api.BadWithMsg(c, "create websocket connection failed!")
+		return
+	}
+	defer ws.Close()
+
+	exe := executor.CreateClusterExecutor(uint(cluster_id), 0)
 
 	resultCh := make(chan executor.CheckResult, 10)
 	// ctx := context.WithValue(context.Background(), "", "")
@@ -702,17 +717,12 @@ func (ch *ClusterHandler) ExecuteCheck(c *gin.Context) {
 	for {
 		select {
 		case result := <-resultCh:
-			fmt.Printf("%+v\n", result)
-			if result.Err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"error": result.Err.Error(),
-				})
+			ws.WriteJSON(result.Data)
+			// fmt.Printf("%+v\n", result)
+			if result.IsFinished {
 				return
 			}
-			c.JSON(http.StatusOK, gin.H{
-				"status": "ok",
-			})
-			return
 		}
+
 	}
 }

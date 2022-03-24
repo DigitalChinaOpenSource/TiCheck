@@ -18,8 +18,10 @@ var (
 )
 
 type CheckResult struct {
-	Err  error // script level error
-	Data []model.CheckData
+	IsFinished bool              `json:"is_finished"`
+	IsTimeout  bool              `json:"is_timeout"`
+	Err        error             `json:"err"` // script level error
+	Data       []model.CheckData `json:"data"`
 }
 
 type Executor interface {
@@ -37,7 +39,7 @@ type ClusterExecutor struct {
 
 type ExecutorContext struct {
 	cluster   *ClusterExecutor
-	checkInfo *model.CheckListInfo
+	checkInfo model.CheckListInfo
 
 	wg      *sync.WaitGroup
 	counter *ExecutorCounter
@@ -59,7 +61,7 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 		SchedulerID: ce.SchedulerID,
 	}
 	if err := model.DbConn.Create(&his).Error; err != nil {
-		result := CheckResult{}
+		result := CheckResult{IsFinished: true}
 		result.Err = fmt.Errorf("create check history error: %s", err.Error())
 		rc <- result
 		return
@@ -71,23 +73,23 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 	counter := &ExecutorCounter{}
 
 	for _, task := range ce.CheckList {
-		result := &CheckResult{}
+		// result := &CheckResult{}
 
 		ctx := ExecutorContext{
 			cluster:   ce,
-			checkInfo: &task,
+			checkInfo: task,
 			wg:        wg,
 			counter:   counter,
 		}
 		executor := createExecutor(ctx)
 		if executor == nil {
-			result.Err = fmt.Errorf("create executor error, invalide source: %s", task.Source)
+			// result.Err = fmt.Errorf("create executor error, invalide source: %s", task.Source)
 			continue
 		} else {
 			wg.Add(1)
-			go executor.ExecuteCheck(result)
+			go executor.ExecuteCheck(rc)
 		}
-		rc <- *result
+		// rc <- *result
 	}
 	wg.Wait()
 	// update history result
@@ -96,8 +98,15 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 	his.WarningItems = counter.warningItems
 	his.TotalItems = counter.normalItems + counter.warningItems
 	model.DbConn.Save(&his)
+	// send finish signal
+	result := CheckResult{IsFinished: true}
+	rc <- result
 }
 
+/*
+@cluster_id - the cluster id
+@scheduler_id - the scheduler id, no scheduler trigger use 0
+*/
 func CreateClusterExecutor(cluster_id, scheduler_id uint) Executor {
 	c, err := (&model.Cluster{}).QueryClusterInfoByID(int(cluster_id))
 	if err != nil {
@@ -121,14 +130,15 @@ func CreateClusterExecutor(cluster_id, scheduler_id uint) Executor {
 	return ce
 }
 
-func applyProbe(ctx ExecutorContext, result *CheckResult) {
-	// result := CheckResult{}
+func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
+	result := CheckResult{}
 
 	file := fmt.Sprintf("%s/%s/%s/%s", probe_prefix, ctx.checkInfo.Source, ctx.checkInfo.ProbeID, ctx.checkInfo.FileName)
 	_, e := os.Stat(file)
 	if os.IsNotExist(e) {
 		fmt.Println("applyProbe Error, file not found:", e.Error())
 		result.Err = e
+		rc <- result
 		return
 	}
 
@@ -136,6 +146,7 @@ func applyProbe(ctx ExecutorContext, result *CheckResult) {
 	if e != nil {
 		fmt.Println("applyProbe Error, file abs not found:", e.Error())
 		result.Err = e
+		rc <- result
 		return
 	}
 	args := []string{f} // script file absolute path
@@ -167,6 +178,7 @@ func applyProbe(ctx ExecutorContext, result *CheckResult) {
 	ctx.counter.normalItems += normal
 	ctx.counter.warningItems += warning
 	ctx.counter.mutex.Unlock()
+	rc <- result
 }
 
 func compareThreshold(
@@ -311,7 +323,7 @@ func applyPythonProbe(args []string) (output []string, err error) {
 }
 
 type ProbeExecutor interface {
-	ExecuteCheck(res *CheckResult)
+	ExecuteCheck(rc chan CheckResult)
 }
 
 // type LocalExecutor struct {
@@ -348,9 +360,9 @@ type CommonExecutor struct {
 	context ExecutorContext
 }
 
-func (ce *CommonExecutor) ExecuteCheck(res *CheckResult) {
-	time.Sleep(time.Second * 3)
-	applyProbe(ce.context, res)
+func (ce *CommonExecutor) ExecuteCheck(rc chan CheckResult) {
+	// time.Sleep(time.Second * 3)
+	applyProbe(ce.context, rc)
 	ce.context.wg.Done()
 }
 
