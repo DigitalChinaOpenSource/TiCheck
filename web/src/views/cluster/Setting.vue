@@ -1,82 +1,83 @@
 <template>
-  <a-page-header
-    :ghost="false"
-    :style="{ marginTop: '24px'}"
-    :title="$t('cluster.list.setting.title')">
-    <div>
-      <a-form :form="updateForm">
-        <a-form-item
-          :label="$t('cluster.list.name')"
-          :labelCol="{lg: {span: 2}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
-          <a-input
-            v-decorator="['name',{rules: [{ required: true }], initialValue: this.initialCluster.name }]"
-            :placeholder="$t('cluster.list.input.name')"
-            name="name" />
-        </a-form-item>
-        <a-form-item
-          :label="$t('cluster.list.prometheus')"
-          :labelCol="{lg: {span: 2}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
-          <a-input
-            name="url"
-            addon-before="http://"
-            :placeholder="$t('cluster.list.input.prometheus')"
-            v-decorator="[
-              'url',
-              {
-                rules: [
-                  {
-                    required: true,
-                    message: ''
-                  }],
-                initialValue: this.initialCluster.url
-              }]" />
-        </a-form-item>
-        <a-form-item
-          :label="$t('cluster.list.user')"
-          :labelCol="{lg: {span: 2}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
-          <a-input
-            name="user"
-            :placeholder="$t('cluster.list.input.user')"
-            v-decorator="['user',{rules: [{ required: true }], initialValue: this.initialCluster.user}]" />
-        </a-form-item>
-        <a-form-item
-          :label="$t('cluster.list.passwd')"
-          :labelCol="{lg: {span: 2}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
-          <a-input-password
-            name="passwd"
-            :placeholder="$t('cluster.list.input.passwd')"
-            v-decorator="['passwd',{rules: [{ required: true }]}]" />
-        </a-form-item>
-        <a-form-item
-          :label="$t('cluster.list.description')"
-          :labelCol="{lg: {span: 2}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
-          <a-textarea
-            :auto-size="{ minRows: 4, maxRows: 6 }"
-            name="description"
-            :placeholder="$t('cluster.list.input.description')"
-            v-decorator="['description', {initialValue: this.initialCluster.description}]" />
-        </a-form-item>
-        <a-form-item
-          label=" "
-          :colon="false"
-          :labelCol="{lg: {span: 2}, sm: {span: 7}}">
-          <a-button type="primary" @click="showConfirm">{{ $t('cluster.list.setting.btn') }}</a-button>
-        </a-form-item>
-      </a-form>
-    </div>
-  </a-page-header>
+  <div>
+    <a-page-header
+      :ghost="false"
+      style="border: 1px solid rgb(235, 237, 240); margin-bottom: 20px;"
+      :title="$t('cluster.list.setting.title')"
+    />
+    <a-form :form="updateForm">
+      <a-form-item
+        :label="$t('cluster.list.name')"
+        :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+        :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+        <a-input
+          v-decorator="['name',{rules: [{ required: true }], initialValue: this.initialCluster.name }]"
+          :placeholder="$t('cluster.list.input.name')"
+          name="name"/>
+      </a-form-item>
+      <a-form-item
+        :label="$t('cluster.list.prometheus')"
+        :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+        :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+        <a-input
+          name="url"
+          addon-before="http://"
+          :placeholder="$t('cluster.list.input.prometheus')"
+          v-decorator="[
+            'url',
+            {
+              rules: [
+                {
+                  required: true,
+                  message: ''
+                }],
+              initialValue: this.initialCluster.url
+            }]"/>
+      </a-form-item>
+      <a-form-item
+        :label="$t('cluster.list.user')"
+        :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+        :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+        <a-input
+          name="user"
+          :placeholder="$t('cluster.list.input.user')"
+          v-decorator="['user',{rules: [{ required: true }], initialValue: this.initialCluster.user}]"/>
+      </a-form-item>
+      <a-form-item
+        :label="$t('cluster.list.passwd')"
+        :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+        :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+        <a-input-password
+          name="passwd"
+          :placeholder="$t('cluster.list.input.passwd')"
+          v-decorator="['passwd',{rules: [{ required: true }]}]"/>
+      </a-form-item>
+      <a-form-item
+        :label="$t('cluster.list.description')"
+        :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+        :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+        <a-textarea
+          :auto-size="{ minRows: 4, maxRows: 6 }"
+          name="description"
+          :placeholder="$t('cluster.list.input.description')"
+          v-decorator="['description', {initialValue: this.initialCluster.description}]"/>
+      </a-form-item>
+      <a-form-item
+        label=" "
+        :colon="false"
+        :labelCol="{lg: {span: 7}, sm: {span: 7}}">
+        <a-button type="primary" @click="showConfirm">{{ $t('cluster.list.setting.btn') }}</a-button>
+      </a-form-item>
+    </a-form>
+  </div>
 </template>
 
 <script>
 import { updateCluster, getInitialCluster } from '@/api/cluster'
+
 const initialCluster = {}
 export default {
-  name: 'ClusterSet',
+  name: 'ClusterSetting',
   clusterID: '',
   data () {
     return {
@@ -98,7 +99,8 @@ export default {
         onOk: () => {
           this.handleUpdate()
         },
-        onCancel () {}
+        onCancel () {
+        }
       })
     },
     handleUpdate () {
@@ -130,7 +132,9 @@ export default {
     InitialClusterInfo () {
       console.log('test')
       getInitialCluster(this.clusterID)
-        .then(res => { this.initialCluster = res.data })
+        .then(res => {
+          this.initialCluster = res.data
+        })
         .catch(() => {
           this.$router.push({ path: '/' })
         })

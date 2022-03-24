@@ -6,7 +6,7 @@
     />
     <a-row :gutter="24" :style="{marginTop:'5px'}">
       <a-col :sm="24" :md="24" :xl="24" :style="{ marginBottom: '4px' }">
-        <a-button type="primary" style="float: right">{{ $t('cluster.info.check') }}</a-button>
+        <a-button type="primary" style="float: right" @click="doCheck">{{ $t('cluster.info.check') }}</a-button>
       </a-col>
       <a-col :sm="24" :md="24" :xl="24" :style="{ marginBottom: '4px' }">
         <div>
@@ -90,7 +90,8 @@ import {
   RankList,
   Bar
 } from '@/components'
-// import { getClusterInfo } from '@/api/manage'
+import moment from 'moment'
+// import moment from "moment";
 const clusterInfo = {}
 export default {
   name: 'ClusterInfo',
@@ -115,10 +116,17 @@ export default {
   methods: {
     localClusterInfo () {
       getClusterInfo(this.clusterID)
-        .then(res => { this.clusterInfo = res.data })
-        .catch(() => {
+        .then(res => {
+          this.clusterInfo = res.data
+          for (let i = 0; i < this.clusterInfo.recent_warning_items.length; i++) {
+            this.clusterInfo.recent_warning_items[i].time = moment(this.clusterInfo.recent_warning_items[i].time).format('MM-DD HH:mm:ss')
+          }
+        }).catch(() => {
           this.$router.push({ path: '/' })
         })
+    },
+    doCheck () {
+      this.$router.push({ name: 'ExecuteCheck', params: { id: this.clusterID } })
     }
   }
 }
