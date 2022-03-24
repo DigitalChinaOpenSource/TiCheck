@@ -2,7 +2,6 @@ package main
 
 import (
 	"TiCheck/cmd/ticheck-server/router"
-	"TiCheck/executor"
 	"TiCheck/internal/model"
 	"context"
 	"fmt"
@@ -67,19 +66,22 @@ func main() {
 
 func testExe() {
 
-	exe := executor.CreateClusterExecutor(1, 0)
+	// exe := executor.CreateClusterExecutor(1, 0)
 
-	resultCh := make(chan executor.CheckResult, 10)
-	// ctx := context.WithValue(context.Background(), "", "")
-	go exe.Execute(resultCh)
-	for {
-		select {
-		case result := <-resultCh:
-			fmt.Printf("%+v\n", result)
-			if result.IsFinished {
-				return
-			}
-		}
+	// resultCh := make(chan executor.CheckResult, 10)
+	// // ctx := context.WithValue(context.Background(), "", "")
+	// go exe.Execute(resultCh)
+	// for {
+	// 	select {
+	// 	case result := <-resultCh:
+	// 		fmt.Printf("%+v\n", result)
+	// 		if result.IsFinished {
+	// 			return
+	// 		}
+	// 	}
 
-	}
+	// }
+
+	res := (&model.ClusterChecklist{}).GetEnabledCheckListTagGroup(1)
+	fmt.Println(res)
 }

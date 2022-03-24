@@ -151,8 +151,8 @@ func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
 	}
 	args := []string{f} // script file absolute path
 	args = append(args, "baepath")
-	args = append(args, ctx.cluster.Prometheus) //promethous url
 	args = append(args, ctx.cluster.LoginPath)  //login path
+	args = append(args, ctx.cluster.Prometheus) //promethous url
 	args = append(args, ctx.checkInfo.Arg)      //probe custom args
 
 	var output []string
@@ -310,7 +310,7 @@ func applyShellProbe(args []string) (output []string, err error) {
 }
 
 func applyPythonProbe(args []string) (output []string, err error) {
-	cmd := exec.Command("python", args...)
+	cmd := exec.Command("python3", args...)
 	op, e := cmd.CombinedOutput()
 	if e != nil {
 		print(e)
