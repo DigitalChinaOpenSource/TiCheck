@@ -1,12 +1,12 @@
 <template>
   <div>
     <a-page-header
-      style="border: 1px solid rgb(235, 237, 240); margin-bottom: 20px;"
-      title="$t('cluster.detail.check.history.title')"
+      style="border: 1px solid rgb(235, 237, 240); margin-bottom: 20px"
+      :title="$t('check.history.title')"
     />
     <div style="float: right">
-        <span>{{ $t('cluster.detail.check.history.timeSelect') }}</span>
-        <a-range-picker @change="onTimeChange" style="margin-left: 30px" />
+      <span>{{ $t('check.history.timeSelect') }}</span>
+      <a-range-picker @change="onTimeChange" style="margin-left: 30px" />
     </div>
 
     <a-table
@@ -14,11 +14,12 @@
       :data-source="data"
       :rowKey="(record) => record.id"
       :pagination="pagination"
-      @change="handleChange" 
-      style="padding-top: 60px"
+      @change="handleChange"
+      style="padding-top: 50px"
     >
-
-      <a target="blank" @click="getReportDetail(text)" slot="id" slot-scope="text">{{ text }}</a>
+      <span slot="check_time" slot-scope="check_time">
+        {{ check_time | moment }}
+      </span>
       <span slot="normal_items" slot-scope="normal_items">
         <a-tag :key="normal_items" :color="'green'">
           {{ normal_items }}
@@ -30,57 +31,22 @@
         </a-tag>
       </span>
       <span slot="action" slot-scope="record">
-        <a @click="downloadReport(record.id)">{{ $t('cluster.detail.check.history.download') }}</a>
+        <a @click="getReportDetail(record.id)">
+          {{ $t('check.history.table.detail') }}
+        </a>
+        <a-divider type="vertical" />
+        <a @click="downloadReport(record)">
+          {{ $t('check.history.table.download') }}
+        </a>
       </span>
     </a-table>
   </div>
 </template>
 <script>
-import { getCheckHistoryByClusterID, downloadReport } from '@/api/check';
-
-const columns = [
-  {
-    title: "ID",
-    dataIndex: "id",
-    key: "id",
-    slots: { title: "customTitle" },
-    scopedSlots: { customRender: "id" },
-  },
-  {
-    title: "Time",
-    dataIndex: "check_time",
-    key: "check_time",
-  },
-  {
-    title: "Duration",
-    dataIndex: "duration",
-    key: "duration",
-  },
-  {
-    title: "Normal",
-    key: "normal_items",
-    dataIndex: "normal_items",
-    scopedSlots: { customRender: "normal_items" },
-  },
-  {
-    title: "Warning",
-    key: "warning_items",
-    dataIndex: "warning_items",
-    scopedSlots: { customRender: "warning_items" },
-  },
-  {
-    title: "Total",
-    key: "total_items",
-    dataIndex: "total_items",
-  },
-  {
-    title: "Action",
-    key: "action",
-    scopedSlots: { customRender: "action" },
-  },
-];
+import { getCheckHistoryByClusterID, downloadReport } from "@/api/check";
 
 const data = [];
+const columns = [];
 
 export default {
   data() {
@@ -88,9 +54,9 @@ export default {
       data,
       columns,
       pagination: {
-          showTotal: total => `Total ${total} items`,
-          showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '30', '40']
+        showTotal: (total) => `Total ${total} items`,
+        showSizeChanger: true,
+        pageSizeOptions: ["10", "20", "30", "40"],
       },
       start_time: "",
       end_time: "",
@@ -103,8 +69,7 @@ export default {
   },
   methods: {
     handleChange(pagination) {
-      this.pagination = pagination;
-      this.getHistoryList(pagination)
+      this.getHistoryList(pagination);
     },
     getHistoryList(
       pagination = {
@@ -112,33 +77,37 @@ export default {
         pageSize: 10,
       }
     ) {
-      getCheckHistoryByClusterID(this.clusterID, pagination.current, pagination.pageSize, this.start_time, this.end_time).then(
-        (res) => {
-          debugger
+      this.pagination = pagination;
+      getCheckHistoryByClusterID(
+        this.clusterID,
+        pagination.current,
+        pagination.pageSize,
+        this.start_time,
+        this.end_time
+      )
+        .then((res) => {
           const result = res.data;
           this.data = result.data;
           this.pagination = {
             ...this.pagination,
-            total: result.total
-          }
-        }
-      ).catch(err => {
-        this.$router.push({ name: "cluster" });
-      });
+            total: result.total,
+          };
+        })
+        .catch((err) => {
+          this.$router.push({ name: "cluster" });
+        });
     },
     downloadReport(reportID) {
-      console.log(reportID);
       downloadReport(reportID);
     },
     onTimeChange(date, dateString) {
       this.start_time = dateString[0];
       this.end_time = dateString[1];
-      this.getHistoryList();      
+      this.getHistoryList();
     },
     getReportDetail(reportID) {
-      console.log(reportID);
-      this.$router.push({name: 'ReportDetail', params: { id: reportID }});
-    }
+      this.$router.push({ name: "ReportDetail", params: { id: reportID } });
+    },
     // onChange: (current, pageSize) => {
     //   debugger
 
@@ -147,6 +116,43 @@ export default {
     // onShowSizeChange: (current, pageSize) => {
     //   this.pageSize = pageSize
     // }
+  },
+  beforeUpdate() {
+    this.columns = [
+      {
+        title: this.$t("check.history.table.checkTime"),
+        dataIndex: "check_time",
+        key: "check_time",
+        scopedSlots: { customRender: "check_time" },
+      },
+      {
+        title: this.$t("check.history.table.duration"),
+        dataIndex: "duration",
+        key: "duration",
+      },
+      {
+        title: this.$t("check.history.table.normal"),
+        key: "normal_items",
+        dataIndex: "normal_items",
+        scopedSlots: { customRender: "normal_items" },
+      },
+      {
+        title: this.$t("check.history.table.warning"),
+        key: "warning_items",
+        dataIndex: "warning_items",
+        scopedSlots: { customRender: "warning_items" },
+      },
+      {
+        title: this.$t("check.history.table.total"),
+        key: "total_items",
+        dataIndex: "total_items",
+      },
+      {
+        title: this.$t("check.history.table.action"),
+        key: "action",
+        scopedSlots: { customRender: "action" },
+      },
+    ];
   },
 };
 </script>
