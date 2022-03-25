@@ -15,6 +15,6 @@ try:
     for result in response.json()['data']['result']:
         result_instance = result['metric']['instance']
         result_value = float(result['value'][1])
-        print ("$tck_result: "+result_instance+"="+"{:.3f}".format(result_value))
+        print ("[tck_result:] "+result_instance+"="+"{:.3f}".format(result_value))
 except:
     sys.exit(1)

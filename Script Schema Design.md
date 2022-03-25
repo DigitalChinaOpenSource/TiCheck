@@ -10,7 +10,7 @@
 
 
 
-#### package.json
+#### package.json格式
 ```
 {
   "_id": "alive_pd_number", //id要和打包名称一致
@@ -26,9 +26,10 @@
   ],
   "main": "index.js", //入口文件
   "tags": [
-    "集群",
-    "网络",
-    "运行状态"
+    "cluster",
+    "network",
+    "running_state",
+    "others"
   ],
   "rules": [
       {
@@ -44,3 +45,20 @@
 }
 
 ```
+
+
+### 输入输出规范
+
+我们为每一个Probe制定了统一的输入输出格式，会把一些全局参数传给要运行的脚本，方然也支持给脚本自定义启动参数。与此同时，脚本输出信息也要符合一定要求才能被TiCheck捕获到，这和是否能正确判断阈值至关重要。
+
+#### 默认输入参数
+
+针对`shell`和`python`脚本，我们会统一传入三个参数，他们依次是：
+
+- BasePath，程序运行的主目录
+- MysqlLoginPath，tidb集群的登录连接信息，可以使用login path的方式登录执行sql
+- PremetheusPath，tidb集群的Prometheus地址，可以使用Psql查询集群监控指标
+
+#### 自定义输入参数
+
+#### 巡检值输出格式

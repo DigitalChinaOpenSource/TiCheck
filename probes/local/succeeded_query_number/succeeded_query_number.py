@@ -14,6 +14,6 @@ try:
 
     for result in response.json()['data']['result']:
         result_value = result['value'][1].split('.')[0]
-        print ("$tck_result: 今天成功的Query数="+result_value)
+        print ("[tck_result:] 今天成功的Query数="+result_value)
 except:
     sys.exit(1)

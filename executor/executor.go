@@ -213,8 +213,8 @@ func compareThreshold(
 	}
 	for i := 0; i < len(output); i++ {
 		op := output[i]
-		if strings.HasPrefix(op, "$tck_result:") {
-			row := strings.Split(strings.TrimPrefix(op, "$tck_result:"), "=")
+		if strings.HasPrefix(op, "[tck_result:]") {
+			row := strings.Split(strings.TrimPrefix(op, "[tck_result:]"), "=")
 			if len(row) < 2 {
 				fmt.Printf("error to skipped: invald probe %s", op)
 				continue

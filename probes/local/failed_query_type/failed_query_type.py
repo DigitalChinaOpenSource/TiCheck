@@ -16,6 +16,6 @@ try:
         result_instance = result['metric']['instance']
         result_type = result['metric']['type']
         result_value = result['value'][1].split('.')[0]
-        print ("$tck_result: "+result_instance + result_type+"="+result_value)
+        print ("[tck_result:] "+result_instance + result_type+"="+result_value)
 except:
     sys.exit(1)
