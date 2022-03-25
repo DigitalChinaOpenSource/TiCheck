@@ -22,16 +22,19 @@ type Cluster struct {
 	ClusterHealth int
 }
 
+// RecentWarnings is a struct for QueryRecentWarningsByID
 type RecentWarnings struct {
 	CheckTime    time.Time `json:"time"`
 	WarningItems int       `json:"warnings"`
 }
 
+// HistoryWarnings is a struct for QueryHistoryWarningByID
 type HistoryWarnings struct {
 	Name  string `json:"name"`
 	Total int    `json:"total"`
 }
 
+// CheckHistoryInfo is a struct for QueryHistoryInfoByID
 type CheckHistoryInfo struct {
 	Count int `json:"count"`
 	Total int `json:"total"`
@@ -51,6 +54,7 @@ func IsClusterExist(id int) bool {
 	}
 }
 
+// QueryClusterInfoByID query a cluster information by its id
 func (c *Cluster) QueryClusterInfoByID(id int) (clusterInfo Cluster, err error) {
 	err = DbConn.First(&clusterInfo, id).Error
 	if err != nil {
@@ -59,6 +63,7 @@ func (c *Cluster) QueryClusterInfoByID(id int) (clusterInfo Cluster, err error) 
 	return clusterInfo, nil
 }
 
+// QueryClusterList query all clusters under the current user
 func (c *Cluster) QueryClusterList() ([]Cluster, error) {
 	var clusterList []Cluster
 	err := DbConn.
@@ -72,6 +77,7 @@ func (c *Cluster) QueryClusterList() ([]Cluster, error) {
 	return clusterList, nil
 }
 
+// CreateCluster create a cluster for current user
 func (c *Cluster) CreateCluster() (err error) {
 	c.CreateTime = time.Now().Local()
 	err = DbConn.Create(&c).Error
@@ -81,6 +87,7 @@ func (c *Cluster) CreateCluster() (err error) {
 	return nil
 }
 
+// UpdateClusterByID update a cluster by its id
 func (c *Cluster) UpdateClusterByID() error {
 	updateData := map[string]interface{}{
 		"name":           c.Name,
@@ -102,6 +109,7 @@ func (c *Cluster) UpdateClusterByID() error {
 	return nil
 }
 
+// CheckConn check connectivity to tidb cluster
 func (c *Cluster) CheckConn(path string) error {
 	DB, err := sql.Open("mysql", path)
 	if err != nil {
@@ -117,7 +125,9 @@ func (c *Cluster) CheckConn(path string) error {
 	return nil
 }
 
-func (chi *CheckHistoryInfo) QueryHistoryInfoByID(id int) (CheckHistoryInfo, error) {
+// QueryHistoryInfoByID query the total number of inspections and
+// the total number of inspection items for a cluster by its id.
+func (c *Cluster) QueryHistoryInfoByID(id int) (CheckHistoryInfo, error) {
 	var checkHistory CheckHistoryInfo
 	err := DbConn.Model(&CheckHistory{}).
 		Select("count(*) as count,sum(total_items) as total").
@@ -130,7 +140,8 @@ func (chi *CheckHistoryInfo) QueryHistoryInfoByID(id int) (CheckHistoryInfo, err
 	return checkHistory, nil
 }
 
-func (hw *HistoryWarnings) QueryHistoryWarningByID(id int, days int) ([]HistoryWarnings, error) {
+// QueryHistoryWarningByID query the warnings items in the cluster in the past period by cluster id
+func (c *Cluster) QueryHistoryWarningByID(id int, days int) ([]HistoryWarnings, error) {
 	var historyWarnings []HistoryWarnings
 	err := DbConn.Model(&CheckData{}).
 		Select("check_name || '(' ||check_item || ')' as name,count(*) as total").
@@ -149,7 +160,8 @@ func (hw *HistoryWarnings) QueryHistoryWarningByID(id int, days int) ([]HistoryW
 	return historyWarnings, nil
 }
 
-func (rw *RecentWarnings) QueryRecentWarningsByID(id int) (recentWarnings []RecentWarnings, err error) {
+// QueryRecentWarningsByID query the cluster's recent warnings by its cluster id
+func (c *Cluster) QueryRecentWarningsByID(id int) (recentWarnings []RecentWarnings, err error) {
 	subQuery := DbConn.Model(&CheckHistory{}).
 		Select("id,check_time,warning_items").
 		Where("cluster_id", id).
