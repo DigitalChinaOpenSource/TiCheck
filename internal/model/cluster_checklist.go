@@ -48,6 +48,32 @@ func (cc *ClusterChecklist) GetEnabledCheckListByClusterID(id int) ([]CheckListI
 	return cl, err
 }
 
+func (cc *ClusterChecklist) GetEnabledCheckListTagGroup(id int) map[string]interface{} {
+	result := make(map[string]interface{})
+	var total int
+
+	groups := make(map[string]interface{})
+	var probe Probe
+	rows, _ := DbConn.Table(cc.TableName()+" as cc").Select("p.tag, count(cc.probe_id) as cnt").
+		Joins("join "+probe.TableName()+" as p on cc.probe_id = p.id").
+		Where("cc.is_enabled = 1 and cc.cluster_id = ?", id).Group("p.tag").Rows()
+	defer rows.Close()
+
+	for rows.Next() {
+		g := struct {
+			Tag string
+			Cnt int
+		}{}
+		DbConn.ScanRows(rows, &g)
+		total += g.Cnt
+		groups[g.Tag] = g.Cnt
+	}
+
+	result["groups"] = groups
+	result["total"] = total
+	return result
+}
+
 func (cc *ClusterChecklist) AddCheckProbe() error {
 	err := DbConn.Create(cc).Error
 	return err

@@ -784,6 +784,7 @@ func (ch *ClusterHandler) ExecuteCheck(c *gin.Context) {
 			if result.IsFinished {
 				return
 			}
+			time.Sleep(time.Second * 1)
 		}
 
 	}

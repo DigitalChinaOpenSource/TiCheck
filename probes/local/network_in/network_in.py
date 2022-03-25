@@ -20,13 +20,12 @@ if check_args:
           % device_filter
 
 try:
-    response = requests.get('http://%s/api/v1/query' % prometheus_address, params={'query': pql})
+    response = requests.get('%s/api/v1/query' % prometheus_address, params={'query': pql})
 
     for result in response.json()['data']['result']:
         result_instance = result['metric']['instance']
         result_device = result['metric']['device']
         result_value = float(result['value'][1])
-        print(result_instance + '/' + result_device)
-        print("%.3f" % result_value)
+        print ("$tck_result: "+result_instance + '/' + result_device+"="+"{:.3f}".format(result_value))
 except:
     sys.exit(1)

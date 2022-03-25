@@ -4,9 +4,6 @@ export default {
     'check.probe.table.probeID': 'ID',
     'check.probe.table.name': '指标名称',
     'check.probe.table.tag': '标签',
-    'check.probe.table.tag.cluster': '集群',
-    'check.probe.table.tag.network': '网络',
-    'check.probe.table.tag.state': '运行状态',
     'check.probe.table.description': '描述',
     'check.probe.table.operator': '运算符',
     'check.probe.table.threshold': '阈值',
@@ -18,6 +15,11 @@ export default {
     'check.probe.table.action': '操作',
     'check.probe.table.edit': '编辑',
     'check.probe.table.delete': '删除',
+
+    // tag
+    'check.probe.tag.cluster': '集群',
+    'check.probe.tag.network': '网络',
+    'check.probe.tag.state': '运行状态',
 
     // add probe
     'check.probe.add.title': '添加巡检项',

@@ -11,7 +11,7 @@
     ],
     "main": "no_primary_key.sh",
     "tags": [
-      "运行状态"
+      "running_state"
     ],
     "rules": [
         {
