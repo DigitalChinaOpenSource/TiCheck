@@ -135,8 +135,10 @@ func (s *StoreHandler) UploadCustomScript(c *gin.Context) {
 			p.Tag = "Others"
 		}
 	}
-	if len(pm.Comparators) > 0 {
-		p.Comparator = *pm.Comparators[0]
+	if len(pm.Rules) > 0 {
+		p.Comparator.Operator = pm.Rules[0].Operator
+		p.Comparator.Threshold = pm.Rules[0].Threshold
+		p.Comparator.Arg = strings.Join(pm.Rules[0].Args, " ")
 	}
 	if err := p.Create(); err != nil {
 		defer os.RemoveAll(dir)

@@ -8,20 +8,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	web_prefix = "../../web/dist"
+)
+
 func Register(engine *gin.Engine) {
 
 	// 使用静态资源需要在 web 目录下 npm run build
-
-	//// 多模板
-	//engine.HTMLRender = createMyRender()
-	//
-	//// 加载静态资源
-	//engine.Static("/assets", "web/dist/assets")
-	//engine.Static("/css", "web/dist/css")
-	//engine.Static("/img", "web/dist/img")
-	//engine.Static("/js", "web/dist/js")
-	//engine.StaticFile("/avatar2.jpg", "web/dist/avatar2.jpg")
-	//engine.StaticFile("/logo.png", "web/dist/logo.png")
+	if gin.Mode() == gin.ReleaseMode {
+		// 多模板
+		engine.HTMLRender = createMyRender()
+		// 加载静态资源
+		engine.Static("/assets", web_prefix+"/assets")
+		engine.Static("/css", web_prefix+"/css")
+		engine.Static("/img", web_prefix+"/img")
+		engine.Static("/js", web_prefix+"/js")
+		engine.StaticFile("/avatar2.jpg", web_prefix+"/avatar2.jpg")
+		engine.StaticFile("/logo.png", web_prefix+"/logo.png")
+	}
 
 	viewGroup := engine.Group("/")
 	{
@@ -159,6 +163,6 @@ func Register(engine *gin.Engine) {
 
 func createMyRender() multitemplate.Renderer {
 	p := multitemplate.NewRenderer()
-	p.AddFromFiles("frontend", "web/dist/index.html")
+	p.AddFromFiles("frontend", web_prefix+"/index.html")
 	return p
 }

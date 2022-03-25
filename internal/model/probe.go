@@ -24,18 +24,26 @@ func (Probe) TableName() string {
 }
 
 type ProbeMeta struct {
-	ID          string        `json:"_id"`
-	Name        string        `json:"name"`
-	Author      ProbeAuthor   `json:"author"`
-	Description string        `json:"description"`
-	Tags        []string      `json:"tags"`
-	Comparators []*Comparator `json:"rules"`
-	Files       []string      `json:"files"`
-	Main        string        `json:"main"`
-	HomePage    string        `json:"homepage"`
-	Version     string        `json:"version"`
-	CreateTime  JsonTime      `json:"createTime"`
-	UpdateTime  JsonTime      `json:"updateTime"`
+	ID          string          `json:"_id"`
+	Name        string          `json:"name"`
+	Author      ProbeAuthor     `json:"author"`
+	Description string          `json:"description"`
+	Tags        []string        `json:"tags"`
+	Rules       []ProbeMetaRule `json:"rules"`
+	Files       []string        `json:"files"`
+	Main        string          `json:"main"`
+	HomePage    string          `json:"homepage"`
+	Version     string          `json:"version"`
+	CreateTime  JsonTime        `json:"createTime"`
+	UpdateTime  JsonTime        `json:"updateTime"`
+}
+
+type ProbeMetaRule struct {
+	// represents way to compare threshold and result
+	// 0: NA, 1: eq. 2: g, 3: ge, 4: l, 5: le
+	Operator  int      `json:"operator"`
+	Threshold string   `json:"threshold"`
+	Args      []string `json:"args,omitempty"`
 }
 
 type ProbeAuthor struct {

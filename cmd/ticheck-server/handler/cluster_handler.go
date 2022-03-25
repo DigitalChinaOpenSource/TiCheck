@@ -755,10 +755,10 @@ func (h QueryHelper) queryWithUrl() (result map[string]interface{}, err error) {
 	return result, nil
 }
 
-// run once check task, response by realtime
+// ExecuteCheck run once check task, response by realtime
 func (ch *ClusterHandler) ExecuteCheck(c *gin.Context) {
 	id := c.Param("id")
-	cluster_id, err := strconv.Atoi(id)
+	clusterID, err := strconv.Atoi(id)
 	if err != nil {
 		api.BadWithMsg(c, "cluster id is invalid")
 		return
@@ -771,7 +771,7 @@ func (ch *ClusterHandler) ExecuteCheck(c *gin.Context) {
 	}
 	defer ws.Close()
 
-	exe := executor.CreateClusterExecutor(uint(cluster_id), 0)
+	exe := executor.CreateClusterExecutor(uint(clusterID), 0)
 
 	resultCh := make(chan executor.CheckResult, 10)
 	// ctx := context.WithValue(context.Background(), "", "")

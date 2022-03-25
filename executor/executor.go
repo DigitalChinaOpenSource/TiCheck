@@ -98,6 +98,7 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 	his.WarningItems = counter.warningItems
 	his.TotalItems = counter.normalItems + counter.warningItems
 	model.DbConn.Save(&his)
+	model.DbConn.Model(&model.Cluster{}).Where("id = ?", ce.ClusterID).Update("last_check_time", begin)
 	// send finish signal
 	result := CheckResult{IsFinished: true}
 	rc <- result
