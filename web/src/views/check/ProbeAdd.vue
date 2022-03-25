@@ -303,9 +303,9 @@ export default {
         dataIndex: "tag",
         scopedSlots: { customRender: "tag" },
         filters: [
-          { text: this.$t("check.probe.table.tag.cluster"), value: "集群" },
-          { text: this.$t("check.probe.table.tag.network"), value: "网络" },
-          { text: this.$t("check.probe.table.tag.state"), value: "运行状态" },
+          { text: this.$t("check.probe.tag.cluster"), value: "集群" },
+          { text: this.$t("check.probe.tag.network"), value: "网络" },
+          { text: this.$t("check.probe.tag.state"), value: "运行状态" },
         ],
         filterMultiple: false,
         onFilter: (value, record) => record.tag.indexOf(value) === 0,

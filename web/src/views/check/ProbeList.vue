@@ -178,13 +178,6 @@ const columns = [];
 
 const data = [];
 
-const paginationOpt = {
-  showTotal: (total) => `Total ${total} items`,
-  showSizeChanger: true,
-  pageSizeOptions: ["10", "30", "50", "100"],
-  defaultPageSize: 100,
-};
-
 export default {
   data() {
     return {
@@ -194,6 +187,7 @@ export default {
         showTotal: (total) => `Total ${total} items`,
         showSizeChanger: true,
         pageSizeOptions: ["10", "20", "30", "40"],
+        defaultPageSize: 100,
       },
       start_time: "",
       end_time: "",
@@ -340,9 +334,9 @@ export default {
         dataIndex: "tag",
         scopedSlots: { customRender: "tag" },
         filters: [
-          { text: this.$t("check.probe.table.tag.cluster"), value: "集群" },
-          { text: this.$t("check.probe.table.tag.network"), value: "网络" },
-          { text: this.$t("check.probe.table.tag.state"), value: "运行状态" },
+          { text: this.$t("check.probe.tag.cluster"), value: "集群" },
+          { text: this.$t("check.probe.tag.network"), value: "网络" },
+          { text: this.$t("check.probe.tag.state"), value: "运行状态" },
         ],
         filterMultiple: false,
         onFilter: (value, record) => record.tag.indexOf(value) === 0,

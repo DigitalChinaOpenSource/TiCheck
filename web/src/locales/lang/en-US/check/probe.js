@@ -4,9 +4,6 @@ export default {
     'check.probe.table.probeID': 'ID',
     'check.probe.table.name': 'Name',
     'check.probe.table.tag': 'Tag',
-    'check.probe.table.tag.cluster': 'Cluster',
-    'check.probe.table.tag.network': 'Network',
-    'check.probe.table.tag.state': 'Running State',
     'check.probe.table.description': 'Description',
     'check.probe.table.operator': 'Operator',
     'check.probe.table.threshold': 'Threshold',
@@ -18,6 +15,11 @@ export default {
     'check.probe.table.action': 'Action',
     'check.probe.table.edit': 'Edit',
     'check.probe.table.delete': 'Delete',
+
+    // tag
+    'check.probe.tag.cluster': 'Cluster',
+    'check.probe.tag.network': 'Network',
+    'check.probe.tag.state': 'Running State',
 
     // add probe
     'check.probe.add.title': 'Add Probe',
