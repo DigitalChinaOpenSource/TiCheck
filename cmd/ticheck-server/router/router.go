@@ -59,12 +59,16 @@ func Register(engine *gin.Engine) {
 	//clusterGroup.Use(session.VerifyToken)
 	{
 		cluster := &handler.ClusterHandler{}
+
 		// Get cluster list
 		clusterGroup.GET("/list", cluster.GetClusterList)
+
 		// Get cluster information by id
 		clusterGroup.GET("/info/:id", cluster.GetClusterInfo)
 
+		// Get before updated cluster information
 		clusterGroup.GET("/initial/:id", cluster.GetInitialClusterInfo)
+
 		// Add cluster
 		clusterGroup.POST("/add", cluster.PostClusterInfo)
 
@@ -74,13 +78,13 @@ func Register(engine *gin.Engine) {
 		// Get cluster scheduler list by id
 		clusterGroup.GET("/scheduler/:id", cluster.GetClusterSchedulerList)
 
-		//
+		// Add a scheduler for this cluster
 		clusterGroup.POST("/scheduler/add", cluster.PostClusterScheduler)
 
-		//
+		// Update a scheduler by its id
 		clusterGroup.PUT("/scheduler/update", cluster.UpdateScheduler)
 
-		//
+		// Delete a scheduler for its id
 		clusterGroup.DELETE("/scheduler/delete/:id", cluster.DeleteScheduler)
 
 		// Get the cluster installed probe checklist

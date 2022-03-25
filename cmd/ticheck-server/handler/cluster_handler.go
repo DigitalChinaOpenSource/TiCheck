@@ -19,12 +19,8 @@ import (
 type ClusterHandler struct {
 	ClusterInfo model.Cluster
 	Scheduler   model.Scheduler
-}
-
-// QueryHelper is a struct for query by pd url or prometheus
-type QueryHelper struct {
-	Url   string `json:"url"`
-	Query string `json:"query"`
+	Url         string `json:"url"`
+	Query       string `json:"query"`
 }
 
 // PrometheusRespMetrics is a struct for PrometheusResp metrics
@@ -136,6 +132,7 @@ type ClusterSchedulerReq struct {
 	ClusterID string `json:"cluster_id"`
 }
 
+// GetClusterList get all clusters of currently log in user
 func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 	owner := c.Query("owner")
 	clusterList, err := ch.ClusterInfo.QueryClusterList(owner)
@@ -158,7 +155,7 @@ func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 		}
 		nodeType := []string{"pd", "tidb", "tikv", "tiflash"}
 		url := cluster.PrometheusURL + "/api/v1/query"
-		nodesInfo, e := getClusterNodesInfo(url, nodeType)
+		nodesInfo, e := GetClusterNodesInfo(url, nodeType)
 		if e != nil {
 			api.ErrorWithMsg(c, e.Error())
 			return
@@ -171,6 +168,7 @@ func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 	return
 }
 
+// GetClusterInfo get cluster info for cluster info view
 func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 	id := c.Param("id")
 	clusterID, err := strconv.Atoi(id)
@@ -241,6 +239,7 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 	return
 }
 
+// GetInitialClusterInfo get initial cluster information before cluster updated
 func (ch *ClusterHandler) GetInitialClusterInfo(c *gin.Context) {
 	id := c.Param("id")
 	clusterID, err := strconv.Atoi(id)
@@ -273,6 +272,7 @@ func (ch *ClusterHandler) GetInitialClusterInfo(c *gin.Context) {
 	return
 }
 
+// PostClusterInfo add a cluster
 func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 	clusterInfoReq := &ClusterInfoReq{}
 	err := c.BindJSON(clusterInfoReq)
@@ -297,6 +297,7 @@ func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 	return
 }
 
+// UpdateClusterInfo update a cluster by cluster id
 func (ch *ClusterHandler) UpdateClusterInfo(c *gin.Context) {
 	clusterInfoReq := &ClusterInfoReq{}
 	err := c.BindJSON(clusterInfoReq)
@@ -335,10 +336,11 @@ func (ch *ClusterHandler) UpdateClusterInfo(c *gin.Context) {
 	return
 }
 
+// BuildClusterInfo build a cluster information by ClusterInfoReq for UpdateClusterInfo and PostClusterInfo
 func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) (cluster model.Cluster, err error) {
 	nodeType := []string{"pd", "grafana", "tidb"}
 	url := fmt.Sprintf("http://%s/api/v1/query", req.PrometheusUrl)
-	nodes, err := getClusterNodesInfo(url, nodeType)
+	nodes, err := GetClusterNodesInfo(url, nodeType)
 	if err != nil {
 		return cluster, err
 	}
@@ -357,13 +359,13 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) (cluster model.C
 	dashboard = fmt.Sprintf("http://%s/dashboard", nodes[0].Instance[0])
 
 	pdUrl := fmt.Sprintf("http://%s/pd/api/v1/version", nodes[0].Instance[0])
-	version, err := getClusterVersion(pdUrl)
+	version, err := GetClusterVersion(pdUrl)
 	if err != nil {
 		return cluster, err
 	}
 
 	tidbUrl := fmt.Sprintf("http://%s/info", nodes[2].Instance[0])
-	host, portStr, err := getClusterConnectPath(tidbUrl)
+	host, portStr, err := GetClusterConnectPath(tidbUrl)
 	if err != nil {
 		return cluster, err
 	}
@@ -520,6 +522,7 @@ func (ch *ClusterHandler) DeleteProbeForCluster(c *gin.Context) {
 	return
 }
 
+// GetClusterSchedulerList get cluster scheduler list of this cluster
 func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 	id := c.Param("id")
 	clusterID, err := strconv.Atoi(id)
@@ -551,6 +554,7 @@ func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 	return
 }
 
+// PostClusterScheduler add a scheduler for a cluster by cluster id
 func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 	schedulerReq := &ClusterSchedulerReq{}
 	err := c.BindJSON(schedulerReq)
@@ -590,6 +594,7 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 	return
 }
 
+// UpdateScheduler update a scheduler information by its id
 func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
 	schedulerReq := &ClusterSchedulerReq{}
 	err := c.BindJSON(schedulerReq)
@@ -620,6 +625,7 @@ func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
 	return
 }
 
+// DeleteScheduler delete a scheduler by scheduler id
 func (ch *ClusterHandler) DeleteScheduler(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -640,8 +646,9 @@ func (ch *ClusterHandler) DeleteScheduler(c *gin.Context) {
 	return
 }
 
-func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, err error) {
-	queryHelper := QueryHelper{
+// GetClusterNodesInfo get tidb cluster node information through prometheus and node type name
+func GetClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, err error) {
+	queryHelper := ClusterHandler{
 		Url: url,
 	}
 	for k, v := range nodeType {
@@ -649,7 +656,7 @@ func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, 
 		var normal = 0
 		queryString := fmt.Sprintf("probe_success{group='%s'}", v)
 		queryHelper.Query = queryString
-		resp, err := queryHelper.queryWithPrometheus()
+		resp, err := queryHelper.QueryWithPrometheus()
 		if err != nil {
 			return nodesInfo, err
 		}
@@ -660,7 +667,7 @@ func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, 
 			}
 		}
 
-		resp, err = queryHelper.queryWithPrometheus()
+		resp, err = queryHelper.QueryWithPrometheus()
 		if err != nil {
 			return nodesInfo, err
 		}
@@ -677,12 +684,13 @@ func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, 
 	return nodesInfo, nil
 }
 
-func getClusterVersion(url string) (version string, err error) {
-	queryHelper := QueryHelper{
+// GetClusterVersion get tidb cluster version through PD api
+func GetClusterVersion(url string) (version string, err error) {
+	queryHelper := ClusterHandler{
 		Url: url,
 	}
 
-	jsonMap, err := queryHelper.queryWithUrl()
+	jsonMap, err := queryHelper.QueryWithUrl()
 	if err != nil {
 		return version, errors.New(fmt.Sprintf("bad request: %s", err))
 	}
@@ -691,12 +699,13 @@ func getClusterVersion(url string) (version string, err error) {
 	return version, nil
 }
 
-func getClusterConnectPath(url string) (host string, portStr string, err error) {
-	queryHelper := QueryHelper{
+// GetClusterConnectPath get tidb cluster connection path through PD api
+func GetClusterConnectPath(url string) (host string, portStr string, err error) {
+	queryHelper := ClusterHandler{
 		Url: url,
 	}
 
-	jsonMap, err := queryHelper.queryWithUrl()
+	jsonMap, err := queryHelper.QueryWithUrl()
 	if err != nil {
 		return host, portStr, errors.New(fmt.Sprintf("bad request: %s", err))
 	}
@@ -707,15 +716,16 @@ func getClusterConnectPath(url string) (host string, portStr string, err error) 
 	return host, portStr, nil
 }
 
-func (h QueryHelper) queryWithPrometheus() (proResp PrometheusResp, err error) {
+// QueryWithPrometheus query information through the interface of prometheus
+func (ch *ClusterHandler) QueryWithPrometheus() (proResp PrometheusResp, err error) {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", h.Url, nil)
+	req, err := http.NewRequest("GET", ch.Url, nil)
 	if err != nil {
 		return proResp, err
 	}
 
 	q := req.URL.Query()
-	q.Add("query", h.Query)
+	q.Add("query", ch.Query)
 	req.URL.RawQuery = q.Encode()
 	resp, err := client.Do(req)
 	if err != nil {
@@ -736,8 +746,9 @@ func (h QueryHelper) queryWithPrometheus() (proResp PrometheusResp, err error) {
 	return proResp, nil
 }
 
-func (h QueryHelper) queryWithUrl() (result map[string]interface{}, err error) {
-	resp, err := http.Get(h.Url)
+// QueryWithUrl query information through the interface of PD or TiDB
+func (ch *ClusterHandler) QueryWithUrl() (result map[string]interface{}, err error) {
+	resp, err := http.Get(ch.Url)
 	if err != nil {
 		return result, errors.New(fmt.Sprintf("bad request: %s", err))
 	}
