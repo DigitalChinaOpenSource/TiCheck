@@ -14,6 +14,6 @@ try:
 
     for result in response.json()['data']['result']:
         result_value = result['value'][1]
-        print ("$tck_result: TiKV节点数量="+result_value)
+        print ("[tck_result:] TiKV节点数量="+result_value)
 except:
     sys.exit(1)

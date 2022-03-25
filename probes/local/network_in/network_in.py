@@ -26,6 +26,6 @@ try:
         result_instance = result['metric']['instance']
         result_device = result['metric']['device']
         result_value = float(result['value'][1])
-        print ("$tck_result: "+result_instance + '/' + result_device+"="+"{:.3f}".format(result_value))
+        print ("[tck_result:] "+result_instance + '/' + result_device+"="+"{:.3f}".format(result_value))
 except:
     sys.exit(1)

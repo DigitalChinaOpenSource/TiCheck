@@ -15,6 +15,6 @@ try:
     for result in response.json()['data']['result']:
         result_address = result['metric']['instance']
         result_value = result['value'][1]
-        print ("$tck_result: "+result_address+"="+result_value)
+        print ("[tck_result:] "+result_address+"="+result_value)
 except:
     sys.exit(1)

@@ -128,7 +128,12 @@ func (s *StoreHandler) UploadCustomScript(c *gin.Context) {
 	p.CreateTime = time.Time(pm.CreateTime).Local()
 	p.UpdateTime = time.Time(pm.UpdateTime).Local()
 	if len(pm.Tags) > 0 {
-		p.Tag = pm.Tags[0]
+		t, ok := model.Dict_ProbeTags[pm.Tags[0]]
+		if ok {
+			p.Tag = t
+		} else {
+			p.Tag = "Others"
+		}
 	}
 	if len(pm.Comparators) > 0 {
 		p.Comparator = *pm.Comparators[0]

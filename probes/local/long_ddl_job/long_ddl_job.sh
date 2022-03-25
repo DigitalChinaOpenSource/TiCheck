@@ -20,7 +20,7 @@ to_print=$(mysql --login-path="${MYSQL_LOGIN_PATH}" -e "$print_sql" -ss)
 
 IFS=$'\n'
 for i in $to_print ; do
-    echo "$i" | awk '{print "$tck_result: DDL JOB_ID:"$1"=花费时间"$2"秒"}'
+    echo "$i" | awk '{print "[tck_result:] DDL JOB_ID:"$1"=花费时间"$2"秒"}'
 done
 
 # save_sql=\
