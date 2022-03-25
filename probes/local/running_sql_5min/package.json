@@ -11,7 +11,7 @@
     ],
     "main": "running_sql_5min.sh",
     "tags": [
-      "运行状态"
+      "running_state"
     ],
     "rules": [
         {

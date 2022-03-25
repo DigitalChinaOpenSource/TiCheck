@@ -19,6 +19,5 @@ result=$(mysql --login-path="${MYSQL_LOGIN_PATH}" -e "$sql_command" -ss)
 
 IFS=$'\n'
 for i in $result ; do
-    echo "$i" | awk '{print $1"."$2}'
-    echo "无主键"
+    echo "$i" | awk '{print $tck_result: $1"."$2=无主键}'
 done

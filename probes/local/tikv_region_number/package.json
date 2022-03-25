@@ -11,7 +11,7 @@
     ],
     "main": "tikv_region_number.py",
     "tags": [
-      "运行状态"
+      "running_state"
     ],
     "rules": [
         {

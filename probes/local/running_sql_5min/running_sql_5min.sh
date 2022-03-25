@@ -18,16 +18,16 @@ to_print=$(mysql --login-path="${MYSQL_LOGIN_PATH}" -e "$print_sql" -ss)
 
 IFS=$'\n'
 for i in $to_print ; do
-    echo "$i" | awk '{print "SQL ID:"$1"\n已经运行"$2"秒"}'
+    echo "$i" | awk '{print "$tck_result: SQL ID:"$1"=已经运行"$2"秒"}'
 done
 
-save_sql=\
-"select *
-from information_schema.cluster_processlist
-where \`COMMAND\` <> 'Sleep'
-and \`TIME\`> 300 \G"
+# save_sql=\
+# "select *
+# from information_schema.cluster_processlist
+# where \`COMMAND\` <> 'Sleep'
+# and \`TIME\`> 300 \G"
 
-to_save=$(mysql --login-path="${MYSQL_LOGIN_PATH}" -e "$save_sql")
-if [ -n "$to_save" ]; then
-  echo "$to_save" > "$BASE_PATH"/err_report/running_sql_5min
-fi
+# to_save=$(mysql --login-path="${MYSQL_LOGIN_PATH}" -e "$save_sql")
+# if [ -n "$to_save" ]; then
+#   echo "$to_save" > "$BASE_PATH"/err_report/running_sql_5min
+# fi

@@ -11,7 +11,7 @@
     ],
     "main": "alive_tidb_number.py",
     "tags": [
-      "集群"
+      "cluster"
     ],
     "rules": [
         {

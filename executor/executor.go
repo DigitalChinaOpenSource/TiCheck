@@ -104,23 +104,23 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 }
 
 /*
-@cluster_id - the cluster id
-@scheduler_id - the scheduler id, no scheduler trigger use 0
+@clusterID - the cluster id
+@schedulerID - the scheduler id, no scheduler trigger use 0
 */
-func CreateClusterExecutor(cluster_id, scheduler_id uint) Executor {
-	c, err := (&model.Cluster{}).QueryClusterInfoByID(int(cluster_id))
+func CreateClusterExecutor(clusterID, schedulerID uint) Executor {
+	c, err := (&model.Cluster{}).QueryClusterInfoByID(int(clusterID))
 	if err != nil {
 		fmt.Println("CreateClusterExecutor Error:", err.Error())
 		return nil
 	}
 	ce := &ClusterExecutor{
-		ClusterID:   cluster_id,
-		SchedulerID: scheduler_id,
+		ClusterID:   clusterID,
+		SchedulerID: schedulerID,
 		Prometheus:  c.PrometheusURL,
 		LoginPath:   c.LoginPath,
 	}
 
-	tasks, err := (&model.ClusterChecklist{}).GetEnabledCheckListByClusterID(int(cluster_id))
+	tasks, err := (&model.ClusterChecklist{}).GetEnabledCheckListByClusterID(int(clusterID))
 	if err != nil {
 		fmt.Println("CreateClusterExecutor Error:", err.Error())
 		return nil
@@ -149,8 +149,9 @@ func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
 		rc <- result
 		return
 	}
-	args := []string{f} // script file absolute path
-	args = append(args, "baepath")
+	// the required arguments
+	args := []string{f}                         // script file absolute path
+	args = append(args, "basepath")             // TODO
 	args = append(args, ctx.cluster.LoginPath)  //login path
 	args = append(args, ctx.cluster.Prometheus) //promethous url
 	args = append(args, ctx.checkInfo.Arg)      //probe custom args
@@ -212,8 +213,8 @@ func compareThreshold(
 	}
 	for i := 0; i < len(output); i++ {
 		op := output[i]
-		if strings.HasPrefix(op, "tck_result:") {
-			row := strings.Split(strings.TrimPrefix(op, "tck_result:"), "=")
+		if strings.HasPrefix(op, "$tck_result:") {
+			row := strings.Split(strings.TrimPrefix(op, "$tck_result:"), "=")
 			if len(row) < 2 {
 				fmt.Printf("error to skipped: invald probe %s", op)
 				continue
@@ -279,7 +280,7 @@ func compareThreshold(
 			}
 			data = append(data, cd)
 
-		} else if strings.HasPrefix(op, "tck_log:") {
+		} else if strings.HasPrefix(op, "$tck_log:") {
 			// TODO: save check log of a script in furtuer
 			fmt.Printf("probe %s", op)
 		}
@@ -289,15 +290,6 @@ func compareThreshold(
 
 func applyShellProbe(args []string) (output []string, err error) {
 	cmd := exec.Command("sh", args...)
-
-	// var output bytes.Buffer
-	// cmd.Stdout = &output
-	// err := cmd.Run()
-	// if err != nil {
-	// 	print(err)
-	// }
-	// fmt.Printf("%s", output.String())
-
 	op, e := cmd.CombinedOutput()
 	if e != nil {
 		print(e)
