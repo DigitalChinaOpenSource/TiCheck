@@ -129,6 +129,7 @@
 
 <script>
 import { getSchedulerList, addScheduler, updateScheduler, deleteScheduler } from '@/api/cluster'
+import moment from "moment";
 
 const schedulerList = []
 
@@ -168,6 +169,9 @@ export default {
     getSchedulers () {
       getSchedulerList(this.clusterID).then(res => {
         this.schedulerList = res.data
+        for (let i = 0; i < this.schedulerList.length; i++) {
+          this.schedulerList[i].create_time = moment(this.schedulerList[i].create_time).format('YYYY-MM-DD HH:mm:ss')
+        }
       })
     },
     mapStatusValue (status) {

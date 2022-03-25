@@ -6,8 +6,7 @@ const api = {
   service: '/service',
   permission: '/permission',
   permissionNoPager: '/permission/no-pager',
-  orgTree: '/org/tree',
-  clusterInfo: '/cluster/info'
+  orgTree: '/org/tree'
 }
 
 export default api
@@ -51,15 +50,6 @@ export function getOrgTree (parameter) {
     params: parameter
   })
 }
-
-export function getClusterInfo (parameter) {
-  return request({
-    url: api.clusterInfo,
-    method: 'get',
-    params: parameter
-  })
-}
-
 // id == 0 add     post
 // id != 0 update  put
 export function saveService (parameter) {

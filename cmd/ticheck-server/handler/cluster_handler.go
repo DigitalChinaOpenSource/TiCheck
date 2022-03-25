@@ -17,18 +17,17 @@ import (
 )
 
 type ClusterHandler struct {
-	ClusterInfo      model.Cluster
-	CheckHistoryInfo model.CheckHistoryInfo
-	RecentWarnings   model.RecentWarnings
-	HistoryWarnings  model.HistoryWarnings
-	Scheduler        model.Scheduler
+	ClusterInfo model.Cluster
+	Scheduler   model.Scheduler
 }
 
+// QueryHelper is a struct for query by pd url or prometheus
 type QueryHelper struct {
 	Url   string `json:"url"`
 	Query string `json:"query"`
 }
 
+// PrometheusRespMetrics is a struct for PrometheusResp metrics
 type PrometheusRespMetrics struct {
 	Name     string `json:"__name__"`
 	Group    string `json:"group"`
@@ -36,39 +35,47 @@ type PrometheusRespMetrics struct {
 	Job      string `json:"job"`
 }
 
+// PrometheusRespRes is a struct for PrometheusResp result
 type PrometheusRespRes struct {
 	Metrics PrometheusRespMetrics `json:"metric"`
 	Value   []interface{}         `json:"value"`
 }
 
+// PrometheusRespData is a struct for PrometheusRespRes data
 type PrometheusRespData struct {
 	ResultType string              `json:"resultType"`
 	Result     []PrometheusRespRes `json:"result"`
 }
 
+// PrometheusResp is a struct for prometheus response
 type PrometheusResp struct {
 	Status string             `json:"status"`
 	Data   PrometheusRespData `json:"data"`
 }
 
+// NodesInfo is a struct for tidb cluster's nodes
 type NodesInfo struct {
 	ID       int      `json:"id"`
 	NodeType string   `json:"type"`
 	Instance []string `json:"instance"`
 	Count    int      `json:"count"`
+	Normal   int      `json:"normal"`
 }
 
+// ClusterInfoReq is a request for PostClusterInfo
 type ClusterInfoReq struct {
-	ID            uint   `json:"id"`
-	Owner         string `json:"owner"`
-	Name          string `json:"name"`
-	PrometheusUrl string `json:"url"`
-	LogUser       string `json:"user"`
-	LogPasswd     string `json:"passwd"`
-	Description   string `json:"description"`
+	ID            uint     `json:"id"`
+	Owner         string   `json:"owner"`
+	Name          string   `json:"name"`
+	PrometheusUrl string   `json:"url"`
+	LogUser       string   `json:"user"`
+	LogPasswd     string   `json:"passwd"`
+	Description   string   `json:"description"`
+	CheckItems    []string `json:"check_items"`
 }
 
-type ClusterListReps struct {
+// ClusterListResp is a response for GetClusterList
+type ClusterListResp struct {
 	ID            uint        `json:"id"`
 	Name          string      `json:"cluster_name"`
 	Description   string      `json:"description"`
@@ -80,7 +87,8 @@ type ClusterListReps struct {
 	LastCheckTime time.Time   `json:"last_check_time"`
 }
 
-type ClusterInfoReps struct {
+// ClusterInfoResp is a response for GetClusterInfo
+type ClusterInfoResp struct {
 	ID                     uint                    `json:"id"`
 	Name                   string                  `json:"name"`
 	Version                string                  `json:"version"`
@@ -97,7 +105,18 @@ type ClusterInfoReps struct {
 	MonthlyHistoryWarnings []model.HistoryWarnings `json:"monthly_history_warnings"`
 }
 
-type ClusterSchedulerListReps struct {
+// InitialClusterInfoResp is a response for GetInitialClusterInfo
+type InitialClusterInfoResp struct {
+	Owner         string `json:"owner"`
+	Name          string `json:"name"`
+	PrometheusUrl string `json:"url"`
+	LogUser       string `json:"user"`
+	LogPasswd     string `json:"passwd"`
+	Description   string `json:"description"`
+}
+
+// ClusterSchedulerListResp is a response for GetClusterSchedulerList
+type ClusterSchedulerListResp struct {
 	Index      int       `json:"index"`
 	ID         uint      `json:"id"`
 	Name       string    `json:"name"`
@@ -107,6 +126,7 @@ type ClusterSchedulerListReps struct {
 	Count      int       `json:"count"`
 }
 
+// ClusterSchedulerReq is a request for PostClusterScheduler
 type ClusterSchedulerReq struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
@@ -117,15 +137,16 @@ type ClusterSchedulerReq struct {
 }
 
 func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
-	clusterList, err := ch.ClusterInfo.QueryCLusterList()
+	owner := c.Query("owner")
+	clusterList, err := ch.ClusterInfo.QueryClusterList(owner)
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	var clusterListReps []ClusterListReps
+	var clusterListReps []ClusterListResp
 	for _, cluster := range clusterList {
-		var reps = ClusterListReps{
+		var reps = ClusterListResp{
 			ID:            cluster.ID,
 			Name:          cluster.Name,
 			Description:   cluster.Description,
@@ -169,38 +190,38 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 		return
 	}
 
-	checkHistoryInfo, err := ch.CheckHistoryInfo.QueryHistoryInfoByID(clusterID)
+	checkHistoryInfo, err := ch.ClusterInfo.QueryHistoryInfoByID(clusterID)
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
 	var recentWarnings []model.RecentWarnings
-	recentWarnings, err = ch.RecentWarnings.QueryRecentWarningsByID(clusterID)
+	recentWarnings, err = ch.ClusterInfo.QueryRecentWarningsByID(clusterID)
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	weekly, err := ch.HistoryWarnings.QueryHistoryWarningByID(clusterID, -7)
+	weekly, err := ch.ClusterInfo.QueryHistoryWarningByID(clusterID, -7)
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	monthly, err := ch.HistoryWarnings.QueryHistoryWarningByID(clusterID, -30)
+	monthly, err := ch.ClusterInfo.QueryHistoryWarningByID(clusterID, -30)
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	yearly, err := ch.HistoryWarnings.QueryHistoryWarningByID(clusterID, -365)
+	yearly, err := ch.ClusterInfo.QueryHistoryWarningByID(clusterID, -365)
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	var clusterInfoReps = ClusterInfoReps{
+	var clusterInfoReps = ClusterInfoResp{
 		ID:                     clusterInfo.ID,
 		Name:                   clusterInfo.Name,
 		ClusterOwner:           clusterInfo.Owner,
@@ -217,6 +238,38 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 	}
 
 	api.Success(c, "", clusterInfoReps)
+	return
+}
+
+func (ch *ClusterHandler) GetInitialClusterInfo(c *gin.Context) {
+	id := c.Param("id")
+	clusterID, err := strconv.Atoi(id)
+	if err != nil {
+		api.BadWithMsg(c, "cluster id is invalid")
+		return
+	}
+
+	if !model.IsClusterExist(clusterID) {
+		api.BadWithMsg(c, "cluster does not exist")
+		return
+	}
+
+	clusterInfo, err := ch.ClusterInfo.QueryClusterInfoByID(clusterID)
+	if err != nil {
+		api.ErrorWithMsg(c, err.Error())
+		return
+	}
+	url := strings.Trim(clusterInfo.PrometheusURL, "http://")
+	var initialCluster = InitialClusterInfoResp{
+		Name:          clusterInfo.Name,
+		Owner:         clusterInfo.Owner,
+		PrometheusUrl: url,
+		Description:   clusterInfo.Description,
+		LogUser:       clusterInfo.TiDBUsername,
+		LogPasswd:     clusterInfo.TiDBPassword,
+	}
+
+	api.Success(c, "", initialCluster)
 	return
 }
 
@@ -480,9 +533,9 @@ func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 		return
 	}
 
-	var data []ClusterSchedulerListReps
+	var data []ClusterSchedulerListResp
 	for k, v := range schedulerList {
-		item := ClusterSchedulerListReps{
+		item := ClusterSchedulerListResp{
 			Index:      k + 1,
 			ID:         v.ID,
 			Name:       v.Name,
@@ -593,6 +646,7 @@ func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, 
 	}
 	for k, v := range nodeType {
 		var instances []string
+		var normal = 0
 		queryString := fmt.Sprintf("probe_success{group='%s'}", v)
 		queryHelper.Query = queryString
 		resp, err := queryHelper.queryWithPrometheus()
@@ -601,12 +655,21 @@ func getClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, 
 		}
 		for _, res := range resp.Data.Result {
 			instances = append(instances, res.Metrics.Instance)
+			if res.Value[1] == "1" {
+				normal = normal + 1
+			}
+		}
+
+		resp, err = queryHelper.queryWithPrometheus()
+		if err != nil {
+			return nodesInfo, err
 		}
 		node := NodesInfo{
 			ID:       k,
 			NodeType: v,
 			Instance: instances,
 			Count:    len(instances),
+			Normal:   normal,
 		}
 		nodesInfo = append(nodesInfo, node)
 	}

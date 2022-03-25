@@ -236,6 +236,18 @@ export default {
         this.isCompleted = true;
       }, 3000);
     },
+    executeCheck() {
+      const id = this.$route.query.id;
+      console.log('id=>', id)
+      if (id != null) {
+        this.runCheck()
+        console.log('id is not null', id)
+      }
+    }
   },
+  created() {
+    window.that = this
+    this.executeCheck()
+  }
 };
 </script>

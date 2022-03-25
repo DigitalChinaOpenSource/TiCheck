@@ -3,6 +3,7 @@ import request from '@/utils/request'
 const clusterApi = {
   getClusterList: '/cluster/list',
   getClusterInfo: '/cluster/info/',
+  getInitialCluster: '/cluster/initial/',
   addCluster: '/cluster/add',
   updateCluster: '/cluster/update/',
   getSchedulerList: '/cluster/scheduler/',
@@ -11,9 +12,9 @@ const clusterApi = {
   deleteScheduler: '/cluster/scheduler/delete/'
 }
 
-export function getClusterList () {
+export function getClusterList (owner) {
   return request({
-    url: clusterApi.getClusterList,
+    url: clusterApi.getClusterList + '?owner=' + owner,
     method: 'get'
   })
 }
@@ -21,6 +22,13 @@ export function getClusterList () {
 export function getClusterInfo (param) {
   return request({
     url: clusterApi.getClusterInfo + param,
+    method: 'get'
+  })
+}
+
+export function getInitialCluster (param) {
+  return request({
+    url: clusterApi.getInitialCluster + param,
     method: 'get'
   })
 }
@@ -35,7 +43,7 @@ export function addCluster (parameter) {
 
 export function updateCluster (id, parameter) {
   return request({
-    method: 'post',
+    method: 'put',
     url: clusterApi.updateCluster + id,
     data: parameter
   })
