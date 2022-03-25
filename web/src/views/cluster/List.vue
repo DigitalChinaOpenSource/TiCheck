@@ -214,7 +214,7 @@ export default {
   },
   methods: {
     getList () {
-      getClusterList().then(res => {
+      getClusterList(this.owner.user_name).then(res => {
         this.dataSource = res.data
       })
     },

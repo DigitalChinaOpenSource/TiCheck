@@ -12,9 +12,9 @@ const clusterApi = {
   deleteScheduler: '/cluster/scheduler/delete/'
 }
 
-export function getClusterList () {
+export function getClusterList (owner) {
   return request({
-    url: clusterApi.getClusterList,
+    url: clusterApi.getClusterList + '?owner=' + owner,
     method: 'get'
   })
 }

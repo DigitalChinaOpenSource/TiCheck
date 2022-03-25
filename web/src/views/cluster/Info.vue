@@ -126,7 +126,7 @@ export default {
         })
     },
     doCheck () {
-      this.$router.push({ name: 'ExecuteCheck', params: { id: this.clusterID } })
+      this.$router.push({ name: 'ExecuteCheck', params: { id: this.clusterID }, query: { id: this.clusterID } })
     }
   }
 }

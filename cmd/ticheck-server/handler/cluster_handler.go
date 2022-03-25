@@ -137,7 +137,8 @@ type ClusterSchedulerReq struct {
 }
 
 func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
-	clusterList, err := ch.ClusterInfo.QueryClusterList()
+	owner := c.Query("owner")
+	clusterList, err := ch.ClusterInfo.QueryClusterList(owner)
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())
 		return

@@ -64,10 +64,11 @@ func (c *Cluster) QueryClusterInfoByID(id int) (clusterInfo Cluster, err error) 
 }
 
 // QueryClusterList query all clusters under the current user
-func (c *Cluster) QueryClusterList() ([]Cluster, error) {
+func (c *Cluster) QueryClusterList(owner string) ([]Cluster, error) {
 	var clusterList []Cluster
 	err := DbConn.
 		Order("create_time asc").
+		Where("owner = ?", owner).
 		Find(&clusterList).
 		Error
 	if err != nil {
