@@ -2,9 +2,9 @@ package main
 
 import (
 	"TiCheck/cmd/ticheck-server/router"
+	"TiCheck/executor"
 	"TiCheck/internal/model"
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -67,11 +67,11 @@ func main() {
 
 func testExe() {
 
-	// exe := executor.CreateClusterExecutor(1, 0)
+	exe := executor.CreateClusterExecutor(1, 0)
 
-	// resultCh := make(chan executor.CheckResult, 10)
-	// // ctx := context.WithValue(context.Background(), "", "")
-	// go exe.Execute(resultCh)
+	resultCh := make(chan executor.CheckResult, 10)
+	// ctx := context.WithValue(context.Background(), "", "")
+	go exe.Execute(resultCh)
 	// for {
 	// 	select {
 	// 	case result := <-resultCh:
@@ -83,6 +83,6 @@ func testExe() {
 
 	// }
 
-	res := (&model.ClusterChecklist{}).GetEnabledCheckListTagGroup(1)
-	fmt.Println(res)
+	// res := (&model.ClusterChecklist{}).GetEnabledCheckListTagGroup(1)
+	// fmt.Println(res)
 }

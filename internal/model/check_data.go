@@ -15,7 +15,7 @@ type CheckData struct {
 	Duration    int64  `gorm:"not null" json:"duration"` // unit is ms
 	CheckItem   string `gorm:"not null" json:"check_item"`
 	CheckValue  string `json:"check_value"`                  // null: script no output
-	CheckStatus int    `gorm:"not null" json:"check_status"` //0:正常, 1:异常_已有, 2:异常_新增
+	CheckStatus int    `gorm:"not null" json:"check_status"` //-1:脚本运行异常,错误信息在CheckValue，0:正常, 1:异常_已有, 2:异常_新增
 }
 
 func (cd *CheckData) TableName() string {

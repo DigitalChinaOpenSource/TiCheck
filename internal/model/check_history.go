@@ -13,6 +13,7 @@ type CheckHistory struct {
 	WarningItems uint      `gorm:"not null" json:"warning_items"`
 	TotalItems   uint      `gorm:"not null" json:"total_items"`
 	Duration     int64     `gorm:"not null" json:"duration"`
+	State        string    `gorm:"not null" json:"state"`
 }
 
 func (ch *CheckHistory) TableName() string {

@@ -18,10 +18,11 @@ var (
 )
 
 type CheckResult struct {
-	IsFinished bool              `json:"is_finished"`
-	IsTimeout  bool              `json:"is_timeout"`
-	Err        error             `json:"err"` // script level error
-	Data       []model.CheckData `json:"data"`
+	CheckInfo  model.CheckListInfo `json:"check_info"`
+	IsFinished bool                `json:"is_finished"`
+	IsTimeout  bool                `json:"is_timeout"`
+	Err        string              `json:"err"` // script level error
+	Data       []model.CheckData   `json:"data"`
 }
 
 type Executor interface {
@@ -59,10 +60,11 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 		CheckTime:   begin,
 		ClusterID:   ce.ClusterID,
 		SchedulerID: ce.SchedulerID,
+		State:       "running",
 	}
 	if err := model.DbConn.Create(&his).Error; err != nil {
 		result := CheckResult{IsFinished: true}
-		result.Err = fmt.Errorf("create check history error: %s", err.Error())
+		result.Err = fmt.Sprintf("create check history error: %s", err.Error())
 		rc <- result
 		return
 	}
@@ -97,6 +99,7 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 	his.NormalItems = counter.normalItems
 	his.WarningItems = counter.warningItems
 	his.TotalItems = counter.normalItems + counter.warningItems
+	his.State = "finished"
 	model.DbConn.Save(&his)
 	model.DbConn.Model(&model.Cluster{}).Where("id = ?", ce.ClusterID).Update("last_check_time", begin)
 	// send finish signal
@@ -132,13 +135,15 @@ func CreateClusterExecutor(clusterID, schedulerID uint) Executor {
 }
 
 func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
-	result := CheckResult{}
+	result := CheckResult{
+		CheckInfo: ctx.checkInfo,
+	}
 
 	file := fmt.Sprintf("%s/%s/%s/%s", probe_prefix, ctx.checkInfo.Source, ctx.checkInfo.ProbeID, ctx.checkInfo.FileName)
 	_, e := os.Stat(file)
 	if os.IsNotExist(e) {
 		fmt.Println("applyProbe Error, file not found:", e.Error())
-		result.Err = e
+		result.Err = e.Error()
 		rc <- result
 		return
 	}
@@ -146,7 +151,7 @@ func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
 	f, e := filepath.Abs(file)
 	if e != nil {
 		fmt.Println("applyProbe Error, file abs not found:", e.Error())
-		result.Err = e
+		result.Err = e.Error()
 		rc <- result
 		return
 	}
@@ -167,19 +172,34 @@ func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
 		output, err = applyPythonProbe(args)
 	default:
 		fmt.Println("applyProbe Error, invalid file extension:", file)
-		result.Err = fmt.Errorf("invalid file extension: %s", path.Ext(file))
+		result.Err = fmt.Sprintf("invalid file extension: %s", path.Ext(file))
 		return
 	}
-	normal, warning, data := compareThreshold(ctx, begin, output)
-	result.Data = data
-	result.Err = err
-	if len(data) > 0 {
-		model.DbConn.Create(&data)
+	if err != nil {
+		cd := model.CheckData{
+			Duration:    time.Since(begin).Milliseconds(),
+			CheckTag:    ctx.checkInfo.Tag,
+			CheckTime:   begin,
+			CheckName:   ctx.checkInfo.ScriptName,
+			ClusterID:   ctx.cluster.ClusterID,
+			HistoryID:   ctx.cluster.HistoryID,
+			CheckStatus: -1,
+			CheckItem:   ctx.checkInfo.ScriptName,
+			CheckValue:  err.Error(),
+		}
+		result.Data = append(result.Data, cd)
+		model.DbConn.Create(&cd)
+	} else {
+		normal, warning, data := compareThreshold(ctx, begin, output)
+		result.Data = data
+		if len(data) > 0 {
+			model.DbConn.Create(&data)
+		}
+		ctx.counter.mutex.Lock()
+		ctx.counter.normalItems += normal
+		ctx.counter.warningItems += warning
+		ctx.counter.mutex.Unlock()
 	}
-	ctx.counter.mutex.Lock()
-	ctx.counter.normalItems += normal
-	ctx.counter.warningItems += warning
-	ctx.counter.mutex.Unlock()
 	rc <- result
 }
 
