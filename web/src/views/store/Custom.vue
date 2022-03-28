@@ -21,7 +21,6 @@
         </a-button>
       </div>
     </a-card>
-
     <a-card style="margin-top: 10px" :bordered="false">
       <a-list
         size="large"
@@ -374,18 +373,6 @@ export default {
       }
     }
   }
-}
-
-.ant-pro-components-tag-select {
-  /deep/ .ant-pro-tag-select .ant-tag {
-    margin-right: 24px;
-    padding: 0 8px;
-    font-size: 14px;
-  }
-}
-
-.list-articles-trigger {
-  margin-left: 12px;
 }
 
 .desc {

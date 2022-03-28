@@ -12,6 +12,8 @@ import account from './zh-CN/account'
 import cluster from './zh-CN/cluster'
 import check from './zh-CN/check'
 
+import store from './zh-CN/store'
+
 const components = {
   antLocale: antd,
   momentName: 'zh-cn',
@@ -34,5 +36,6 @@ export default {
   ...result,
   ...account,
   ...cluster,
-  ...check
+  ...check,
+  ...store
 }

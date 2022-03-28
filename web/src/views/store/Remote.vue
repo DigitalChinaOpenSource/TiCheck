@@ -94,15 +94,5 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.ant-pro-components-tag-select {
-  /deep/ .ant-pro-tag-select .ant-tag {
-    margin-right: 24px;
-    padding: 0 8px;
-    font-size: 14px;
-  }
-}
 
-.list-articles-trigger {
-  margin-left: 12px;
-}
 </style>
