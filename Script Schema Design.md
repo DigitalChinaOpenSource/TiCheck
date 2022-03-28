@@ -55,9 +55,9 @@
 
 针对`shell`和`python`脚本，我们会统一传入三个参数，他们依次是：
 
-- BasePath，程序运行的主目录
-- MysqlLoginPath，tidb集群的登录连接信息，可以使用login path的方式登录执行sql
-- PremetheusPath，tidb集群的Prometheus地址，可以使用Psql查询集群监控指标
+- BasePath，比如`/data/tidb/ticheck`，程序运行的主目录
+- MysqlLoginPath，比如`tidb-login`，tidb集群的登录连接信息，可以使用login path的方式登录执行sql
+- PremetheusPath，比如`http://10.0.0.1:9090`，tidb集群的Prometheus地址，可以使用Psql查询集群监控指标
 
 > **注意:**
 > 这三个参数需要按传入顺序获取，比如在shell中依次是`$1`、`$2`、`$3`，在python中依次是`sys.argv[1]`、`sys.argv[2]`、`sys.argv[3]`。

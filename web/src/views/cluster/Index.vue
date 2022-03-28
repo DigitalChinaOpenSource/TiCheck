@@ -11,39 +11,39 @@
             type="inner"
             @openChange="onOpenChange"
           >
-            <a-menu-item key="cluster/detail">
+            <a-menu-item key="/cluster/info/detail/:id">
               <router-link :to="{ name: 'ClusterInfo', params: {id: clusrerID}}">
-                <a-icon type="folder-open" />
+                <a-icon type="container" />
                 {{ $t('menu.cluster.info') }}
               </router-link>
             </a-menu-item>
-            <a-menu-item key="/cluster/check/history">
+            <a-menu-item key="/cluster/check/history/:id">
               <router-link :to="{ name: 'CheckHistory', params: {id: clusrerID}}">
-                <a-icon type="folder-open" />
+                <a-icon type="profile" />
                 {{ $t('menu.cluster.check.history') }}
               </router-link>
             </a-menu-item>
-            <a-menu-item key="/cluster/script">
+            <a-menu-item key="/cluster/check/probe/:id">
               <router-link :to="{ name: 'ProbeList', params: {id: clusrerID}}">
-                <a-icon type="folder-open" />
+                <a-icon type="block" />
                 {{ $t('menu.cluster.check.probe') }}
               </router-link>
             </a-menu-item>
-            <a-menu-item key="/cluster/check/execute">
+            <a-menu-item key="/cluster/check/execute/:id">
               <router-link :to="{ name: 'ExecuteCheck' }">
-                <a-icon type="folder-open" />
+                <a-icon type="rocket" />
                 {{ $t('menu.cluster.check.execute') }}
               </router-link>
             </a-menu-item>
-            <a-menu-item key="/cluster/scheduler">
+            <a-menu-item key="/cluster/info/scheduler/:id">
               <router-link :to="{ name: 'ClusterScheduler', params: {id: clusrerID}}">
-                <a-icon type="folder-open" />
+                <a-icon type="schedule" />
                 {{ $t('menu.cluster.scheduler') }}
               </router-link>
             </a-menu-item>
-            <a-menu-item key="/cluster/setting">
+            <a-menu-item key="/cluster/info/setting/:id">
               <router-link :to="{ name: 'ClusterSetting', params: {id: clusrerID}}">
-                <a-icon type="folder-open" />
+                <a-icon type="setting" />
                 {{ $t('menu.cluster.settings') }}
               </router-link>
             </a-menu-item>
@@ -92,6 +92,7 @@ export default {
     updateMenu () {
       const routes = this.$route.matched.concat()
       this.selectedKeys = [ routes.pop().path ]
+      console.log(this.selectedKeys)
     },
     getCluterId () {
       return this.clusrerID
