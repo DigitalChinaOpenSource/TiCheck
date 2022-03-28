@@ -144,7 +144,6 @@ export default {
   name: 'ClusterScheduler',
   data () {
     return {
-      user: {},
       schedulerList,
       paginationOpt,
       columns: [],
@@ -156,14 +155,6 @@ export default {
       schedulerForm: this.$form.createForm(this, { name: 'addForm' }),
       editSchedulerForm: this.$form.createForm(this, { name: 'editForm' })
     }
-  },
-  computed: {
-    userInfo () {
-      return this.$store.getters.userInfo
-    }
-  },
-  created () {
-    this.user = this.userInfo
   },
   methods: {
     getSchedulers () {
@@ -247,7 +238,6 @@ export default {
         if (err) {
           this.addFailed()
         }
-        values.creator = this.user.user_name
         values.cluster_id = this.clusterID
         addScheduler(values)
         .then(res => this.addSuccess())

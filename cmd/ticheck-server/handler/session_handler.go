@@ -38,6 +38,11 @@ type GetUserInfoResp struct {
 	Email    string `json:"email,omitempty"`
 }
 
+var SessionHelper = SessionHandler{
+	Users:    map[string]string{},
+	Sessions: make(map[string]*Session, 0),
+}
+
 func (sh *SessionHandler) AuthenticatedUser(c *gin.Context) {
 	userReq := &UserReq{}
 	err := c.BindJSON(userReq)

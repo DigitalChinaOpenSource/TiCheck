@@ -82,7 +82,6 @@ export default {
   data () {
     return {
       initialCluster,
-      owner: {},
       updateForm: this.$form.createForm(this)
     }
   },
@@ -108,7 +107,6 @@ export default {
         if (err) {
           this.updateFailed()
         }
-        values.owner = this.owner.user_name
         updateCluster(this.clusterID, values)
           .then(res => this.updateSuccess())
           .catch(res => this.updateFailed())
@@ -142,7 +140,6 @@ export default {
   },
   created () {
     this.clusterID = this.$route.params.id
-    this.owner = this.userInfo
     this.InitialClusterInfo()
     console.log(this.initialCluster)
   }
