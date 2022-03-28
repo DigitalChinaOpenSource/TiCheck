@@ -198,15 +198,9 @@ export default {
   data () {
     return {
       checkItems,
-      owner: {},
       dataSource,
       modalVisible: false,
       clusterForm: this.$form.createForm(this)
-    }
-  },
-  computed: {
-    userInfo () {
-      return this.$store.getters.userInfo
     }
   },
   mounted () {
@@ -214,8 +208,11 @@ export default {
   },
   methods: {
     getList () {
-      getClusterList(this.owner.user_name).then(res => {
+      getClusterList()
+        .then(res => {
         this.dataSource = res.data
+      }).catch(res => {
+        this.failed(res)
       })
     },
     jump2Info (item) {
@@ -231,27 +228,26 @@ export default {
     handleOk () {
       this.clusterForm.validateFields((err, values) => {
         if (err) {
-          this.addFailed()
+          this.failed(err)
         }
-        values.owner = this.owner.user_name
         console.log('values =>', values)
         addCluster(values)
-        .then(res => this.addSuccess())
-        .catch(res => this.addFailed(res))
+        .then(res => this.ifSuccess())
+        .catch(res => this.failed(res))
         .finally(() => {
           this.modalVisible = false
           this.clusterForm = this.$form.createForm(this)
         })
       })
     },
-    addSuccess () {
+    ifSuccess () {
       this.$notification.success({
-        message: 'add cluster success',
+        message: 'success',
         description: `success`
       })
       this.getList()
     },
-    addFailed (res) {
+    failed (res) {
       this.$notification['error']({
         message: 'error',
         description: res.error.message,
@@ -260,7 +256,6 @@ export default {
     }
   },
   created () {
-    this.owner = this.userInfo
     setTimeout(() => {
       this.loading = !this.loading
     }, 1000)
