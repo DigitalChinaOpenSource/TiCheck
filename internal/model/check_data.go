@@ -8,6 +8,7 @@ type CheckData struct {
 	ID          uint      `gorm:"primarykey" json:"id"`
 	HistoryID   uint      `gorm:"not null" json:"history_id"`
 	ClusterID   uint      `gorm:"not null" json:"cluster_id"`
+	ProbeID     string    `gorm:"not null" json:"probe_id"`
 	CheckTime   time.Time `gorm:"not null" json:"check_time"`
 	CheckTag    string    `gorm:"not null" json:"check_tag"`
 	CheckName   string    `gorm:"not null" json:"check_name"`
