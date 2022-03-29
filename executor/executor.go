@@ -18,6 +18,7 @@ var (
 )
 
 type CheckResult struct {
+	CheckID    uint              `json:"check_id"`
 	IsFinished bool              `json:"is_finished"`
 	IsTimeout  bool              `json:"is_timeout"`
 	Err        string            `json:"err"` // script level error
@@ -103,7 +104,7 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 	model.DbConn.Save(&his)
 	model.DbConn.Model(&model.Cluster{}).Where("id = ?", ce.ClusterID).Update("last_check_time", begin)
 	// send finish signal
-	result := CheckResult{IsFinished: true}
+	result := CheckResult{IsFinished: true, CheckID: his.ID}
 	rc <- result
 }
 
