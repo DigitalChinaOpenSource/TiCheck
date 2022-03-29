@@ -174,15 +174,11 @@ import {
   deleteProbe,
 } from "@/api/check";
 
-const columns = [];
-
-const data = [];
-
 export default {
   data() {
     return {
-      data,
-      columns,
+      data: [],
+      columns: [],
       pagination: {
         showTotal: (total) => `Total ${total} items`,
         showSizeChanger: true,
@@ -334,9 +330,10 @@ export default {
         dataIndex: "tag",
         scopedSlots: { customRender: "tag" },
         filters: [
-          { text: this.$t("check.probe.tag.cluster"), value: "集群" },
-          { text: this.$t("check.probe.tag.network"), value: "网络" },
-          { text: this.$t("check.probe.tag.state"), value: "运行状态" },
+          { text: this.$t("check.probe.tag.cluster"), value: "cluster" },
+          { text: this.$t("check.probe.tag.network"), value: "network" },
+          { text: this.$t("check.probe.tag.running_state"), value: "running_state" },
+          { text: this.$t("check.probe.tag.others"), value: "Others" },
         ],
         filterMultiple: false,
         onFilter: (value, record) => record.tag.indexOf(value) === 0,

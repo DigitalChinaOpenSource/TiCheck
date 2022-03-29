@@ -65,6 +65,9 @@
           {{ $t("check.probe.add.reset") }}
         </a-button>
       </div>
+      <span slot="tag" slot-scope="tag">
+        {{ mapTagText(tag) }}
+      </span>
       <span slot="operator" slot-scope="operator">
         {{ mapOperatorValue(operator) }}
       </span>
@@ -169,16 +172,13 @@
   </div>
 </template>
 <script>
-import { getAddProbeList, mapOperatorValue, addProbe } from "@/api/check";
-
-const columns = [];
-const data = [];
+import { getAddProbeList, mapOperatorValue, addProbe, mapTagText } from "@/api/check";
 
 export default {
   data() {
     return {
-      data,
-      columns,
+      data: [],
+      columns: [],
       pagination: {
         showTotal: (total) => `Total ${total} items`,
         showSizeChanger: true,
@@ -265,6 +265,10 @@ export default {
       clearFilters();
       this.searchText = "";
     },
+
+    mapTagText(tag) {
+      return mapTagText(tag);
+    },
   },
   beforeUpdate() {
     this.columns = [
@@ -303,9 +307,10 @@ export default {
         dataIndex: "tag",
         scopedSlots: { customRender: "tag" },
         filters: [
-          { text: this.$t("check.probe.tag.cluster"), value: "集群" },
-          { text: this.$t("check.probe.tag.network"), value: "网络" },
-          { text: this.$t("check.probe.tag.state"), value: "运行状态" },
+          { text: this.$t("check.probe.tag.cluster"), value: "cluster" },
+          { text: this.$t("check.probe.tag.network"), value: "network" },
+          { text: this.$t("check.probe.tag.running_state"), value: "running_state" },
+          { text: this.$t("check.probe.tag.others"), value: "others" },
         ],
         filterMultiple: false,
         onFilter: (value, record) => record.tag.indexOf(value) === 0,

@@ -69,7 +69,7 @@ func (cc *ClusterChecklist) GetEnabledCheckListTagGroup(id int) map[string]inter
 		groups[g.Tag] = g.Cnt
 	}
 
-	result["groups"] = groups
+	result["tags"] = groups
 	result["total"] = total
 	return result
 }

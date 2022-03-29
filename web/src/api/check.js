@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import i18n from '@/locales/index'
 
 const checkApi = {
     checkHistory: '/cluster/report/all/',
@@ -10,6 +11,8 @@ const checkApi = {
     deleteProbe: '/cluster/probe/',
     changeProbeStatus: '/cluster/probe/status',
     updateProbeConfig: '/cluster/probe/config',
+    getExecuteInfo: '/cluster/check/info/',
+    runExecute: '/cluster/check/run/',
 }
 
 export function getCheckHistoryByClusterID (clusterID, page, pageSize, startTime, endTime) {
@@ -64,6 +67,17 @@ export function changeProbeStatus(params) {
     })
 }
 
+export function getExecuteInfo(clusterID) {
+    return request({
+        url: checkApi.getExecuteInfo + clusterID,
+        method: 'get'
+    })
+}
+
+export function runExecute(clusterID) {
+    return new WebSocket("ws://localhost:8081" + checkApi.runExecute + clusterID)
+}
+
 export function updateProbeConfig(params) {
     return request({
         url: checkApi.updateProbeConfig,
@@ -107,4 +121,17 @@ export function mapEnableValue (enable) {
     default:
       return false
   }
+}
+
+export function mapTagText (tag) {
+    switch (tag) {
+    case 'cluster':
+        return i18n.t('check.probe.tag.cluster')
+    case 'network':
+        return i18n.t('check.probe.tag.network')
+    case 'running_state':
+        return i18n.t('check.probe.tag.running_state')
+    case 'others':
+        return i18n.t('check.probe.tag.others')
+    }
 }
