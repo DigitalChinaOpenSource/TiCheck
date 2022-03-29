@@ -18,7 +18,6 @@ var (
 )
 
 type CheckResult struct {
-	// CheckInfo  model.CheckListInfo `json:"check_info"`
 	IsFinished bool              `json:"is_finished"`
 	IsTimeout  bool              `json:"is_timeout"`
 	Err        string            `json:"err"` // script level error
@@ -53,9 +52,11 @@ type ExecutorCounter struct {
 	warningItems uint
 }
 
+// Execute the cluster exexute once check, rc is check result
 func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 
 	begin := time.Now()
+	// create check history first
 	his := model.CheckHistory{
 		CheckTime:   begin,
 		ClusterID:   ce.ClusterID,
@@ -71,9 +72,11 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 
 	ce.HistoryID = his.ID
 
+	// global sync and counter
 	wg := &sync.WaitGroup{}
 	counter := &ExecutorCounter{}
 
+	// execute check in concurrency
 	for _, task := range ce.CheckList {
 		ctx := ExecutorContext{
 			cluster:   ce,
@@ -108,6 +111,7 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 @clusterID - the cluster id
 @schedulerID - the scheduler id, no scheduler trigger use 0
 */
+// CreateClusterExecutor create TiDB cluster check executor
 func CreateClusterExecutor(clusterID, schedulerID uint) Executor {
 	c, err := (&model.Cluster{}).QueryClusterInfoByID(int(clusterID))
 	if err != nil {
@@ -131,6 +135,7 @@ func CreateClusterExecutor(clusterID, schedulerID uint) Executor {
 	return ce
 }
 
+// applyProbe use a probe in check
 func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
 	result := CheckResult{}
 
@@ -199,6 +204,7 @@ func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
 	rc <- result
 }
 
+// compareThreshold check probe result
 func compareThreshold(
 	ctx ExecutorContext,
 	begin time.Time,
@@ -222,6 +228,7 @@ func compareThreshold(
 		cd.CheckValue = "NA"
 		cd.CheckStatus = 0
 		data = append(data, cd)
+		normal++
 		return
 	}
 
@@ -231,25 +238,27 @@ func compareThreshold(
 	}
 	for i := 0; i < len(output); i++ {
 		op := output[i]
+
+		cd := model.CheckData{
+			Duration:  duration,
+			ProbeID:   ctx.checkInfo.ProbeID,
+			CheckTag:  ctx.checkInfo.Tag,
+			CheckTime: begin,
+			CheckName: ctx.checkInfo.ScriptName,
+			ClusterID: ctx.cluster.ClusterID,
+			HistoryID: ctx.cluster.HistoryID,
+		}
+		cd.Operator = ctx.checkInfo.Operator
+		cd.Threshold = ctx.checkInfo.Threshold
+		cd.Arg = ctx.checkInfo.Arg
+
+		is_normal := true
 		if strings.HasPrefix(op, "[tck_result:]") {
 			row := strings.Split(strings.TrimPrefix(op, "[tck_result:]"), "=")
 			if len(row) < 2 {
 				fmt.Printf("error to skipped: invald probe %s", op)
 				continue
 			}
-
-			cd := model.CheckData{
-				Duration:  duration,
-				ProbeID:   ctx.checkInfo.ProbeID,
-				CheckTag:  ctx.checkInfo.Tag,
-				CheckTime: begin,
-				CheckName: ctx.checkInfo.ScriptName,
-				ClusterID: ctx.cluster.ClusterID,
-				HistoryID: ctx.cluster.HistoryID,
-			}
-			cd.Operator = ctx.checkInfo.Operator
-			cd.Threshold = ctx.checkInfo.Threshold
-			cd.Arg = ctx.checkInfo.Arg
 			cd.CheckItem = row[0]
 			cd.CheckValue = row[1]
 
@@ -258,7 +267,6 @@ func compareThreshold(
 				val = t
 			}
 
-			is_normal := true
 			switch ctx.checkInfo.Operator {
 			case Comparator_Eq:
 				{
@@ -290,23 +298,30 @@ func compareThreshold(
 					continue
 				}
 			}
-			if is_normal {
-				normal = normal + 1
-				cd.CheckStatus = 0
-			} else {
-				warning = warning + 1
-				cd.CheckStatus = 1
-			}
-			data = append(data, cd)
 
 		} else if strings.HasPrefix(op, "[tck_log:]") {
 			// TODO: save check log of a script in furtuer
 			fmt.Printf("probe %s", op)
+			continue
+		} else {
+			// the others output as script error to save
+			cd.CheckItem = ctx.checkInfo.ScriptName
+			cd.CheckValue = op
+			is_normal = false
 		}
+		if is_normal {
+			normal = normal + 1
+			cd.CheckStatus = 0
+		} else {
+			warning = warning + 1
+			cd.CheckStatus = 1
+		}
+		data = append(data, cd)
 	}
 	return
 }
 
+// applyShellProbe run a .sh file
 func applyShellProbe(args []string) (output []string, err error) {
 	cmd := exec.Command("sh", args...)
 	op, e := cmd.CombinedOutput()
@@ -314,12 +329,15 @@ func applyShellProbe(args []string) (output []string, err error) {
 		fmt.Println(e.Error())
 		err = e
 	} else {
-		output = strings.Split(strings.Trim(string(op), "\n"), "\n")
-		fmt.Println(output)
+		if s := string(op); len(s) > 0 {
+			output = strings.Split(strings.Trim(s, "\n"), "\n")
+			//fmt.Println(output)
+		}
 	}
 	return
 }
 
+// applyPythonProbe run s python file
 func applyPythonProbe(args []string) (output []string, err error) {
 	cmd := exec.Command("python3", args...)
 	op, e := cmd.CombinedOutput()
@@ -327,8 +345,10 @@ func applyPythonProbe(args []string) (output []string, err error) {
 		fmt.Println(e.Error())
 		err = e
 	} else {
-		output = strings.Split(strings.Trim(string(op), "\n"), "\n")
-		fmt.Println(output)
+		if s := string(op); len(s) > 0 {
+			output = strings.Split(strings.Trim(s, "\n"), "\n")
+			//fmt.Println(output)
+		}
 	}
 	return
 }
@@ -367,18 +387,18 @@ type ProbeExecutor interface {
 // 	applyProbe(ce.Info, ce.Cluster, res)
 // }
 
-type CommonExecutor struct {
+type commonExecutor struct {
 	context ExecutorContext
 }
 
-func (ce *CommonExecutor) ExecuteCheck(rc chan CheckResult) {
-	// time.Sleep(time.Second * 3)
+// ExecuteCheck
+func (ce *commonExecutor) ExecuteCheck(rc chan CheckResult) {
 	applyProbe(ce.context, rc)
 	ce.context.wg.Done()
 }
 
 func createExecutor(ctx ExecutorContext) ProbeExecutor {
-	return &CommonExecutor{context: ctx}
+	return &commonExecutor{context: ctx}
 	// fmt.Println("Create ProbeExecutor:", info.ScriptName, info.Source)
 	// switch info.Source {
 	// case string(LocalExecutorType):
