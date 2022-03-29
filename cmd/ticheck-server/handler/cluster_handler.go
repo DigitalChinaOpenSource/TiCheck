@@ -134,8 +134,18 @@ type ClusterSchedulerReq struct {
 
 // GetClusterList get all clusters of currently log in user
 func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
-	owner := c.Query("owner")
-	clusterList, err := ch.ClusterInfo.QueryClusterList(owner)
+	token, ok := c.Request.Header["Access-Token"]
+	if !ok || len(token) < 1 {
+		api.BadWithMsg(c, "the token is invalid")
+		return
+	}
+	se := SessionHelper.getSessionByToken(token[0])
+	if se == nil {
+		api.BadWithMsg(c, "the token is invalid")
+		return
+	}
+
+	clusterList, err := ch.ClusterInfo.QueryClusterList(se.User.UserName)
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())
 		return
@@ -280,6 +290,17 @@ func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 		api.BadWithMsg(c, err.Error())
 		return
 	}
+	token, ok := c.Request.Header["Access-Token"]
+	if !ok || len(token) < 1 {
+		api.BadWithMsg(c, "the token is invalid")
+		return
+	}
+	se := SessionHelper.getSessionByToken(token[0])
+	if se == nil {
+		api.BadWithMsg(c, "the token is invalid")
+		return
+	}
+	clusterInfoReq.Owner = se.User.UserName
 
 	cluster, err := ch.BuildClusterInfo(clusterInfoReq)
 	if err != nil {
@@ -319,6 +340,18 @@ func (ch *ClusterHandler) UpdateClusterInfo(c *gin.Context) {
 	}
 
 	clusterInfoReq.ID = uint(clusterID)
+
+	token, ok := c.Request.Header["Access-Token"]
+	if !ok || len(token) < 1 {
+		api.BadWithMsg(c, "the token is invalid")
+		return
+	}
+	se := SessionHelper.getSessionByToken(token[0])
+	if se == nil {
+		api.BadWithMsg(c, "the token is invalid")
+		return
+	}
+	clusterInfoReq.Owner = se.User.UserName
 
 	cluster, err := ch.BuildClusterInfo(clusterInfoReq)
 	if err != nil {
@@ -574,10 +607,21 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 		return
 	}
 
+	token, ok := c.Request.Header["Access-Token"]
+	if !ok || len(token) < 1 {
+		api.BadWithMsg(c, "the token is invalid")
+		return
+	}
+	se := SessionHelper.getSessionByToken(token[0])
+	if se == nil {
+		api.BadWithMsg(c, "the token is invalid")
+		return
+	}
+
 	schedulerInfo := model.Scheduler{
 		Name:           schedulerReq.Name,
 		CronExpression: schedulerReq.Cron,
-		Creator:        schedulerReq.Creator,
+		Creator:        se.User.UserName,
 		ClusterID:      uint(clusterID),
 		IsEnabled:      isEnabled,
 		CreateTime:     time.Now().Local(),

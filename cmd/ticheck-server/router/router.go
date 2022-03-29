@@ -39,20 +39,20 @@ func Register(engine *gin.Engine) {
 	}
 
 	sessionGroup := engine.Group("/session")
-	session := &handler.SessionHandler{
-		Users:    map[string]string{},
-		Sessions: make(map[string]*handler.Session, 0),
-	}
+	//session := &handler.SessionHandler{
+	//	Users:    map[string]string{},
+	//	Sessions: make(map[string]*handler.Session, 0),
+	//}
 
 	{
 		// 用户认证
-		sessionGroup.POST("", session.AuthenticatedUser)
+		sessionGroup.POST("", handler.SessionHelper.AuthenticatedUser)
 
 		// 退出用户
-		sessionGroup.POST("/logout", session.Logout)
+		sessionGroup.POST("/logout", handler.SessionHelper.Logout)
 
 		// 获取当前用户信息
-		sessionGroup.GET("/info", session.GetUserInfo)
+		sessionGroup.GET("/info", handler.SessionHelper.GetUserInfo)
 	}
 
 	clusterGroup := engine.Group("/cluster")
