@@ -45,14 +45,11 @@
 <script>
 import { getCheckHistoryByClusterID, downloadReport } from "@/api/check";
 
-const data = [];
-const columns = [];
-
 export default {
   data() {
     return {
-      data,
-      columns,
+      data: [],
+      columns: [],
       pagination: {
         showTotal: (total) => `Total ${total} items`,
         showSizeChanger: true,

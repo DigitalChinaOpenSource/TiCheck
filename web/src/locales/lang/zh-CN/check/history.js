@@ -21,4 +21,8 @@ export default {
     'check.history.detail.table.threshold': '阈值',
     'check.history.detail.table.actual': '实际值',
     'check.history.detail.table.duration': '耗时',
+    'check.history.detail.table.status.normal': '正常',
+    'check.history.detail.table.status.new_abnormal': '新增异常',
+    'check.history.detail.table.status.existing_abnormal': '已有异常',
+    'check.history.detail.table.status.script_error': '脚本错误', 
 }

@@ -19,7 +19,8 @@ export default {
     // tag
     'check.probe.tag.cluster': '集群',
     'check.probe.tag.network': '网络',
-    'check.probe.tag.state': '运行状态',
+    'check.probe.tag.running_state': '运行状态',
+    'check.probe.tag.others': '其他',
 
     // add probe
     'check.probe.add.title': '添加巡检项',

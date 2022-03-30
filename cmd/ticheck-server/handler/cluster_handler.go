@@ -877,7 +877,7 @@ func (ch *ClusterHandler) ExecuteCheck(c *gin.Context) {
 	for {
 		select {
 		case result := <-resultCh:
-			ws.WriteJSON(result.Data)
+			ws.WriteJSON(result)
 			// fmt.Printf("%+v\n", result)
 			if result.IsFinished {
 				return
@@ -886,4 +886,39 @@ func (ch *ClusterHandler) ExecuteCheck(c *gin.Context) {
 		}
 
 	}
+}
+
+// GetExecuteInfo Get some information before execute check.
+// include total check times, last check time and check item count for each tag
+func (ch *ClusterHandler) GetExecuteInfo(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		api.BadWithMsg(c, err.Error())
+		return
+	}
+
+	if !model.IsClusterExist(id) {
+		api.BadWithMsg(c, "cluster does not exist")
+		return
+	}
+
+	var cluster model.Cluster
+	lastCheckTime, err := cluster.GetLashCheckTime(id)
+
+	historyInfo, err := cluster.QueryHistoryInfoByID(id)
+
+	if err != nil {
+		api.ErrorWithMsg(c, err.Error())
+		return
+	}
+
+	var ccl model.ClusterChecklist
+	itemInfo := ccl.GetEnabledCheckListTagGroup(id)
+
+	api.Success(c, "", map[string]interface{}{
+		"check_times":     historyInfo.Count,
+		"last_check_time": lastCheckTime,
+		"check_items":     itemInfo,
+	})
+	return
 }

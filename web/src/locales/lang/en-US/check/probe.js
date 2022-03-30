@@ -19,7 +19,8 @@ export default {
     // tag
     'check.probe.tag.cluster': 'Cluster',
     'check.probe.tag.network': 'Network',
-    'check.probe.tag.state': 'Running State',
+    'check.probe.tag.running_state': 'RunningState',
+    'check.probe.tag.others': 'Others',
 
     // add probe
     'check.probe.add.title': 'Add Probe',
