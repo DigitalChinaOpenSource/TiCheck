@@ -55,6 +55,9 @@
           {{ $t("check.probe.table.reset") }}
         </a-button>
       </div>
+      <span slot="tag" slot-scope="tag">
+        {{ mapTagText(tag) }}
+      </span>
       <span slot="operator" slot-scope="operator">
         {{ mapOperatorValue(operator) }}
       </span>
@@ -172,6 +175,7 @@ import {
   changeProbeStatus,
   updateProbeConfig,
   deleteProbe,
+  mapTagText,
 } from "@/api/check";
 
 export default {
@@ -291,6 +295,10 @@ export default {
     handleReset(clearFilters) {
       clearFilters();
       this.searchText = "";
+    },
+
+    mapTagText(tag) {
+      return mapTagText(tag);
     },
   },
   beforeUpdate() {
