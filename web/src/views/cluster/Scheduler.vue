@@ -160,6 +160,7 @@ export default {
     getSchedulers () {
       getSchedulerList(this.clusterID).then(res => {
         this.schedulerList = res.data
+        console.log(this.schedulerList)
         for (let i = 0; i < this.schedulerList.length; i++) {
           this.schedulerList[i].create_time = moment(this.schedulerList[i].create_time).format('YYYY-MM-DD HH:mm:ss')
         }
