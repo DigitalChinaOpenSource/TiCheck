@@ -51,3 +51,14 @@ func (ch *CheckHistory) IsExistRunningByClusterID(id int) (*CheckHistory, error)
 
 	return his, err
 }
+
+func (ch *CheckHistory) UpdateClusterHealthy(id int) error {
+	var healthy float64
+	err := DbConn.Table(ch.TableName()).Select("(sum(normal_items)*1.0/sum(total_items)*1.0)*100 as healthy").
+		Where("cluster_id = ?", id).Limit(1).Find(&healthy).Error
+	if err != nil {
+		return err
+	}
+	DbConn.Model(&Cluster{}).Where("id = ?", id).Update("cluster_health", int(healthy))
+	return nil
+}

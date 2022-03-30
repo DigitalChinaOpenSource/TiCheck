@@ -58,7 +58,7 @@ type ExecutorCounter struct {
 func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 	// check if historiy in running
 	history, err := (&model.CheckHistory{}).IsExistRunningByClusterID(int(ce.ClusterID))
-	if err == nil && history != nil {
+	if err == nil && history.ID > 0 {
 		rc <- CheckResult{
 			IsConfict:  true,
 			IsFinished: true,
@@ -117,6 +117,8 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 	// send finish signal
 	result := CheckResult{IsFinished: true, CheckID: his.ID}
 	rc <- result
+	// update clsuter healthy
+	go his.UpdateClusterHealthy(int(ce.ClusterID))
 }
 
 /*
