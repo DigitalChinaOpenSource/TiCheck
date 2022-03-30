@@ -178,3 +178,11 @@ func (c *Cluster) QueryRecentWarningsByID(id int) (recentWarnings []RecentWarnin
 
 	return recentWarnings, nil
 }
+
+// GetLashCheckTime get last check time by cluster id
+func (c *Cluster) GetLashCheckTime(id int) (time.Time, error) {
+	var lastTime time.Time
+	err := DbConn.Model(c).Select("LastCheckTime").Where("id = ?", id).First(&lastTime).Error
+
+	return lastTime, err
+}

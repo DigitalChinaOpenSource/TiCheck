@@ -2,7 +2,6 @@ package router
 
 import (
 	"TiCheck/cmd/ticheck-server/handler"
-
 	"github.com/gin-contrib/multitemplate"
 
 	"github.com/gin-gonic/gin"
@@ -104,8 +103,11 @@ func Register(engine *gin.Engine) {
 
 		clusterGroup.DELETE("/probe/:id", cluster.DeleteProbeForCluster)
 
+		// Get some information before execute check
+		clusterGroup.GET("/check/info/:id", cluster.GetExecuteInfo)
+
 		// execute check
-		clusterGroup.POST("/check/:id", cluster.ExecuteCheck)
+		clusterGroup.GET("/check/run/:id", cluster.ExecuteCheck)
 	}
 
 	reportGroup := engine.Group("/cluster/report")

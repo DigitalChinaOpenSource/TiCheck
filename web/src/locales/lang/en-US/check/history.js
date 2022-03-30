@@ -21,4 +21,8 @@ export default {
     'check.history.detail.table.threshold': 'Threshold',
     'check.history.detail.table.actual': 'Actual',
     'check.history.detail.table.duration': 'Duration',
+    'check.history.detail.table.status.normal': 'normal',
+    'check.history.detail.table.status.new_abnormal': 'new abnormal',
+    'check.history.detail.table.status.existing_abnormal': 'existing abnormal',
+    'check.history.detail.table.status.script_error': 'script error', 
 }

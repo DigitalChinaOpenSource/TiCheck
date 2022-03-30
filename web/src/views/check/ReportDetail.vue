@@ -44,10 +44,6 @@
 <script>
 import { getReportDetail, downloadReport } from "@/api/check";
 
-const columns = [];
-const data = [];
-const report = {};
-
 const paginationOpt = {
   showTotal: (total) => `Total ${total} items`,
   showSizeChanger: true,
@@ -60,9 +56,9 @@ export default {
     return {
       loading: false,
       reportID: this.$route.params.id,
-      report,
-      columns,
-      data,
+      report: {},
+      columns: [],
+      data: [],
       paginationOpt,
     };
   },
@@ -90,12 +86,14 @@ export default {
     },
     mapStatusValue(status) {
       switch (status) {
+        case -1:
+          return "script error"
         case 0:
           return "normal";
         case 1:
-          return "existing error";
+          return "existing abnormal";
         case 2:
-          return "new error";
+          return "new abnormal";
         default:
           return "unknown";
       }
@@ -131,9 +129,10 @@ export default {
         dataIndex: "check_tag",
         key: "check_tag",
         filters: [
-          { text: "集群", value: "集群" },
-          { text: "网络", value: "网络" },
-          { text: "运行状态", value: "运行状态" },
+          { text: this.$t("check.probe.tag.cluster"), value: "cluster" },
+          { text: this.$t("check.probe.tag.network"), value: "network" },
+          { text: this.$t("check.probe.tag.running_state"), value: "running_state" },
+          { text: this.$t("check.probe.tag.others"), value: "others" },
         ],
         filterMultiple: false,
         onFilter: (value, record) => record.check_tag.indexOf(value) === 0,
@@ -149,9 +148,10 @@ export default {
         key: "check_status",
         scopedSlots: { customRender: "check_status" },
         filters: [
-          { text: "normal", value: 0 },
-          { text: "new error", value: 2 },
-          { text: "existing error", value: 1 },
+          { text: this.$t("check.history.detail.table.status.normal"), value: 0 },
+          { text: this.$t("check.history.detail.table.status.new_abnormal"), value: 2 },
+          { text: this.$t("check.history.detail.table.status.existing_abnormal"), value: 1 },
+          { text: this.$t("check.history.detail.table.status.script_error"), value: -1 }
         ],
         filterMultiple: false,
         onFilter: (value, record) =>
