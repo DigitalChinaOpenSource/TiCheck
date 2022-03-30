@@ -29,7 +29,7 @@
             {{ item.script_name }}</a>
             <template slot="description">
               <span>
-                <a-tag color="blue">{{ item.tag }}</a-tag>
+                <a-tag color="blue">{{ mapTag(item.tag) }}</a-tag>
               </span>
             </template>
           </a-list-item-meta>
@@ -59,6 +59,7 @@
 
 <script>
 import { ArticleListContent } from '@/components'
+import {  mapTagText } from "@/api/check";
 import VueMarkdown from 'vue-markdown'
 import 'github-markdown-css/github-markdown.css'
 
@@ -98,6 +99,9 @@ export default {
       this.$http.get('/store/local/readme?name='+id).then((response) => {
          　　this.readmeText = response.data;
      　　});
+    },
+    mapTag(tag) {
+      return mapTagText(tag);
     },
     handleCancel (e) {
       this.visible = false

@@ -120,7 +120,7 @@ func setupSeedData() {
 				if ok {
 					p.Tag = t
 				} else {
-					p.Tag = "Others"
+					p.Tag = "others"
 				}
 			}
 			if len(pm.Rules) > 0 {

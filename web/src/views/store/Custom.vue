@@ -47,7 +47,7 @@
             >
             <template slot="description">
               <span>
-                <a-tag color="blue">{{ item.tag }}</a-tag>
+                <a-tag color="blue">{{ mapTag(item.tag) }}</a-tag>
               </span>
             </template>
           </a-list-item-meta>
@@ -191,6 +191,7 @@
 
 <script>
 import { ArticleListContent } from "@/components";
+import {  mapTagText } from "@/api/check";
 import request from "@/utils/request";
 import VueMarkdown from "vue-markdown";
 import "github-markdown-css/github-markdown.css";
@@ -262,6 +263,9 @@ export default {
         .finally(() => {
           this.loading = false;
         });
+    },
+    mapTag(tag) {
+      return mapTagText(tag);
     },
     loadMore() {
       this.loadingMore = true;

@@ -132,7 +132,7 @@ func (s *StoreHandler) UploadCustomScript(c *gin.Context) {
 		if ok {
 			p.Tag = t
 		} else {
-			p.Tag = "Others"
+			p.Tag = "others"
 		}
 	}
 	if len(pm.Rules) > 0 {

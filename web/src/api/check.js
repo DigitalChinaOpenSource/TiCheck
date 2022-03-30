@@ -124,7 +124,7 @@ export function mapEnableValue (enable) {
 }
 
 export function mapTagText (tag) {
-    switch (tag) {
+    switch (tag.toLowerCase()) {
     case 'cluster':
         return i18n.t('check.probe.tag.cluster')
     case 'network':
