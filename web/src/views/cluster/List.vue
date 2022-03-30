@@ -250,7 +250,7 @@ export default {
     failed (res) {
       this.$notification['error']({
         message: 'error',
-        description: res.error.message,
+        description: res.error.msg,
         duration: 4
       })
     }

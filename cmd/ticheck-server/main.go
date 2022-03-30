@@ -4,6 +4,7 @@ import (
 	"TiCheck/cmd/ticheck-server/router"
 	"TiCheck/executor"
 	"TiCheck/internal/model"
+	"TiCheck/internal/service"
 	"context"
 	"log"
 	"net/http"
@@ -43,7 +44,7 @@ func main() {
 		}
 	}()
 	//testExe()
-	//service.CronTask.InitCron()
+	service.CronService.Initialize()
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
 	quit := make(chan os.Signal, 1)
