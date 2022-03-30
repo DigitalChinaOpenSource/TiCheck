@@ -17,6 +17,7 @@ export default {
     'check.probe.table.delete': '删除',
 
     // tag
+    'check.probe.tag.all': '全部',
     'check.probe.tag.cluster': '集群',
     'check.probe.tag.network': '网络',
     'check.probe.tag.running_state': '运行状态',

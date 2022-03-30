@@ -3,10 +3,11 @@
     <a-card :bordered="false" class="ant-pro-components-tag-select" :title="$t('store.page.remote.title')">
          <div slot="extra">
         <a-radio-group default-value="all" @change="onSearch">
-          <a-radio-button value="all">全部分类</a-radio-button>
-          <a-radio-button value="processing">集群</a-radio-button>
-          <a-radio-button value="waiting">网络</a-radio-button>
-          <a-radio-button value="run">运行状态</a-radio-button>
+          <a-radio-button value="all">{{$t("check.probe.tag.all")}}</a-radio-button>
+          <a-radio-button value="cluster">{{$t("check.probe.tag.cluster")}}</a-radio-button>
+          <a-radio-button value="network">{{$t("check.probe.tag.network")}}</a-radio-button>
+          <a-radio-button value="running_state">{{$t("check.probe.tag.running_state")}}</a-radio-button>
+          <a-radio-button value="others">{{$t("check.probe.tag.others")}}</a-radio-button>
         </a-radio-group>
         <a-input-search style="margin-left: 16px; width: 272px;" @search="onSearch" />
       </div>

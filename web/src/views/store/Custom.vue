@@ -7,10 +7,11 @@
     >
       <div slot="extra">
         <a-radio-group default-value="all" @change="onSearch">
-          <a-radio-button value="all">全部分类</a-radio-button>
-          <a-radio-button value="集群">集群</a-radio-button>
-          <a-radio-button value="网络">网络</a-radio-button>
-          <a-radio-button value="运行状态">运行状态</a-radio-button>
+          <a-radio-button value="all">{{$t("check.probe.tag.all")}}</a-radio-button>
+          <a-radio-button value="cluster">{{$t("check.probe.tag.cluster")}}</a-radio-button>
+          <a-radio-button value="network">{{$t("check.probe.tag.network")}}</a-radio-button>
+          <a-radio-button value="running_state">{{$t("check.probe.tag.running_state")}}</a-radio-button>
+          <a-radio-button value="others">{{$t("check.probe.tag.others")}}</a-radio-button>
         </a-radio-group>
         <a-input-search
           style="margin: 0 16px; width: 272px"

@@ -17,6 +17,7 @@ export default {
     'check.probe.table.delete': 'Delete',
 
     // tag
+    'check.probe.tag.all': 'All',
     'check.probe.tag.cluster': 'Cluster',
     'check.probe.tag.network': 'Network',
     'check.probe.tag.running_state': 'RunningState',
