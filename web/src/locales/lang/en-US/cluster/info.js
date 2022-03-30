@@ -9,7 +9,12 @@ export default {
   'cluster.info.status': 'Cluster Status',
   'cluster.info.status.count': 'Total Check Count',
   'cluster.info.status.total': 'Total Check Items',
+  'cluster.info.status.count-today': 'Today Check Count',
+  'cluster.info.status.total-today': 'Today Check Items',
   'cluster.info.status.last': 'Last Check At',
+  'cluster.info.status.last-normal': 'Normal Count',
+  'cluster.info.status.last-warning': 'Warning Count',
   'cluster.info.status.healthy': 'Cluster Healthy',
+  'cluster.info.status.healthy-update': 'Update At',
   'cluster.info.recent': 'Latest Warnings Trending'
 }

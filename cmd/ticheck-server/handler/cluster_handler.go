@@ -93,9 +93,14 @@ type ClusterInfoResp struct {
 	Description            string                  `json:"description"`
 	CreateTime             time.Time               `json:"create_time"`
 	LastCheckTime          time.Time               `json:"last_check_time"`
+	LastCheckNormal        uint                    `json:"last_check_normal"`
+	LastCheckWarning       uint                    `json:"last_check_warning"`
 	ClusterHealth          int                     `json:"cluster_health"`
+	HealthUpdateTime       time.Time               `json:"health_update_time"`
 	CheckCount             int                     `json:"check_count"`
 	CheckTotal             int                     `json:"check_total"`
+	TodayCheckCount        int                     `json:"today_check_count"`
+	TodayCheckTotal        int                     `json:"today_check_total"`
 	RecentWarningItems     []model.RecentWarnings  `json:"recent_warning_items"`
 	WeeklyHistoryWarnings  []model.HistoryWarnings `json:"weekly_history_warnings"`
 	YearlyHistoryWarnings  []model.HistoryWarnings `json:"yearly_history_warnings"`
@@ -205,6 +210,18 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 		return
 	}
 
+	todayHistoryInfo, err := ch.ClusterInfo.QueryTodayHistoryInfoByID(clusterID)
+	if err != nil {
+		api.ErrorWithMsg(c, err.Error())
+		return
+	}
+
+	var lastCheck = &model.CheckHistory{}
+	lc, err := lastCheck.QueryLastHistoryByID(clusterID)
+	if err == nil {
+		lastCheck = lc
+	}
+
 	var recentWarnings []model.RecentWarnings
 	recentWarnings, err = ch.ClusterInfo.QueryRecentWarningsByID(clusterID)
 	if err != nil {
@@ -236,10 +253,16 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 		ClusterOwner:           clusterInfo.Owner,
 		Version:                clusterInfo.TiDBVersion,
 		ClusterHealth:          clusterInfo.ClusterHealth,
+		HealthUpdateTime:       clusterInfo.HealthUpdateTime,
 		CreateTime:             clusterInfo.CreateTime,
 		Description:            clusterInfo.Description,
+		LastCheckTime:          clusterInfo.LastCheckTime,
+		LastCheckNormal:        lastCheck.NormalItems,
+		LastCheckWarning:       lastCheck.WarningItems,
 		CheckCount:             checkHistoryInfo.Count,
 		CheckTotal:             checkHistoryInfo.Total,
+		TodayCheckCount:        todayHistoryInfo.Count,
+		TodayCheckTotal:        todayHistoryInfo.Total,
 		RecentWarningItems:     recentWarnings,
 		WeeklyHistoryWarnings:  weekly,
 		MonthlyHistoryWarnings: monthly,
