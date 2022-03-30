@@ -20,6 +20,9 @@
       :pagination="paginationOpt"
       style="margin-top: 60px"
     >
+      <span slot="check_tag" slot-scope="check_tag">
+        {{ mapTagText(check_tag) }}
+      </span>
       <span slot="check_status" slot-scope="check_status">
         <a-tag
           :key="check_status"
@@ -28,10 +31,11 @@
               ? 'red'
               : check_status === 0
               ? 'green'
-              : 'volcano'
+              : check_status === -1
+              ? '#FF00FF' : 'volcano'
           "
         >
-          {{ mapStatusValue(check_status) }}
+          {{ mapStatusText(check_status) }}
         </a-tag>
       </span>
       <span slot="operator" slot-scope="operator">
@@ -42,7 +46,7 @@
 </template>
 
 <script>
-import { getReportDetail, downloadReport } from "@/api/check";
+import { getReportDetail, downloadReport, mapTagText, mapStatusText } from "@/api/check";
 
 const paginationOpt = {
   showTotal: (total) => `Total ${total} items`,
@@ -116,6 +120,14 @@ export default {
           return "NA";
       }
     },
+
+    mapTagText(tag) {
+      return mapTagText(tag);
+    },
+
+    mapStatusText (status) {
+      return mapStatusText(status)
+    }
   },
   beforeUpdate() {
     this.columns = [
@@ -128,6 +140,7 @@ export default {
         title: this.$t("check.history.detail.table.tag"),
         dataIndex: "check_tag",
         key: "check_tag",
+        scopedSlots: { customRender: "check_tag" },
         filters: [
           { text: this.$t("check.probe.tag.cluster"), value: "cluster" },
           { text: this.$t("check.probe.tag.network"), value: "network" },

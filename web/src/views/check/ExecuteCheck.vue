@@ -369,7 +369,7 @@ export default {
           return;
         }
 
-        if (result.err != null) {
+        if (result.err != "" && result.err != null) {
           this.$notification["warning"]({
             message: "Warning",
             description: result.err,
@@ -407,6 +407,7 @@ export default {
             duration: 3,
           });
         }
+        webSocket.close()
       };
 
       webSocket.onerror = (event) => {

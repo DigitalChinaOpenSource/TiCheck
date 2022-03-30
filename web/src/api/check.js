@@ -123,6 +123,7 @@ export function mapEnableValue (enable) {
   }
 }
 
+// this function is used to map the status text of each probe tag
 export function mapTagText (tag) {
     switch (tag.toLowerCase()) {
     case 'cluster':
@@ -133,5 +134,23 @@ export function mapTagText (tag) {
         return i18n.t('check.probe.tag.running_state')
     case 'others':
         return i18n.t('check.probe.tag.others')
+    default:
+        return "unknown"
+    }
+}
+
+// this function is used to map the status text of each probe resutle status
+export function mapStatusText (status) {
+    switch (status) {
+        case -1:
+            return i18n.t('check.history.detail.table.status.script_error')
+        case 0:
+            return i18n.t('check.history.detail.table.status.normal')
+        case 1:
+            return i18n.t('check.history.detail.table.status.existing_abnormal')
+        case 2:
+            return i18n.t('check.history.detail.table.status.new_abnormal')
+        default:
+            return "unknown"
     }
 }
