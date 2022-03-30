@@ -21,6 +21,7 @@ type CheckResult struct {
 	CheckID    uint              `json:"check_id"`
 	IsFinished bool              `json:"is_finished"`
 	IsTimeout  bool              `json:"is_timeout"`
+	IsConfict  bool              `json:"is_confict"`
 	Err        string            `json:"err"` // script level error
 	Data       []model.CheckData `json:"data"`
 }
@@ -55,6 +56,16 @@ type ExecutorCounter struct {
 
 // Execute the cluster exexute once check, rc is check result
 func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
+	// check if historiy in running
+	history, err := (&model.CheckHistory{}).IsExistRunningByClusterID(int(ce.ClusterID))
+	if err == nil && history != nil {
+		rc <- CheckResult{
+			IsConfict:  true,
+			IsFinished: true,
+			Err:        fmt.Sprintf("Execute Error, There is a running check task with a start time of %s", history.CheckTime),
+		}
+		return
+	}
 
 	begin := time.Now()
 	// create check history first

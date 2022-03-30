@@ -43,3 +43,11 @@ func (ch *CheckHistory) GetHistoryByClusterID(id int, pageSize int, pageNum int,
 		"data":      chs,
 	}, nil
 }
+
+func (ch *CheckHistory) IsExistRunningByClusterID(id int) (*CheckHistory, error) {
+	var his = &CheckHistory{}
+
+	err := DbConn.Where("cluster_id = ? and State = 'running'", id).Order("check_time desc").Limit(1).Find(his).Error
+
+	return his, err
+}
