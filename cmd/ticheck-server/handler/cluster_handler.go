@@ -4,6 +4,7 @@ import (
 	"TiCheck/cmd/ticheck-server/api"
 	"TiCheck/executor"
 	"TiCheck/internal/model"
+	"TiCheck/internal/service"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -413,6 +414,14 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) (cluster model.C
 		return cluster, errors.New("tidb database username or password is wrong")
 	}
 
+	loginPath := fmt.Sprintf("ticheck_%d", req.ID)
+	// todo fix bug
+	//shellStr := "logpath.sh " + loginPath + " " + req.LogUser + " " + host + " " + portStr + " " + req.LogPasswd
+	//
+	//if res, err := exec.Command("/bin/bash", "-c", shellStr).Output(); err != nil {
+	//	return cluster, errors.New("failed to add login-path for mysql" + string(res))
+	//}
+
 	cluster = model.Cluster{
 		ID:            req.ID,
 		Name:          req.Name,
@@ -424,6 +433,7 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) (cluster model.C
 		TiDBVersion:   version,
 		GrafanaURL:    grafana,
 		DashboardURL:  dashboard,
+		LoginPath:     loginPath,
 	}
 	return cluster, nil
 }
@@ -634,6 +644,16 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 		return
 	}
 
+	// After successfully adding scheduler,according to its IsEnabled value,
+	// to decide whether to add cron job for it
+	if schedulerInfo.IsEnabled == 1 {
+		err = service.CronService.AddTask(schedulerInfo)
+		if err != nil {
+			api.ErrorWithMsg(c, "Failed to run scheduled task")
+			return
+		}
+	}
+
 	api.S(c)
 	return
 }
@@ -665,6 +685,22 @@ func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
 		return
 	}
 
+	isExits := false
+	for _, v := range service.CronService.Tasks {
+		if v.SchedulerID == schedulerInfo.ID {
+			isExits = true
+			service.CronService.RemoveTask(v)
+		}
+	}
+
+	if !isExits && schedulerReq.Status {
+		err = service.CronService.AddTask(schedulerInfo)
+		if err != nil {
+			api.ErrorWithMsg(c, "Failed to run scheduled task")
+			return
+		}
+	}
+
 	api.S(c)
 	return
 }
@@ -684,6 +720,12 @@ func (ch *ClusterHandler) DeleteScheduler(c *gin.Context) {
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())
 		return
+	}
+
+	for _, v := range service.CronService.Tasks {
+		if v.SchedulerID == s.ID {
+			service.CronService.RemoveTask(v)
+		}
 	}
 
 	api.S(c)
