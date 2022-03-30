@@ -2,6 +2,7 @@ export default {
     'check.history.title': '巡检历史',
     'check.history.timeSelect': '时间筛选',
     'check.history.table.checkTime': '巡检时间',
+    'check.history.table.checkState': '状态',
     'check.history.table.duration': '耗时',
     'check.history.table.normal': '正常项',
     'check.history.table.warning': '异常项',

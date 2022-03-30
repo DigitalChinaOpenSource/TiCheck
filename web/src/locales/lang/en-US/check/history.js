@@ -2,6 +2,7 @@ export default {
     'check.history.title': 'Check History',
     'check.history.timeSelect': 'Time Select',
     'check.history.table.checkTime': 'Check Time',
+    'check.history.table.checkState': 'State',
     'check.history.table.duration': 'Duration',
     'check.history.table.normal': 'Normal',
     'check.history.table.warning': 'Warning',

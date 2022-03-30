@@ -123,7 +123,12 @@ export default {
         scopedSlots: { customRender: "check_time" },
       },
       {
-        title: this.$t("check.history.table.duration"),
+        title: this.$t("check.history.table.checkState"),
+        dataIndex: "state",
+        key: "state",
+      },
+      {
+        title: this.$t("check.history.table.duration")+"(ms)",
         dataIndex: "duration",
         key: "duration",
       },

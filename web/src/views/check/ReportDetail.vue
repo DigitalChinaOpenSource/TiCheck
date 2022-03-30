@@ -174,7 +174,7 @@ export default {
         key: "check_value",
       },
       {
-        title: this.$t("check.history.detail.table.duration"),
+        title: this.$t("check.history.detail.table.duration")+"(ms)",
         dataIndex: "duration",
         key: "duration",
       },
