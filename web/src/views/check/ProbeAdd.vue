@@ -238,7 +238,7 @@ export default {
       addProbe({
         cluster_id: parseInt(this.clusterID),
         probe_id: this.form.getFieldValue("probe_id"),
-        operator: parseInt(this.form.getFieldValue("operator").value),
+        operator: parseInt(this.form.getFieldValue("operator").key),
         threshold: this.form.getFieldValue("threshold"),
       })
         .then((res) => {
@@ -248,7 +248,7 @@ export default {
           setTimeout(() => {
             this.confirmLoading = false;
             this.modalVisible = false;
-          }, 1000);
+          }, 500);
         })
         .catch((err) => {
           this.confirmLoading = false;

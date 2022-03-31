@@ -117,6 +117,7 @@
                 },
               ]"
               placeholder="Select a operator"
+              :labelInValue="true"
             >
               <a-select-option value="0">
                 {{ mapOperatorValue(0) }}
@@ -242,7 +243,10 @@ export default {
         this.form.setFieldsValue({
           probe_id: record.probe_id,
           script_name: record.script_name,
-          operator: mapOperatorValue(record.operator),
+          operator: {
+            value: record.operator,
+            label: mapOperatorValue(record.operator),
+          },
           threshold: record.threshold,
         });
       });
@@ -258,7 +262,7 @@ export default {
       var a = {
         id: this.editProbeRecord.id,
         probe_id: this.form.getFieldValue("probe_id"),
-        operator: parseInt(this.form.getFieldValue("operator")),
+        operator: parseInt(this.form.getFieldValue("operator").key),
         threshold: this.form.getFieldValue("threshold"),
       };
       updateProbeConfig(a)
@@ -269,7 +273,7 @@ export default {
           setTimeout(() => {
             this.modalVisible = false;
             this.confirmLoading = false;
-          }, 1000);
+          }, 500);
         })
         .catch((err) => {
           this.confirmLoading = false;
