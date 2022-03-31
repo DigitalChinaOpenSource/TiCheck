@@ -59,6 +59,12 @@ func (ch *CheckHistory) UpdateClusterHealthy(id int) error {
 	if err != nil {
 		return err
 	}
-	DbConn.Model(&Cluster{}).Where("id = ?", id).Update("cluster_health", int(healthy))
+	DbConn.Model(&Cluster{}).Where("id = ?", id).Updates(map[string]interface{}{"cluster_health": int(healthy), "health_update_time": time.Now()})
 	return nil
+}
+
+func (ch *CheckHistory) QueryLastHistoryByID(id int) (*CheckHistory, error) {
+	err := DbConn.Table(ch.TableName()).
+		Where("cluster_id = ? and state = 'finished'", id).Order("id desc").Limit(1).Find(&ch).Error
+	return ch, err
 }

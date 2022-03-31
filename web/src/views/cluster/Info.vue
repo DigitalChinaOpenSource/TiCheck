@@ -60,7 +60,7 @@
           <div>
             <mini-area />
           </div>
-          <template slot="footer">日巡检次数<span> {{ '1234' | NumberFormat }}</span></template>
+          <template slot="footer">{{$t('cluster.info.status.count-today')}}：<span> {{ clusterInfo.today_check_count | NumberFormat }}</span></template>
         </chart-card>
       </a-col>
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '4px' }">
@@ -79,7 +79,7 @@
           <div>
             <mini-area />
           </div>
-          <template slot="footer">日检查项<span> {{ '1234' | NumberFormat }}</span></template>
+          <template slot="footer">{{$t('cluster.info.status.total-today')}}：<span> {{ clusterInfo.today_check_total | NumberFormat }}</span></template>
         </chart-card>
       </a-col>
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '4px' }">
@@ -94,14 +94,14 @@
             <a-icon type="info-circle-o" />
           </a-tooltip>
           <template slot="footer">
-            <trend flag="down" style="margin-right: 16px;">
-              <span slot="term">正常数：</span>
-              12
-            </trend>
-            <trend flag="up">
-              <span slot="term">告警数：</span>
-              80
-            </trend>
+            <span flag="down" style="margin-right: 16px;">
+              <span slot="term">{{$t('cluster.info.status.last-normal')}}：</span>
+              {{clusterInfo.last_check_normal}}
+            </span>
+            <span flag="up">
+              <span slot="term">{{$t('cluster.info.status.last-warning')}}：</span>
+              {{clusterInfo.last_check_warning}}
+            </span>
           </template>
         </chart-card>
       </a-col>
@@ -122,10 +122,10 @@
             <mini-progress color="rgb(19, 194, 194)" :target="80" :percentage="clusterInfo.cluster_health" height="8px" />
           </div>
           <template slot="footer">
-            <trend flag="down" style="margin-right: 16px;">
-              <span slot="term">更新时间：</span>
-              12：30
-            </trend>
+           <span>
+              <span slot="term">{{$t('cluster.info.status.healthy-update')}}：</span>
+              {{clusterInfo.health_update_time | moment}}
+           </span>
           </template>
         </chart-card>
       </a-col>

@@ -6,20 +6,21 @@ import (
 )
 
 type Cluster struct {
-	ID            uint      `gorm:"primarykey"`
-	Name          string    `gorm:"not null"`
-	PrometheusURL string    `gorm:"not null"`
-	TiDBUsername  string    `gorm:"not null"`
-	TiDBPassword  string    `gorm:"not null"`
-	LoginPath     string    `gorm:"not null"`
-	CreateTime    time.Time `gorm:"not null"`
-	Description   string
-	Owner         string `gorm:"not null"`
-	TiDBVersion   string `gorm:"not null"`
-	DashboardURL  string
-	GrafanaURL    string
-	LastCheckTime time.Time
-	ClusterHealth int
+	ID               uint      `gorm:"primarykey"`
+	Name             string    `gorm:"not null"`
+	PrometheusURL    string    `gorm:"not null"`
+	TiDBUsername     string    `gorm:"not null"`
+	TiDBPassword     string    `gorm:"not null"`
+	LoginPath        string    `gorm:"not null"`
+	CreateTime       time.Time `gorm:"not null"`
+	Description      string
+	Owner            string `gorm:"not null"`
+	TiDBVersion      string `gorm:"not null"`
+	DashboardURL     string
+	GrafanaURL       string
+	LastCheckTime    time.Time
+	ClusterHealth    int
+	HealthUpdateTime time.Time
 }
 
 // RecentWarnings is a struct for QueryRecentWarningsByID
@@ -139,6 +140,17 @@ func (c *Cluster) QueryHistoryInfoByID(id int) (CheckHistoryInfo, error) {
 		return checkHistory, err
 	}
 	return checkHistory, nil
+}
+
+// QueryRecentWarningsByID query the today items in the cluster by cluster id
+func (ch *Cluster) QueryTodayHistoryInfoByID(id int) (CheckHistoryInfo, error) {
+	var checkHistory CheckHistoryInfo
+	err := DbConn.Model(&CheckHistory{}).
+		Select("count(*) as count,sum(total_items) as total").
+		Where("cluster_id = ? and check_time > ? ", id, time.Now().Format("2006-01-02")).
+		First(&checkHistory).
+		Error
+	return checkHistory, err
 }
 
 // QueryHistoryWarningByID query the warnings items in the cluster in the past period by cluster id
