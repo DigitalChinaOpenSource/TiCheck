@@ -5,7 +5,7 @@
       :title="$t('check.probe.add.title')"
       @back="back"
     />
-    <div style="float: right">
+    <!-- <div style="float: right">
       <a-radio-group default-value="local" button-style="solid" size="large">
         <a-radio-button value="local" @click="getLocalData">
           {{ $t("check.probe.add.local") }}
@@ -17,7 +17,7 @@
           {{ $t("check.probe.add.custom") }}
         </a-radio-button>
       </a-radio-group>
-    </div>
+    </div> -->
     <a-table
       :columns="columns"
       :data-source="data"
@@ -121,8 +121,9 @@
                   ],
                 },
               ]"
+              :labelInValue="true"
             >
-              <a-select-option value="0">
+              <a-select-option :value="0">
                 {{ mapOperatorValue(0) }}
               </a-select-option>
               <a-select-option value="1">
@@ -223,7 +224,10 @@ export default {
         this.form.setFieldsValue({
           probe_id: record.id,
           script_name: record.script_name,
-          operator: mapOperatorValue(record.operator),
+          operator: {
+            value: record.operator,
+            label: mapOperatorValue(record.operator),
+          },
           threshold: record.threshold,
         });
       });
@@ -234,7 +238,7 @@ export default {
       addProbe({
         cluster_id: parseInt(this.clusterID),
         probe_id: this.form.getFieldValue("probe_id"),
-        operator: parseInt(this.form.getFieldValue("operator")),
+        operator: parseInt(this.form.getFieldValue("operator").value),
         threshold: this.form.getFieldValue("threshold"),
       })
         .then((res) => {
