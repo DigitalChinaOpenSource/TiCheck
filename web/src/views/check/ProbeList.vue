@@ -116,7 +116,6 @@
                   ],
                 },
               ]"
-              placeholder="Select a operator"
               :labelInValue="true"
             >
               <a-select-option value="0">
@@ -244,7 +243,7 @@ export default {
           probe_id: record.probe_id,
           script_name: record.script_name,
           operator: {
-            value: record.operator,
+            key: record.operator,
             label: mapOperatorValue(record.operator),
           },
           threshold: record.threshold,

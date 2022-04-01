@@ -123,7 +123,7 @@
               ]"
               :labelInValue="true"
             >
-              <a-select-option :value="0">
+              <a-select-option value="0">
                 {{ mapOperatorValue(0) }}
               </a-select-option>
               <a-select-option value="1">
@@ -225,7 +225,7 @@ export default {
           probe_id: record.id,
           script_name: record.script_name,
           operator: {
-            value: record.operator,
+            key: record.operator,
             label: mapOperatorValue(record.operator),
           },
           threshold: record.threshold,
