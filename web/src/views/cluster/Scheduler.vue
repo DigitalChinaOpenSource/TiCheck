@@ -129,7 +129,8 @@
 
 <script>
 import { getSchedulerList, addScheduler, updateScheduler, deleteScheduler } from '@/api/cluster'
-import moment from "moment";
+import { getCheckHistoryByClusterID } from "@/api/check"
+import moment from 'moment'
 
 const schedulerList = []
 
@@ -177,7 +178,8 @@ export default {
       }
     },
     jump2History (schedulerID) {
-      console.log('jump to history detail view', schedulerID)
+      console.log('scheduler id=>', schedulerID)
+      this.$router.push({ name: 'CheckHistory', params: { id: this.clusterID, scheduler_id: schedulerID } })
     },
     showAddModal () {
       this.scheModalVisible = true

@@ -15,9 +15,10 @@ const checkApi = {
     runExecute: '/cluster/check/run/',
 }
 
-export function getCheckHistoryByClusterID (clusterID, page, pageSize, startTime, endTime) {
+export function getCheckHistoryByClusterID (clusterID, page, pageSize, startTime, endTime, schedulerID) {
     return request({
-        url: checkApi.checkHistory + clusterID + '?page_num=' + page + '&page_size=' + pageSize + '&start_time=' + startTime + '&end_time=' + endTime,
+        url: checkApi.checkHistory + clusterID +
+          '?page_num=' + page + '&page_size=' + pageSize + '&start_time=' + startTime + '&end_time=' + endTime + '&scheduler_id=' + schedulerID,
         method: 'get'
     })
 }

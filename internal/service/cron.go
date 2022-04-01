@@ -21,11 +21,14 @@ type SchedulerTask struct {
 	JobFunc     func()
 }
 
+// Initialize initial a cron service
 func (sc *SchedulerCron) Initialize() {
 	sc.Cron = cron.New(cron.WithSeconds(), cron.WithLocation(time.Local))
 	sc.Cron.Start()
+	// todo check if there is a task in the scheduler table, if so,add it into the cron task queue
 }
 
+//AddTask add a cron task to cron service by scheduler
 func (sc *SchedulerCron) AddTask(scheduler model.Scheduler) error {
 	job := CreateJob(scheduler)
 	taskID, err := sc.Cron.AddFunc(scheduler.CronExpression, job)
@@ -42,6 +45,7 @@ func (sc *SchedulerCron) AddTask(scheduler model.Scheduler) error {
 	return nil
 }
 
+// RemoveTask remove a task from cron service by task info
 func (sc *SchedulerCron) RemoveTask(task SchedulerTask) {
 	sc.Cron.Remove(task.ID)
 }
@@ -50,6 +54,7 @@ func (sc *SchedulerCron) StopAll() {
 	sc.Cron.Stop()
 }
 
+// CreateJob create a cron job by scheduler cron expression, return a job func
 func CreateJob(scheduler model.Scheduler) func() {
 	jobFunc := func() {
 		exe := executor.CreateClusterExecutor(scheduler.ClusterID, scheduler.ID)

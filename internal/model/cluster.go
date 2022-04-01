@@ -2,6 +2,8 @@ package model
 
 import (
 	"database/sql"
+	"errors"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -142,8 +144,8 @@ func (c *Cluster) QueryHistoryInfoByID(id int) (CheckHistoryInfo, error) {
 	return checkHistory, nil
 }
 
-// QueryRecentWarningsByID query the today items in the cluster by cluster id
-func (ch *Cluster) QueryTodayHistoryInfoByID(id int) (CheckHistoryInfo, error) {
+// QueryTodayHistoryInfoByID query the today items in the cluster by cluster id
+func (c *Cluster) QueryTodayHistoryInfoByID(id int) (CheckHistoryInfo, error) {
 	var checkHistory CheckHistoryInfo
 	err := DbConn.Model(&CheckHistory{}).
 		Select("count(*) as count,sum(total_items) as total").
@@ -197,4 +199,12 @@ func (c *Cluster) GetLashCheckTime(id int) (time.Time, error) {
 	err := DbConn.Model(c).Select("LastCheckTime").Where("id = ?", id).First(&lastTime).Error
 
 	return lastTime, err
+}
+
+func (c *Cluster) QueryLastID() (id uint, err error) {
+	err = DbConn.Last(&c).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return 0, nil
+	}
+	return c.ID, err
 }

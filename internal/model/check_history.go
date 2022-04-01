@@ -20,9 +20,9 @@ func (ch *CheckHistory) TableName() string {
 	return "check_histories"
 }
 
-func (ch *CheckHistory) GetHistoryByClusterID(id int, pageSize int, pageNum int, startTime string, endTime string) (map[string]interface{}, error) {
+func (ch *CheckHistory) GetHistoryByClusterID(id int, pageSize int, pageNum int, startTime string, endTime string, schedulerID int) (map[string]interface{}, error) {
 	var chs []CheckHistory
-	var total int64
+	//var total int64
 	var err error
 	if startTime == "" || endTime == "" {
 		err = DbConn.Where("cluster_id = ?", id).Limit(pageSize).Offset((pageNum - 1) * pageSize).Order("id desc").Find(&chs).Error
@@ -30,16 +30,20 @@ func (ch *CheckHistory) GetHistoryByClusterID(id int, pageSize int, pageNum int,
 		err = DbConn.Where("cluster_id = ? and check_time between ? and ?", id, startTime, endTime).Limit(pageSize).Offset((pageNum - 1) * pageSize).Order("id desc").Find(&chs).Error
 	}
 
+	if schedulerID != 0 {
+		DbConn.Where("scheduler_id = ?", schedulerID).Find(&chs)
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	DbConn.Model(&chs).Where("cluster_id = ?", id).Count(&total)
+	//DbConn.Where("cluster_id = ?", id).Find(&chs).Count(&total)
 
 	return map[string]interface{}{
 		"page_size": pageSize,
 		"page_num":  pageNum,
-		"total":     total,
+		"total":     len(chs),
 		"data":      chs,
 	}, nil
 }
@@ -67,4 +71,9 @@ func (ch *CheckHistory) QueryLastHistoryByID(id int) (*CheckHistory, error) {
 	err := DbConn.Table(ch.TableName()).
 		Where("cluster_id = ? and state = 'finished'", id).Order("id desc").Limit(1).Find(&ch).Error
 	return ch, err
+}
+
+func (ch *CheckHistory) QueryHistoryIDbySchedulerID(id int) (historyId uint, err error) {
+	err = DbConn.Last(&ch).Where("scheduler_id=?", id).Error
+	return ch.ID, err
 }

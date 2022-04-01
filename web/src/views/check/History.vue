@@ -58,6 +58,7 @@ export default {
       start_time: "",
       end_time: "",
       clusterID: this.$route.params.id,
+      schedulerID: 0
     };
   },
   activated() {
@@ -75,12 +76,19 @@ export default {
       }
     ) {
       this.pagination = pagination;
+      console.log('scheduler_id=>', this.$route.params.scheduler_id)
+      this.schedulerID = 0
+      if (this.$route.params.scheduler_id != null) {
+        this.schedulerID = this.$route.params.scheduler_id
+        console.log('scheduler_id=>', this.schedulerID)
+      }
       getCheckHistoryByClusterID(
         this.clusterID,
         pagination.current,
         pagination.pageSize,
         this.start_time,
-        this.end_time
+        this.end_time,
+        this.schedulerID
       )
         .then((res) => {
           const result = res.data;
