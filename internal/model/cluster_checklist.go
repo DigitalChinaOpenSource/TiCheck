@@ -79,6 +79,11 @@ func (cc *ClusterChecklist) AddCheckProbe() error {
 	return err
 }
 
+func (cc *ClusterChecklist) AddCheckList(checkList []ClusterChecklist) error {
+	err := DbConn.Create(checkList).Error
+	return err
+}
+
 func (cc *ClusterChecklist) DeleteCheckProbe() error {
 	err := DbConn.Delete(cc).Error
 	return err

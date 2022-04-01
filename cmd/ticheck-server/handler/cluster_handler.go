@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -338,6 +339,18 @@ func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 		return
 	}
 
+	cc := &model.ClusterChecklist{}
+	checkList, err := ch.InitialCheckList(clusterInfoReq)
+	if err != nil {
+		api.BadWithMsg(c, err.Error())
+		return
+	}
+	err = cc.AddCheckList(checkList)
+	if err != nil {
+		api.BadWithMsg(c, err.Error())
+		return
+	}
+
 	api.S(c)
 	return
 }
@@ -437,13 +450,16 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) (cluster model.C
 		return cluster, errors.New("tidb database username or password is wrong")
 	}
 
+	lastID, err := cluster.QueryLastID()
+	if err != nil {
+		return cluster, errors.New("get last cluster id error")
+	}
+	req.ID = lastID + 1
 	loginPath := fmt.Sprintf("ticheck_%d", req.ID)
-	// todo fix bug
-	//shellStr := "logpath.sh " + loginPath + " " + req.LogUser + " " + host + " " + portStr + " " + req.LogPasswd
-	//
-	//if res, err := exec.Command("/bin/bash", "-c", shellStr).Output(); err != nil {
-	//	return cluster, errors.New("failed to add login-path for mysql" + string(res))
-	//}
+
+	if _, err = exec.Command("sh", "../../logpath.sh", loginPath, req.LogUser, host, portStr, req.LogPasswd).Output(); err != nil {
+		return cluster, errors.New("failed to add login-path for mysql")
+	}
 
 	cluster = model.Cluster{
 		ID:            req.ID,
@@ -459,6 +475,34 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) (cluster model.C
 		LoginPath:     loginPath,
 	}
 	return cluster, nil
+}
+
+// InitialCheckList initialize the cluster checklist when adding a cluster
+func (ch *ClusterHandler) InitialCheckList(req *ClusterInfoReq) (checkList []model.ClusterChecklist, err error) {
+
+	for _, v := range req.CheckItems {
+		p := model.Probe{
+			ID: v,
+		}
+		if err = p.GetByID(); err != nil && p.IsSystem != 0 {
+			return checkList, err
+		}
+
+		initialCom := model.Comparator{
+			Operator:  p.Operator,
+			Threshold: p.Threshold,
+			Arg:       p.Arg,
+		}
+
+		checkItem := model.ClusterChecklist{
+			ClusterID:  req.ID,
+			ProbeID:    v,
+			IsEnabled:  0,
+			Comparator: initialCom,
+		}
+		checkList = append(checkList, checkItem)
+	}
+	return checkList, nil
 }
 
 func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
@@ -708,21 +752,20 @@ func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
 		return
 	}
 
-	isExits := false
-	for _, v := range service.CronService.Tasks {
-		if v.SchedulerID == schedulerInfo.ID {
-			isExits = true
-			service.CronService.RemoveTask(v)
-		}
-	}
+	// todo there is panic err when update scheduler
+	//for _, v := range service.CronService.Tasks {
+	//	if v.SchedulerID == schedulerInfo.ID {
+	//		service.CronService.RemoveTask(v)
+	//	}
+	//}
 
-	if !isExits && schedulerReq.Status {
-		err = service.CronService.AddTask(schedulerInfo)
-		if err != nil {
-			api.ErrorWithMsg(c, "Failed to run scheduled task")
-			return
-		}
-	}
+	//if schedulerReq.Status {
+	//	err = service.CronService.AddTask(schedulerInfo)
+	//	if err != nil {
+	//		api.ErrorWithMsg(c, "Failed to update scheduled task")
+	//		return
+	//	}
+	//}
 
 	api.S(c)
 	return

@@ -45,6 +45,7 @@ func (r *ReportHandler) GetReportList(c *gin.Context) {
 	pageNum, _ := strconv.Atoi(c.Query("page_num"))
 	startTime := c.Query("start_time")
 	endTime := c.Query("end_time")
+	schedulerID, _ := strconv.Atoi(c.Query("scheduler_id"))
 
 	if pageSize == 0 {
 		pageSize = 10
@@ -66,7 +67,7 @@ func (r *ReportHandler) GetReportList(c *gin.Context) {
 		return
 	}
 
-	res, err := ch.GetHistoryByClusterID(clusterID, pageSize, pageNum, startTime, endTime)
+	res, err := ch.GetHistoryByClusterID(clusterID, pageSize, pageNum, startTime, endTime, schedulerID)
 
 	if err != nil {
 		api.ErrorWithMsg(c, err.Error())

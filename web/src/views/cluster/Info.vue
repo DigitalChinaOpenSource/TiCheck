@@ -60,7 +60,7 @@
           <div>
             <mini-area />
           </div>
-          <template slot="footer">{{$t('cluster.info.status.count-today')}}：<span> {{ clusterInfo.today_check_count | NumberFormat }}</span></template>
+          <template slot="footer">{{ $t('cluster.info.status.count-today') }}：<span> {{ clusterInfo.today_check_count | NumberFormat }}</span></template>
         </chart-card>
       </a-col>
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '4px' }">
@@ -79,7 +79,7 @@
           <div>
             <mini-area />
           </div>
-          <template slot="footer">{{$t('cluster.info.status.total-today')}}：<span> {{ clusterInfo.today_check_total | NumberFormat }}</span></template>
+          <template slot="footer">{{ $t('cluster.info.status.total-today') }}：<span> {{ clusterInfo.today_check_total | NumberFormat }}</span></template>
         </chart-card>
       </a-col>
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '4px' }">
@@ -95,12 +95,12 @@
           </a-tooltip>
           <template slot="footer">
             <span flag="down" style="margin-right: 16px;">
-              <span slot="term">{{$t('cluster.info.status.last-normal')}}：</span>
-              {{clusterInfo.last_check_normal}}
+              <span slot="term">{{ $t('cluster.info.status.last-normal') }}：</span>
+              {{ clusterInfo.last_check_normal }}
             </span>
             <span flag="up">
-              <span slot="term">{{$t('cluster.info.status.last-warning')}}：</span>
-              {{clusterInfo.last_check_warning}}
+              <span slot="term">{{ $t('cluster.info.status.last-warning') }}：</span>
+              {{ clusterInfo.last_check_warning }}
             </span>
           </template>
         </chart-card>
@@ -122,10 +122,10 @@
             <mini-progress color="rgb(19, 194, 194)" :target="80" :percentage="clusterInfo.cluster_health" height="8px" />
           </div>
           <template slot="footer">
-           <span>
-              <span slot="term">{{$t('cluster.info.status.healthy-update')}}：</span>
-              {{clusterInfo.health_update_time | moment}}
-           </span>
+            <span>
+              <span slot="term">{{ $t('cluster.info.status.healthy-update') }}：</span>
+              {{ clusterInfo.health_update_time | moment }}
+            </span>
           </template>
         </chart-card>
       </a-col>
@@ -181,37 +181,37 @@
 </template>
 
 <script>
-import { getClusterInfo } from "@/api/cluster";
-import { ChartCard, RankList, Bar, MiniProgress, MiniArea } from "@/components";
-import moment from "moment";
-const clusterInfo = {};
+import { getClusterInfo } from '@/api/cluster'
+import { ChartCard, RankList, Bar, MiniProgress, MiniArea } from '@/components'
+import moment from 'moment'
+const clusterInfo = {}
 export default {
-  name: "ClusterInfo",
-  clusterID: "",
+  name: 'ClusterInfo',
+  clusterID: '',
   components: {
     ChartCard,
     RankList,
     Bar,
     MiniProgress,
-    MiniArea,
+    MiniArea
   },
-  data() {
+  data () {
     return {
-      clusterInfo,
-    };
+      clusterInfo
+    }
   },
-  created() {
-    this.clusterID = this.$route.params.id?.toString();
-    this.localClusterInfo();
+  created () {
+    this.clusterID = this.$route.params.id?.toString()
+    this.localClusterInfo()
     setTimeout(() => {
-      this.loading = !this.loading;
-    }, 1000);
+      this.loading = !this.loading
+    }, 1000)
   },
   methods: {
-    localClusterInfo() {
+    localClusterInfo () {
       getClusterInfo(this.clusterID)
         .then((res) => {
-          this.clusterInfo = res.data;
+          this.clusterInfo = res.data
           for (
             let i = 0;
             i < this.clusterInfo.recent_warning_items.length;
@@ -219,20 +219,26 @@ export default {
           ) {
             this.clusterInfo.recent_warning_items[i].time = moment(
               this.clusterInfo.recent_warning_items[i].time
-            ).format("MM-DD HH:mm:ss");
+            ).format('MM-DD HH:mm:ss')
           }
         })
         .catch(() => {
-          this.$router.push({ path: "/" });
-        });
+          this.$router.push({ path: '/' })
+        })
     },
-    doCheck() {
+    doCheck () {
       this.$router.push({
-        name: "ExecuteCheck",
+        name: 'ExecuteCheck',
         params: { id: this.clusterID },
-        query: { id: this.clusterID },
-      });
-    },
+        query: { id: this.clusterID }
+      })
+    }
   },
-};
+  mounted () {
+    this.localClusterInfo()
+    setTimeout(() => {
+      this.loading = !this.loading
+    }, 1000)
+  }
+}
 </script>
