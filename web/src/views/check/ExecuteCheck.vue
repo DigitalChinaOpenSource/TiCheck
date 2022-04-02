@@ -23,7 +23,12 @@
       <a-button class="button" type="primary" @click="editProbe">
         {{ $t("check.execute.editProbe") }}
       </a-button>
-      <a-button class="button" type="primary" :disabled="!isCompleted" @click="getResultReport">
+      <a-button
+        class="button"
+        type="primary"
+        :disabled="!isCompleted"
+        @click="getResultReport"
+      >
         {{ $t("check.execute.checkResult") }}
       </a-button>
     </div>
@@ -165,7 +170,7 @@
       style="padding-left: 140px; margin-top: 20px"
       v-if="isRunning || isCompleted"
     >
-      <a-list :data-source="data">
+      <a-list :data-source="data" itemLayout="”vertical“">
         <a-list-item slot="renderItem" slot-scope="item">
           <a-list-item-meta :description="item.check_item">
             <span slot="title">{{ item.check_name }}</span>
@@ -191,7 +196,10 @@
             }}</span>
           </a-list-item-meta>
 
-          <a-icon :type="mapStatusIconType(item.check_status)" :style="mapStatusIconStyle(item.check_status)" />
+          <a-icon
+            :type="mapStatusIconType(item.check_status)"
+            :style="mapStatusIconStyle(item.check_status)"
+          />
         </a-list-item>
       </a-list>
     </div>
@@ -270,6 +278,7 @@ export default {
       clusterID: this.$route.params.id,
       reportID: 0,
       checkTags: checkTags,
+      webSocket: null,
 
       // use to record haved checked probe.
       probeID: [],
@@ -277,37 +286,75 @@ export default {
   },
   activated() {
     this.clusterID = this.$route.params.id;
-    this.getExecuteInfo();
+    this.getCheckInfo();
   },
   methods: {
-    getExecuteInfo() {
+    async getCheckInfo(readyToRun = false) {
+      debugger;
       console.log(this.checkTags);
-      getExecuteInfo(this.clusterID)
+      await getExecuteInfo(this.clusterID)
         .then((res) => {
+          debugger;
           const data = res.data;
           const checkItems = data.check_items;
 
           this.checkTimes = data.check_times;
           this.lastCheckTime = data.last_check_time;
-          this.total = checkItems.total;
-          if (this.total == 0) {
-            this.$notification["info"]({
-              title: this.$t("check.execute.notification.no_probe.title"),
-              message: this.$t("check.execute.notification.no_probe"),
-            });
+          // if check is running, don't fresh the check list.
+          if (this.isRunning) {
+            return;
           }
-          this.checkTags.cluster.total = checkItems.tags.cluster
-            ? checkItems.tags.cluster
-            : 0;
-          this.checkTags.network.total = checkItems.tags.network
-            ? checkItems.tags.network
-            : 0;
-          this.checkTags.running_state.total = checkItems.tags.running_state
-            ? checkItems.tags.running_state
-            : 0;
-          this.checkTags.others.total = checkItems.tags.others
-            ? checkItems.tags.others
-            : 0;
+
+          // if probe have been changed or is ready to run, init this page.
+          if (
+            readyToRun || this.total != checkItems.total
+              ? checkItems.total
+              : 0 || this.checkTags.cluster.total != checkItems.tags.cluster
+              ? checkItems.tags.cluster
+              : 0 || this.checkTags.network.total != checkItems.tags.network
+              ? checkItems.tags.network
+              : 0 ||
+                this.checkTags.running_state.total !=
+                  checkItems.tags.running_state
+              ? checkItems.tags.running_state
+              : 0 || this.checkTags.others.total != checkItems.tags.others
+              ? checkItems.tags.others
+              : 0
+          ) {
+            this.isCompleted = false;
+            this.isRunning = false;
+            this.progressStatus = "active";
+
+            this.total = checkItems.total;
+
+            if (this.total == 0) {
+              this.$notification["info"]({
+                title: this.$t("check.execute.notification.no_probe.title"),
+                message: this.$t("check.execute.notification.no_probe"),
+              });
+            }
+
+            this.data = [];
+
+            this.current = 0;
+            this.checkTags.cluster.current = 0;
+            this.checkTags.network.current = 0;
+            this.checkTags.running_state.current = 0;
+            this.checkTags.others.current = 0;
+
+            this.checkTags.cluster.total = checkItems.tags.cluster
+              ? checkItems.tags.cluster
+              : 0;
+            this.checkTags.network.total = checkItems.tags.network
+              ? checkItems.tags.network
+              : 0;
+            this.checkTags.running_state.total = checkItems.tags.running_state
+              ? checkItems.tags.running_state
+              : 0;
+            this.checkTags.others.total = checkItems.tags.others
+              ? checkItems.tags.others
+              : 0;
+          }
         })
         .catch((err) => {
           console.log(err);
@@ -327,99 +374,111 @@ export default {
       this.visible = true;
     },
     runCheck() {
-      this.visible = false;
-      this.current = 0;
-      this.checkTags.cluster.current = 0;
-      this.checkTags.network.current = 0;
-      this.checkTags.running_state.current = 0;
-      this.checkTags.others.current = 0;
-      this.isCompleted = false;
-      this.isRunning = true;
-      this.progressStatus = "active";
+      // we must get execute info before run check.
+      this.getCheckInfo(true).then((res) => {
+        this.visible = false;
+        this.isCompleted = false;
+        this.isRunning = true;
+        this.progressStatus = "active";
 
-      const webSocket = runExecute(this.clusterID);
+        this.webSocket = runExecute(this.clusterID);
 
-      webSocket.onmessage = (event) => {
-        const result = JSON.parse(event.data);
-        console.log(result);
+        this.webSocket.onmessage = (event) => this.onmessage(event);
 
-        if (result.is_finished == true) {
-          this.isRunning = false;
-          this.isCompleted = true;
-          this.reportID = result.check_id;
-          this.progressStatus = "success";
-          this.$notification["success"]({
-            message: "Success",
-            description: this.$t("check.execute.notification.success"),
-            duration: 3,
-          });
-          webSocket.close();
-          return;
-        }
+        this.webSocket.onclose = (event) => this.onclose(event);
 
-        if (result.is_timeout == true) {
-          this.isRunning = false;
-          this.progressStatus = "exception";
-          this.$notification["error"]({
-            message: "Timeout",
-            description: this.$t("check.execute.notification.timeout"),
-            duration: 3,
-          });
-          webSocket.close();
-          return;
-        }
+        this.webSocket.onerror = (event) => this.onerror(event);
+      });
+    },
 
-        if (result.err != "" && result.err != null) {
-          this.$notification["warning"]({
-            message: "Warning",
-            description: result.err,
-            duration: 3,
-          });
-        }
+    onmessage(event) {
+      const result = JSON.parse(event.data);
+      console.log(result);
 
-        console.log(result.data);
-        if (result.data == null || result.data.length < 1) {
-          return;
-        }
+      if (result.is_conflict == true) {
+        this.$$notification["error"]({
+          message: "Conflict",
+          description: this.$t("check.execute.notification.error.conflict"),
+          duration: 3,
+        });
+        return;
+      }
 
-        this.data = result.data.concat(this.data);
-        this.current = this.current + 1;
-        const probeTag = result.data[0].check_tag;
-        if (probeTag == "cluster") {
-          this.checkTags.cluster.current += 1;
-        } else if (probeTag == "network") {
-          this.checkTags.network.current += 1;
-        } else if (probeTag == "running_state") {
-          this.checkTags.running_state.current += 1;
-        } else {
-          this.checkTags.others.current += 1;
-        }
-      };
-
-      webSocket.onclose = (event) => {
+      if (result.is_finished == true) {
         this.isRunning = false;
-        if (!this.isCompleted) {
-          this.isRunning = false;
-          this.progressStatus = "exception";
-          this.$notification["error"]({
-            message: "Error",
-            description: this.$t("check.execute.notification.error.disconnect"),
-            duration: 3,
-          });
-        }
-        webSocket.close()
-      };
+        this.isCompleted = true;
+        this.reportID = result.check_id;
+        this.progressStatus = "success";
+        this.$notification["success"]({
+          message: "Success",
+          description: this.$t("check.execute.notification.success"),
+          duration: 3,
+        });
+        this.webSocket.close();
+        return;
+      }
 
-      webSocket.onerror = (event) => {
+      if (result.is_timeout == true) {
         this.isRunning = false;
         this.progressStatus = "exception";
         this.$notification["error"]({
-          message: "Error",
-          description: this.$t("check.execute.notification.error"),
+          message: "Timeout",
+          description: this.$t("check.execute.notification.timeout"),
           duration: 3,
         });
-      };
+        this.webSocket.close();
+        return;
+      }
+
+      if (result.err != "" && result.err != null) {
+        this.$notification["warning"]({
+          message: "Warning",
+          description: result.err,
+          duration: 3,
+        });
+      }
+
+      console.log(result.data);
+      if (result.data == null || result.data.length < 1) {
+        return;
+      }
+
+      this.data = result.data.concat(this.data);
+      this.current = this.current + 1;
+      const probeTag = result.data[0].check_tag;
+      if (probeTag == "cluster") {
+        this.checkTags.cluster.current += 1;
+      } else if (probeTag == "network") {
+        this.checkTags.network.current += 1;
+      } else if (probeTag == "running_state") {
+        this.checkTags.running_state.current += 1;
+      } else {
+        this.checkTags.others.current += 1;
+      }
     },
+    onclose(event) {
+      this.isRunning = false;
+      if (!this.isCompleted) {
+        this.progressStatus = "exception";
+        this.$notification["error"]({
+          message: "Error",
+          description: this.$t("check.execute.notification.error.disconnect"),
+          duration: 3,
+        });
+      }
+      this.webSocket.close();
+    },
+    onerror(event) {
+      this.isRunning = false;
+      this.progressStatus = "exception";
+      this.$notification["error"]({
+        message: "Error",
+        description: this.$t("check.execute.notification.error"),
+        duration: 3,
+      });
+      this.webSocket.close();
+    },
+
     editProbe() {
       this.$router.push({
         name: "ProbeList",
@@ -482,7 +541,7 @@ export default {
         case 0:
           return "check-circle";
         case 1:
-          return "exclamation-circle"
+          return "exclamation-circle";
         case 2:
           return "exclamation-circle";
         default:

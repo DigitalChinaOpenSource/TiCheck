@@ -12,7 +12,7 @@ export default {
     'menu.cluster.check.probe': '巡检指标',
     'menu.cluster.check.execute': '执行巡检',
     'menu.cluster.scheduler': '定时任务',
-    'menu.cluster.set': '集群设置',
+    'menu.cluster.settings': '集群设置',
     'menu.cluster.user': '用户管理',
     'menu.store': '商店',
     'menu.store.local': '本地商店',

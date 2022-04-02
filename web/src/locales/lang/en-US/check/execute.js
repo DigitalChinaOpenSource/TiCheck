@@ -17,6 +17,7 @@ export default {
     'check.execute.notification.Info.no_probe.title': 'No Check Probe',
     'check.execute.notification.Info.no_probe': 'The cluster has no check probes, please add check probes first.',
     'check.execute.notification.error.disconnected': 'The server disconnected abnormally.',
+    'check.execute.notification.error.conflict': 'There is already a running check in this cluster. Please try again later',
 
     // List
     'check.execute.list.check_threshold': 'Check Threshold',

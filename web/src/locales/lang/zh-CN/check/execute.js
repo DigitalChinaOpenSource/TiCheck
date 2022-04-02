@@ -18,6 +18,8 @@ export default {
     'check.execute.notification.Info.no_probe.title': '没有巡检指标',
     'check.execute.notification.Info.no_probe': '目前集群中没有任何巡检指标，请给集群添加指标！',
     'check.execute.notification.error.disconnected': '服务器异常断开连接',
+    'check.execute.notification.error.conflict': '集群当前存在一个正在运行的巡检任务，请稍后再试',
+
 
     // List
     'check.execute.list.check_threshold': '检查阈值',
