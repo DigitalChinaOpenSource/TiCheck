@@ -170,7 +170,7 @@
       style="padding-left: 140px; margin-top: 20px"
       v-if="isRunning || isCompleted"
     >
-      <a-list :data-source="data" itemLayout="”vertical“">
+      <a-list :data-source="data">
         <a-list-item slot="renderItem" slot-scope="item">
           <a-list-item-meta :description="item.check_item">
             <span slot="title">{{ item.check_name }}</span>
@@ -290,11 +290,8 @@ export default {
   },
   methods: {
     async getCheckInfo(readyToRun = false) {
-      debugger;
-      console.log(this.checkTags);
       await getExecuteInfo(this.clusterID)
         .then((res) => {
-          debugger;
           const data = res.data;
           const checkItems = data.check_items;
 
@@ -357,7 +354,6 @@ export default {
           }
         })
         .catch((err) => {
-          console.log(err);
           // this.$router.push({ name: "cluster" });
         });
     },
@@ -375,6 +371,7 @@ export default {
     },
     runCheck() {
       // we must get execute info before run check.
+      debugger
       this.getCheckInfo(true).then((res) => {
         this.visible = false;
         this.isCompleted = false;
@@ -393,7 +390,6 @@ export default {
 
     onmessage(event) {
       const result = JSON.parse(event.data);
-      console.log(result);
 
       if (result.is_conflict == true) {
         this.$$notification["error"]({
@@ -402,6 +398,22 @@ export default {
           duration: 3,
         });
         return;
+      }
+
+      if (result.err != "" && result.err != null) {
+        this.$notification["error"]({
+          message: "Error",
+          description: result.err,
+          duration: 3,
+        });
+
+        if (result.is_finished == true){
+          this.isRunning = false;
+          this.isCompleted = true;
+          this.progressStatus = "exception"
+          this.webSocket.close();
+          return;
+        }
       }
 
       if (result.is_finished == true) {
@@ -430,15 +442,6 @@ export default {
         return;
       }
 
-      if (result.err != "" && result.err != null) {
-        this.$notification["warning"]({
-          message: "Warning",
-          description: result.err,
-          duration: 3,
-        });
-      }
-
-      console.log(result.data);
       if (result.data == null || result.data.length < 1) {
         return;
       }
