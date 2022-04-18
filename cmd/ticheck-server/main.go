@@ -5,8 +5,12 @@ import (
 	"TiCheck/executor"
 	"TiCheck/internal/model"
 	"TiCheck/internal/service"
-	"context"
+	"TiCheck/util/logutil"
+	"github.com/natefinch/lumberjack"
+	"go.uber.org/zap"
 	"log"
+
+	"context"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,6 +23,17 @@ import (
 func main() {
 	engine := gin.Default()
 	engine.Use()
+
+	// LogConfig should be read from the configuration file
+	config := logutil.NewLogConfig(zap.DebugLevel, lumberjack.Logger{
+		Filename:   logutil.DefaultLogFilePath,
+		MaxSize:    logutil.DefaultLogMaxSize,
+		MaxBackups: logutil.DefaultLogBackups,
+		MaxAge:     logutil.DefaultLogAge,
+		Compress:   logutil.DefaultLogCompress,
+	})
+
+	logutil.InitLog(config)
 
 	err := model.InitDB()
 	if err != nil {
@@ -40,7 +55,7 @@ func main() {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+			log.Fatalf("listen: %s", err.Error())
 		}
 	}()
 	//testExe()

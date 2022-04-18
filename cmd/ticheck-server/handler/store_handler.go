@@ -3,7 +3,7 @@ package handler
 import (
 	"TiCheck/cmd/ticheck-server/api"
 	"TiCheck/internal/model"
-	"TiCheck/internal/util"
+	"TiCheck/util"
 	"encoding/json"
 	"fmt"
 	"io"
