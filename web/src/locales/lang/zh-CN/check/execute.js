@@ -15,8 +15,8 @@ export default {
     'check.execute.notification.success': '巡检已经成功执行。',
     'check.execute.notification.timeout': '巡检执行超时',
     'check.execute.notification.error': '无法连接到服务器',
-    'check.execute.notification.Info.no_probe.title': '没有巡检指标',
-    'check.execute.notification.Info.no_probe': '目前集群中没有任何巡检指标，请给集群添加指标！',
+    'check.execute.notification.info.no_probe.message': '没有巡检指标',
+    'check.execute.notification.info.no_probe.description': '目前集群中没有任何巡检指标，请给集群添加指标！',
     'check.execute.notification.error.disconnected': '服务器异常断开连接',
     'check.execute.notification.error.conflict': '集群当前存在一个正在运行的巡检任务，请稍后再试',
 

@@ -16,6 +16,9 @@ export default {
     'check.probe.table.edit': '编辑',
     'check.probe.table.delete': '删除',
 
+    'check.probe.table.delete.modal.title': '删除指标',
+    'check.probe.table.delete.modal.contents': '确定删除该指标吗？',
+
     // tag
     'check.probe.tag.all': '全部',
     'check.probe.tag.cluster': '集群',

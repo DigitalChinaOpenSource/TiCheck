@@ -14,8 +14,8 @@ export default {
     'check.execute.notification.success': 'The Check is completed successfully.',
     'check.execute.notification.timeout': 'The check is timeout.',
     'check.execute.notification.error': 'Can not connect to the server.',
-    'check.execute.notification.Info.no_probe.title': 'No Check Probe',
-    'check.execute.notification.Info.no_probe': 'The cluster has no check probes, please add check probes first.',
+    'check.execute.notification.info.no_probe.message': 'No Check Probe',
+    'check.execute.notification.info.no_probe.description': 'The cluster has no check probes, please add check probes first.',
     'check.execute.notification.error.disconnected': 'The server disconnected abnormally.',
     'check.execute.notification.error.conflict': 'There is already a running check in this cluster. Please try again later',
 

@@ -326,8 +326,9 @@ export default {
 
             if (this.total == 0) {
               this.$notification["info"]({
-                title: this.$t("check.execute.notification.no_probe.title"),
-                message: this.$t("check.execute.notification.no_probe"),
+                message: this.$t('check.execute.notification.info.no_probe.message'),
+                description: this.$t('check.execute.notification.info.no_probe.description'),
+                duration: 3,
               });
             }
 
@@ -360,9 +361,10 @@ export default {
     confirmRunCheck() {
       if (this.total == 0) {
         this.visible = false;
-        this.$notification["info"]({
-          title: this.$t("check.execute.notification.no_probe.title"),
-          message: this.$t("check.execute.notification.no_probe"),
+        this.$notification['info']({
+          message: this.$t("check.execute.notification.info.no_probe.message"),
+          description: this.$t("check.execute.notification.info.no_probe.description"),
+          duration: 3
         });
         return;
       }
@@ -392,7 +394,7 @@ export default {
       const result = JSON.parse(event.data);
 
       if (result.is_conflict == true) {
-        this.$$notification["error"]({
+        this.$notification["error"]({
           message: "Conflict",
           description: this.$t("check.execute.notification.error.conflict"),
           duration: 3,

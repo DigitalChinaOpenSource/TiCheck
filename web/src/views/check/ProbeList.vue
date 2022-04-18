@@ -73,7 +73,7 @@
           {{ $t("check.probe.table.edit") }}
         </a>
         <a-divider type="vertical" />
-        <a @click="handleDelete(record)">
+        <a @click="confirmDelete(record)">
           {{ $t("check.probe.table.delete") }}
         </a>
       </span>
@@ -165,6 +165,17 @@
         </a-form>
       </a-modal>
     </div>
+    
+    <!-- delete confimemodal -->
+    <div>
+      <a-modal
+        v-model="deleteProbeVisiable"
+        :title="$t('check.probe.table.delete.modal.title')"
+        @ok="handleDelete()"
+      >
+        <p>{{ $t("check.probe.table.delete.modal.contents") }}</p>
+      </a-modal>
+    </div>
   </div>
 </template>
 <script>
@@ -198,6 +209,9 @@ export default {
       searchText: "",
       searchInput: null,
       searchedColumn: "",
+
+      deleteProbeVisiable: false,
+      deleteProbeID: -1,
 
       // modal
       form: this.$form.createForm(this, { name: "probeForm" }),
@@ -250,10 +264,20 @@ export default {
         });
       });
     },
-    handleDelete(record) {
-      deleteProbe(record.id).then(() => {
+    confirmDelete(record) {
+      this.deleteProbeVisiable = true;
+      this.deleteProbeID = record.id;
+    },
+    handleDelete() {
+      if (this.deleteProbeID < 0) {
+        console.log("deleteProbeID is invalid");
+        this.deleteProbeVisiable = false;
+        return;
+      }
+      deleteProbe(this.deleteProbeID).then(() => {
         this.getProbeListByClusterID();
       });
+      this.deleteProbeVisiable = false;
     },
     handleUpdateProbe(e) {
       e.preventDefault();

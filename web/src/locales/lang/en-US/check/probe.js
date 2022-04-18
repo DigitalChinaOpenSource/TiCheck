@@ -16,6 +16,9 @@ export default {
     'check.probe.table.edit': 'Edit',
     'check.probe.table.delete': 'Delete',
 
+    'check.probe.table.delete.modal.title': 'Delete Probe',
+    'check.probe.table.delete.modal.contents': 'Are you sure to delete this probe?',
+
     // tag
     'check.probe.tag.all': 'All',
     'check.probe.tag.cluster': 'Cluster',
