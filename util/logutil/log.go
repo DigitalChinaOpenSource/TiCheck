@@ -9,7 +9,7 @@ import (
 
 const (
 	// DefaultLogFilePath is the default path for saving log files.
-	DefaultLogFilePath = "../log/ticheck.log"
+	DefaultLogFilePath = "../../log/ticheck.log"
 	// DefaultLogMaxSize is the default size of log files.
 	DefaultLogMaxSize = 96
 	// DefaultLogAge is the default age of the log.
@@ -63,5 +63,5 @@ func InitLog(conf LogConfig) {
 	core := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(sync, zapcore.AddSync(os.Stdout)), conf.Level)
 	Logger := zap.New(core, zap.AddCaller())
 
-	Logger.Info("completed init the logger")
+	Logger.Info("Completed init the logger")
 }

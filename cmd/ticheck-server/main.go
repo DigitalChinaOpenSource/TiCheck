@@ -6,11 +6,9 @@ import (
 	"TiCheck/internal/model"
 	"TiCheck/internal/service"
 	"TiCheck/util/logutil"
+	"context"
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
-	"log"
-
-	"context"
 	"net/http"
 	"os"
 	"os/signal"
@@ -37,12 +35,13 @@ func main() {
 
 	err := model.InitDB()
 	if err != nil {
-		panic("can't connect to db")
+		logutil.Logger.Panic("Can't connect to db", zap.Error(err))
 	}
+	logutil.Logger.Info("Completed database initialization.")
 
 	// route register
 	engine.GET("/ping", func(c *gin.Context) {
-		c.String(http.StatusOK, "Welcome To Ticheck Server.")
+		c.String(http.StatusOK, "Welcome To TiCheck Server.")
 	})
 	router.Register(engine)
 
@@ -55,30 +54,31 @@ func main() {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s", err.Error())
+			logutil.Logger.Fatal("Failed to initialize service", zap.Error(err))
 		}
+		logutil.Logger.Info("Completed TiCheck server initialization.")
 	}()
 	//testExe()
 	service.CronService.Initialize()
-	// Wait for interrupt signal to gracefully shutdown the server with
+	// Wait for interrupt signal to gracefully shut down the server with
 	// a timeout of 5 seconds.
 	quit := make(chan os.Signal, 1)
 	// kill (no param) default send syscall.SIGTERM
 	// kill -2 is syscall.SIGINT
-	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
+	// kill -9 is syscall.SIGKILL but can't be caught, so don't need to add it
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Shutting down server...")
+	logutil.Logger.Info("Shutting down server...")
 
 	// The context is used to inform the server it has 5 seconds to finish
 	// the request it is currently handling
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown: ", err)
+		logutil.Logger.Fatal("The server forced to shutdown: ", zap.Error(err))
 	}
 
-	log.Println("Server exiting")
+	logutil.Logger.Info("The server has exited.")
 }
 
 func testExe() {

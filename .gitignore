@@ -140,3 +140,6 @@ dmypy.json
 
 # config file that may contain sensitive information
 config/load_variables.sh
+
+# log file
+log

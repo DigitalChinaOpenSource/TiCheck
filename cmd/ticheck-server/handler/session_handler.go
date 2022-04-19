@@ -3,8 +3,10 @@ package handler
 import (
 	"TiCheck/cmd/ticheck-server/api"
 	"TiCheck/internal/model"
+	"TiCheck/util/logutil"
 	"bytes"
 	"crypto/rand"
+	"go.uber.org/zap"
 	"math/big"
 	"time"
 
@@ -47,6 +49,7 @@ func (sh *SessionHandler) AuthenticatedUser(c *gin.Context) {
 	userReq := &UserReq{}
 	err := c.BindJSON(userReq)
 	if err != nil {
+		logutil.Logger.Error("the request body can't be parsed correctly", zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -59,6 +62,7 @@ func (sh *SessionHandler) AuthenticatedUser(c *gin.Context) {
 	}
 
 	if !se.User.VerifyUser() {
+		logutil.Logger.Error("authentication failed", zap.String("user", se.User.UserName))
 		api.AuthenticationFailed(c)
 		return
 	}
@@ -109,19 +113,22 @@ func (sh *SessionHandler) GetUserInfo(c *gin.Context) {
 
 	token, ok := c.Request.Header["Access-Token"]
 	if !ok || len(token) < 1 {
-		api.BadWithMsg(c, "the token is invalid")
+		logutil.Logger.Debug("can't get token from request header.")
+		api.BadWithMsg(c, "the token is invalid.")
 		return
 	}
 
 	se := sh.getSessionByToken(token[0])
 	if se == nil {
-		api.BadWithMsg(c, "the token is invalid")
+		logutil.Logger.Debug("the token is invalid.")
+		api.BadWithMsg(c, "the token is invalid.")
 		return
 	}
 
 	err := se.User.GetUserInfoByName()
 	if err != nil {
-		api.BadWithMsg(c, "user does not exist")
+		logutil.Logger.Error("user does not exist.", zap.Error(err))
+		api.BadWithMsg(c, "user does not exist.")
 		return
 	}
 
@@ -196,6 +203,7 @@ func (sh *SessionHandler) CreateSession(se *Session) {
 func (sh *SessionHandler) clearSession(se *Session) {
 	<-se.Ticker.C
 	se.Ticker.Stop()
+	logutil.Logger.Info("delete a session and token", zap.String("user", se.User.UserName))
 	delete(sh.Sessions, se.User.UserName)
 	delete(sh.Users, se.Token)
 	return
