@@ -13,7 +13,7 @@ RUN make build
 
 FROM ubuntu:20.04 as final
 
-RUN DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt update \
     && apt install -y python3 \
@@ -27,7 +27,7 @@ RUN pip3 install requests
 
 WORKDIR /ticheck
 COPY --from=web /webpack/dist ./web/dist
-COPY --from=service /app/bin/ticheck-server ./service/bin
+COPY --from=service /app/bin/ticheck-server ./service/bin/
 COPY ./probes ./probes
 COPY ./config ./config
 COPY ./executor ./excutor
@@ -35,6 +35,9 @@ COPY ./logpath.sh .
 COPY ./run.sh .
 
 WORKDIR /ticheck/service/bin
+# Create data dir
+RUN mkdir ../../store
+# Set gin mode
 ENV GIN_MODE=release
 
 EXPOSE 8081

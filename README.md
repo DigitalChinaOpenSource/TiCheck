@@ -56,3 +56,22 @@ TiCheck 是为 TiDB 设计的自动化，可扩展的检查工具，核心特点
 
 - [ ] 通过 UI 做巡检配置
 - [ ] 通过 UI 做脚本扩展
+
+
+## Quick Start
+
+### Use Docker
+
+```bash
+# clone repo
+git clone 
+cd TiCheck
+
+# use docker to build image
+docker build -t ticheck:latest .
+
+# use docker to run this image 
+cker run --name ticheck -p 8081:8081 -d ticheck:latest
+
+# and you can access ticheck through port 801
+```
