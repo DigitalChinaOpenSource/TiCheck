@@ -5,6 +5,7 @@ export default {
   'cluster.list.add-time': 'Create Time',
   'cluster.list.description': 'Cluster Description',
   'cluster.list.node-info': 'Node Info',
+  'cluster.list.prometheus.warning': 'Could not connect to the cluster prometheus server',
   'cluster.list.last-check-time': 'Last Check',
   'cluster.list.prometheus': 'Prometheus Url',
   'cluster.list.user': 'User',
