@@ -6,6 +6,7 @@ export default {
   'cluster.list.description': '集群描述',
   'cluster.list.description.else': '暂无数据库简介',
   'cluster.list.node-info': '节点信息',
+  'cluster.list.prometheus.warning': '无法连接到集群Prometheus服务器',
   'cluster.list.last-check-time': '最后巡检时间',
   'cluster.list.prometheus': 'Prometheus地址',
   'cluster.list.user': '登录用户',

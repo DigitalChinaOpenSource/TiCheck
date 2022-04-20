@@ -83,6 +83,7 @@ type ClusterListResp struct {
 	NodesInfo     []NodesInfo `json:"nodes"`
 	CreateTime    time.Time   `json:"create_time"`
 	LastCheckTime time.Time   `json:"last_check_time"`
+	Normal        bool        `json:"normal"`
 }
 
 // ClusterInfoResp is a response for GetClusterInfo
@@ -169,13 +170,13 @@ func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 			GrafanaUrl:    cluster.GrafanaURL,
 			CreateTime:    cluster.CreateTime,
 			LastCheckTime: cluster.LastCheckTime,
+			Normal:        true,
 		}
 		nodeType := []string{"pd", "tidb", "tikv", "tiflash"}
 		url := cluster.PrometheusURL + "/api/v1/query"
 		nodesInfo, e := GetClusterNodesInfo(url, nodeType)
 		if e != nil {
-			api.ErrorWithMsg(c, e.Error())
-			return
+			reps.Normal = false
 		}
 		reps.NodesInfo = nodesInfo
 		clusterListReps = append(clusterListReps, reps)
@@ -819,10 +820,6 @@ func GetClusterNodesInfo(url string, nodeType []string) (nodesInfo []NodesInfo, 
 			}
 		}
 
-		resp, err = queryHelper.QueryWithPrometheus()
-		if err != nil {
-			return nodesInfo, err
-		}
 		node := NodesInfo{
 			ID:       k,
 			NodeType: v,

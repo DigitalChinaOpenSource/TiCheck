@@ -144,13 +144,18 @@
               </div>
             </div>
             <div>
-              <a-list :grid="{ gutter: 16, column: 4 }" :data-source="item.nodes" style="margin-top: 25px">
+              <a-list :grid="{ gutter: 16, column: 4 }" :data-source="item.nodes" style="margin-top: 25px" v-if="item.normal">
                 <a-list-item slot="renderItem" slot-scope="node">
                   <a-card :title="node.type" style="text-align: center">
                     {{ node.normal }} / {{ node.count }}
                   </a-card>
                 </a-list-item>
               </a-list>
+              <div style="margin-top: 25px;" v-else>
+                <a-card title="Warning" style="text-align: center;margin-bottom: 16px">
+                  {{ $t('cluster.list.prometheus.warning') }}
+                </a-card>
+              </div>
             </div>
             <div>
               <a-row type="flex" justify="end">
@@ -210,7 +215,7 @@ export default {
     getList () {
       getClusterList()
         .then(res => {
-        this.dataSource = res.data
+          this.dataSource = res.data
       }).catch(res => {
         this.failed(res)
       })
