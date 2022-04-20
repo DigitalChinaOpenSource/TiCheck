@@ -64,7 +64,7 @@ TiCheck 是为 TiDB 设计的自动化，可扩展的检查工具，核心特点
 
 ```bash
 # clone repo
-git clone 
+git clone -b dev https://github.com/DigitalChinaOpenSource/TiCheck.git
 cd TiCheck
 
 # use docker to build image
