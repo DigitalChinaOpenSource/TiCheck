@@ -20,7 +20,7 @@ const (
 	DefaultLogCompress = false
 )
 
-var Logger zap.Logger
+var Logger *zap.Logger
 
 type LogConfig struct {
 	Level zapcore.Level
@@ -61,7 +61,7 @@ func InitLog(conf LogConfig) {
 	// zapcore.AddSync(os.Stdout) is config for writing to console.
 
 	core := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(sync, zapcore.AddSync(os.Stdout)), conf.Level)
-	Logger := zap.New(core, zap.AddCaller())
+	Logger = zap.New(core, zap.AddCaller())
 
 	Logger.Info("Completed init the logger")
 }
