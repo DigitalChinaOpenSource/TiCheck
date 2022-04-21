@@ -1,6 +1,7 @@
 package executor
 
 import (
+	"TiCheck/config"
 	"TiCheck/internal/model"
 	"fmt"
 	"os"
@@ -11,10 +12,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-)
-
-var (
-	probe_prefix = "../../probes"
 )
 
 type CheckResult struct {
@@ -153,7 +150,7 @@ func CreateClusterExecutor(clusterID, schedulerID uint) Executor {
 func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
 	result := CheckResult{}
 
-	file := fmt.Sprintf("%s/%s/%s/%s", probe_prefix, ctx.checkInfo.Source, ctx.checkInfo.ProbeID, ctx.checkInfo.FileName)
+	file := fmt.Sprintf("%s/%s/%s/%s", config.GlobalConfig.GetProbePrefix(), ctx.checkInfo.Source, ctx.checkInfo.ProbeID, ctx.checkInfo.FileName)
 	_, e := os.Stat(file)
 	if os.IsNotExist(e) {
 		fmt.Println("applyProbe Error, file not found:", e.Error())

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"TiCheck/cmd/ticheck-server/api"
+	"TiCheck/config"
 	"TiCheck/internal/model"
 	"TiCheck/util"
 	"encoding/json"
@@ -15,10 +16,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-)
-
-var (
-	custom_prefix = "../../probes/custom/"
 )
 
 type StoreHandler struct {
@@ -71,7 +68,7 @@ func (s *StoreHandler) DeleteCustomReadme(c *gin.Context) {
 		api.BadWithMsg(c, "probe can not be deleted")
 		return
 	}
-	os.RemoveAll(fmt.Sprintf("%s%s", custom_prefix, id))
+	os.RemoveAll(fmt.Sprintf("%scustom/%s", config.GlobalConfig.GetProbePrefix(), id))
 	api.Success(c, "probe deleted", nil)
 }
 
@@ -81,7 +78,7 @@ func (s *StoreHandler) UploadCustomScript(c *gin.Context) {
 		api.BadWithMsg(c, "file not found: "+err.Error())
 		return
 	}
-
+	custom_prefix := config.GlobalConfig.GetProbePrefix() + "custom/"
 	dst := fmt.Sprintf("%s%s", custom_prefix, file.Filename)
 
 	if err := c.SaveUploadedFile(file, dst); err != nil {
@@ -164,7 +161,7 @@ func (s *StoreHandler) GetLocalReadme(c *gin.Context) {
 }
 
 func (s *StoreHandler) getreadme(c *gin.Context, path, name string) {
-	filePath := fmt.Sprintf("../../probes/%s/%s/readme.md", path, name)
+	filePath := fmt.Sprintf("%s/%s/readme.md", config.GlobalConfig.GetProbePrefix()+path, name)
 	_, err := os.Stat(filePath)
 	if err != nil || os.IsNotExist(err) {
 		api.BadWithMsg(c, "failed to get readme: "+err.Error())

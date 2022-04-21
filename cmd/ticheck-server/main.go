@@ -2,28 +2,36 @@ package main
 
 import (
 	"TiCheck/cmd/ticheck-server/router"
+	"TiCheck/config"
 	"TiCheck/executor"
 	"TiCheck/internal/model"
 	"TiCheck/internal/service"
 	"TiCheck/util/logutil"
 	"context"
-	"github.com/natefinch/lumberjack"
-	"go.uber.org/zap"
+	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
+
+	"github.com/natefinch/lumberjack"
+	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+
+	initAppConfig()
+
 	engine := gin.Default()
 	engine.Use()
 
 	// LogConfig should be read from the configuration file
-	config := logutil.NewLogConfig(zap.DebugLevel, lumberjack.Logger{
+	lc := logutil.NewLogConfig(zap.DebugLevel, lumberjack.Logger{
 		Filename:   logutil.DefaultLogFilePath,
 		MaxSize:    logutil.DefaultLogMaxSize,
 		MaxBackups: logutil.DefaultLogBackups,
@@ -31,7 +39,7 @@ func main() {
 		Compress:   logutil.DefaultLogCompress,
 	})
 
-	logutil.InitLog(config)
+	logutil.InitLog(lc)
 
 	err := model.InitDB()
 	if err != nil {
@@ -46,7 +54,7 @@ func main() {
 	router.Register(engine)
 
 	srv := &http.Server{
-		Addr:    ":8081",
+		Addr:    fmt.Sprintf(":%v", config.GlobalConfig.Port),
 		Handler: engine,
 	}
 
@@ -79,6 +87,28 @@ func main() {
 	}
 
 	logutil.Logger.Info("The server has exited.")
+}
+
+func initAppConfig() {
+	workDir, ok := os.LookupEnv("TICHECK_WORK_DIR")
+	if !ok {
+		flag.StringVar(&workDir, "work-dir", "../../", "the ticheck work directory.")
+	}
+
+	var p string
+	flag.StringVar(&p, "port", "8081", "the ticheck listen port.")
+
+	flag.Parse()
+
+	port, err := strconv.Atoi(p)
+	if err != nil {
+		port = 8081
+	}
+
+	config.GlobalConfig = &config.AppConfig{
+		WorkDir: workDir,
+		Port:    port,
+	}
 }
 
 func testExe() {

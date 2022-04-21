@@ -9,14 +9,16 @@ fmt:
 	@clang-format -i *.c *.h
 
 install:
-	echo "Installing ${PROJECT}..."
+	@echo "Installing ${PROJECT}..."
 	@./install.sh
-	echo "Install Done."
+	@echo "Install Done."
 
 build:
-	echo "Building ${PROJECT}..."
+	@echo "Building ${PROJECT}..."
 	@cd ./cmd/ticheck-server && go build -o ../../bin/ticheck-server
-	echo "Build Done."
+	@cd -
+	@cd ./web && npm install && npm run build
+	@echo "Build Done."
 
 test:
 	echo "Testing ${PROJECT}..."

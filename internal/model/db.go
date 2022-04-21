@@ -1,6 +1,7 @@
 package model
 
 import (
+	"TiCheck/config"
 	"crypto/md5"
 	"crypto/sha1"
 	"encoding/json"
@@ -21,7 +22,7 @@ func InitDB() error {
 	newDB := false
 	if DbConn == nil {
 
-		dbFile := "../../store/ticheck.db"
+		dbFile := config.GlobalConfig.GetStorePath()
 
 		_, err := os.Stat(dbFile)
 		if os.IsNotExist(err) {
@@ -82,7 +83,7 @@ func setupSeedData() {
 	}
 
 	// local script
-	scriptDir := "../../probes/local/"
+	scriptDir := config.GlobalConfig.GetProbePrefix() + "/local/"
 	fileInfos, err := ioutil.ReadDir(scriptDir)
 	if err != nil {
 		log.Fatal(err)

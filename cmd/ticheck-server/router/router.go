@@ -2,19 +2,22 @@ package router
 
 import (
 	"TiCheck/cmd/ticheck-server/handler"
+	"TiCheck/config"
+
 	"github.com/gin-contrib/multitemplate"
 
 	"github.com/gin-gonic/gin"
 )
 
 var (
-	web_prefix = "../../web/dist"
+	web_prefix string
 )
 
 func Register(engine *gin.Engine) {
 
 	// 使用静态资源需要在 web 目录下 npm run build
 	if gin.Mode() == gin.ReleaseMode {
+		web_prefix = config.GlobalConfig.WorkDir + "web/dist"
 		// 多模板
 		engine.HTMLRender = createMyRender()
 		// 加载静态资源
