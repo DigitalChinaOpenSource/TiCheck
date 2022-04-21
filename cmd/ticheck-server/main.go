@@ -54,9 +54,8 @@ func main() {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logutil.Logger.Fatal("Failed to initialize service", zap.Error(err))
+			logutil.Logger.Fatal("Failed to initialize service ", zap.Error(err))
 		}
-		logutil.Logger.Info("Completed TiCheck server initialization.")
 	}()
 	//testExe()
 	service.CronService.Initialize()
