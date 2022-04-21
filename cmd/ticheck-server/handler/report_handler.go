@@ -3,7 +3,9 @@ package handler
 import (
 	"TiCheck/cmd/ticheck-server/api"
 	"TiCheck/internal/model"
+	"TiCheck/util/logutil"
 	"fmt"
+	"go.uber.org/zap"
 	"net/http"
 	"os/exec"
 	"strconv"
@@ -58,18 +60,21 @@ func (r *ReportHandler) GetReportList(c *gin.Context) {
 	ch := &model.CheckHistory{}
 	clusterID, err := strconv.Atoi(id)
 	if err != nil {
+		logutil.Logger.Error("cluster id is invalid.", zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	if !model.IsClusterExist(clusterID) {
-		api.BadWithMsg(c, "cluster does not exist")
+		logutil.Logger.Error("cluster does not exist.")
+		api.BadWithMsg(c, "cluster does not exist.")
 		return
 	}
 
 	res, err := ch.GetHistoryByClusterID(clusterID, pageSize, pageNum, startTime, endTime, schedulerID)
 
 	if err != nil {
+		logutil.Logger.Error("can't get cluster check history.", zap.Error(err))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -81,6 +86,7 @@ func (r *ReportHandler) GetReportList(c *gin.Context) {
 func (r *ReportHandler) GetReport(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		logutil.Logger.Error("report id is invalid.", zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -89,6 +95,7 @@ func (r *ReportHandler) GetReport(c *gin.Context) {
 	data, err := cd.GetDataByHistoryID(id)
 
 	if err != nil {
+		logutil.Logger.Error("can't get report date.", zap.Error(err))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -108,6 +115,7 @@ func (r *ReportHandler) GetMeta(c *gin.Context) {
 func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 	ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -118,6 +126,7 @@ func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 
 	err = r.ConnectDB()
 	if err != nil {
+		logutil.Logger.Error("unable to connect to database.", zap.Error(err))
 		ws.WriteJSON(gin.H{
 			"error": err.Error(),
 		})
@@ -146,6 +155,7 @@ func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 		case result := <-resultCh:
 			err = ws.WriteJSON(result)
 			if err != nil {
+				logutil.Logger.Error("failed to write json result.", zap.Error(err))
 				ws.WriteJSON(gin.H{
 					"error": err.Error(),
 				})
@@ -165,11 +175,13 @@ func (r *ReportHandler) ExecuteCheck(c *gin.Context) {
 }
 
 func (r *ReportHandler) DownloadAllReport(c *gin.Context) {
+	// todo complete download all report
 	return
 }
 
 // DownloadReport 下载指定报告
 func (r *ReportHandler) DownloadReport(c *gin.Context) {
+	// todo complete download report
 	api.S(c)
 
 	//reportId := c.Param("id")
@@ -211,6 +223,7 @@ func (r *ReportHandler) EditConfig(c *gin.Context) {
 	cmd := exec.Command("../run/" + script + ".sh")
 	err := cmd.Run()
 	if err != nil {
+		logutil.Logger.Error("failed to run script: "+script+".sh", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -221,7 +234,7 @@ func (r *ReportHandler) executeScript(executeTime int64, executionFinished chan 
 	cmd := exec.Command("../run.sh", strconv.FormatInt(executeTime, 10))
 	err := cmd.Run()
 	if err != nil {
-		print(err)
+		logutil.Logger.Error("failed to run script: "+"run.sh", zap.Error(err))
 	}
 
 	// sleep for 10 seconds before sending done signal
@@ -244,6 +257,7 @@ func (r *ReportHandler) getResult(executeTime int64, ch chan *CheckData, executi
 			querySQL := fmt.Sprintf("select * from check_data where check_time == %d and id > %d", executeTime, index)
 			rows, err := r.Conn.Query(querySQL)
 			if err != nil {
+				logutil.Logger.Error("failed to query.", zap.Error(err))
 				return
 			}
 
