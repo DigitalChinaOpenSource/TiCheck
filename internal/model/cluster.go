@@ -91,6 +91,25 @@ func (c *Cluster) CreateCluster() (err error) {
 	return nil
 }
 
+// CreateClusterInTx create a cluster and add initial checklist for it in transaction
+func (c *Cluster) CreateClusterInTx(checkList []ClusterChecklist) (err error) {
+	err = DbConn.Transaction(func(tx *gorm.DB) error {
+		c.CreateTime = time.Now().Local()
+		if err = tx.Create(&c).Error; err != nil {
+			return err
+		}
+
+		if err = tx.Create(&checkList).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // UpdateClusterByID update a cluster by its id
 func (c *Cluster) UpdateClusterByID() error {
 	updateData := map[string]interface{}{

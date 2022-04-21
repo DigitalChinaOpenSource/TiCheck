@@ -334,24 +334,16 @@ func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 		return
 	}
 
-	err = cluster.CreateCluster()
-	if err != nil {
-		api.BadWithMsg(c, err.Error())
-		return
-	}
-
-	cc := &model.ClusterChecklist{}
 	checkList, err := ch.InitialCheckList(clusterInfoReq)
 	if err != nil {
 		api.BadWithMsg(c, err.Error())
 		return
 	}
-	err = cc.AddCheckList(checkList)
-	if err != nil {
+
+	if err = cluster.CreateClusterInTx(checkList); err != nil {
 		api.BadWithMsg(c, err.Error())
 		return
 	}
-
 	api.S(c)
 	return
 }
