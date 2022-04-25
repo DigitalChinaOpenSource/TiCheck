@@ -139,7 +139,7 @@ type ClusterSchedulerReq struct {
 	Cron      string `json:"cron"`
 	Status    bool   `json:"status"`
 	Creator   string `json:"creator"`
-	ClusterID string `json:"cluster_id"`
+	ClusterID int    `json:"cluster_id"`
 }
 
 // GetClusterList get all clusters of currently log in user
@@ -183,8 +183,6 @@ func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 		clusterListReps = append(clusterListReps, reps)
 	}
 
-	logutil.Logger.Info("Get cluster information list of this user successfully.",
-		zap.String("user name", se.User.UserName))
 	api.Success(c, "", clusterListReps)
 	return
 }
@@ -298,8 +296,6 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 		YearlyHistoryWarnings:  yearly,
 	}
 
-	logutil.Logger.Info("Get the cluster information successfully",
-		zap.String("cluster name", clusterInfo.Name))
 	api.Success(c, "", clusterInfoReps)
 	return
 }
@@ -344,8 +340,6 @@ func (ch *ClusterHandler) GetInitialClusterInfo(c *gin.Context) {
 		LogPasswd:     clusterInfo.TiDBPassword,
 	}
 
-	logutil.Logger.Info("Get the original cluster information successfully.",
-		zap.String("cluster name", clusterInfo.Name))
 	api.Success(c, "", initialCluster)
 	return
 }
@@ -390,7 +384,6 @@ func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
 		return
 	}
 
-	logutil.Logger.Info("Add a cluster.", zap.String("cluster name", clusterInfoReq.Name))
 	api.S(c)
 	return
 }
@@ -446,8 +439,6 @@ func (ch *ClusterHandler) UpdateClusterInfo(c *gin.Context) {
 		return
 	}
 
-	logutil.Logger.Info("Update cluster information successfully.",
-		zap.String("cluster name", clusterInfoReq.Name))
 	api.S(c)
 	return
 }
@@ -554,11 +545,14 @@ func (ch *ClusterHandler) InitialCheckList(req *ClusterInfoReq) (checkList []mod
 func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		logutil.Logger.Error("the request body can't be parsed correctly", zap.Error(err))
 		api.BadWithMsg(c, "cluster id is invalid")
 		return
 	}
 
 	if !model.IsClusterExist(id) {
+		logutil.Logger.Debug("cluster does not exist",
+			zap.String("cluster id", strconv.Itoa(id)))
 		api.BadWithMsg(c, "cluster does not exist")
 		return
 	}
@@ -566,6 +560,8 @@ func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
 	var cc model.ClusterChecklist
 	cl, err := cc.GetListInfoByClusterID(id)
 	if err != nil {
+		logutil.Logger.Warn("Failed to get this cluster check list information.",
+			zap.String("cluster id", strconv.Itoa(id)))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -577,11 +573,15 @@ func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
 func (ch *ClusterHandler) GetAddProbeList(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, "cluster id is invalid")
 		return
 	}
 
 	if !model.IsClusterExist(id) {
+		logutil.Logger.Warn("this cluster does not exist",
+			zap.String("cluster id", strconv.Itoa(id)))
 		api.BadWithMsg(c, "cluster does not exist")
 		return
 	}
@@ -589,6 +589,8 @@ func (ch *ClusterHandler) GetAddProbeList(c *gin.Context) {
 	var probe model.Probe
 	probes, err := probe.GetNotAddedProveListByClusterID(id)
 	if err != nil {
+		logutil.Logger.Warn("failed to get the probe list that has not been added to the cluster",
+			zap.String("cluster id", strconv.Itoa(id)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -602,6 +604,8 @@ func (ch *ClusterHandler) AddProbeForCluster(c *gin.Context) {
 	err := c.BindJSON(cc)
 
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -609,6 +613,8 @@ func (ch *ClusterHandler) AddProbeForCluster(c *gin.Context) {
 	err = cc.AddCheckProbe()
 
 	if err != nil {
+		logutil.Logger.Warn("failed to add check probe to the cluster",
+			zap.String("cluster id", strconv.Itoa(int(cc.ClusterID))))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -622,6 +628,8 @@ func (ch *ClusterHandler) ChangeProbeStatus(c *gin.Context) {
 	err := c.BindJSON(cc)
 
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -629,6 +637,8 @@ func (ch *ClusterHandler) ChangeProbeStatus(c *gin.Context) {
 	err = cc.ChangeProbeStatus()
 
 	if err != nil {
+		logutil.Logger.Warn("failed to change the probe status",
+			zap.String("probe name", cc.ProbeID))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -642,6 +652,8 @@ func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context) {
 	err := c.BindJSON(cc)
 
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -649,6 +661,8 @@ func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context) {
 	err = cc.UpdateProbeConfig()
 
 	if err != nil {
+		logutil.Logger.Warn("failed to update probe config",
+			zap.String("probe name", cc.ProbeID))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -660,6 +674,8 @@ func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context) {
 func (ch *ClusterHandler) DeleteProbeForCluster(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -670,6 +686,8 @@ func (ch *ClusterHandler) DeleteProbeForCluster(c *gin.Context) {
 	err = cc.DeleteCheckProbe()
 
 	if err != nil {
+		logutil.Logger.Warn("failed to delete the cluster probe item",
+			zap.String("cluster id", strconv.Itoa(id)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -689,11 +707,15 @@ func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 	id := c.Param("id")
 	clusterID, err := strconv.Atoi(id)
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
 	schedulerList, err := ch.Scheduler.QuerySchedulersByClusterID(clusterID)
 	if err != nil {
+		logutil.Logger.Warn("failed to get the cluster scheduler list",
+			zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -720,7 +742,7 @@ func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 	se, err := ch.AccessToken(c)
 	if err != nil {
-		logutil.Logger.Debug("the token is invalid.", zap.Error(err))
+		logutil.Logger.Warn("the token is invalid.", zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -728,6 +750,8 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 	schedulerReq := &ClusterSchedulerReq{}
 	err = c.BindJSON(schedulerReq)
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -737,17 +761,11 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 		isEnabled = 1
 	}
 
-	clusterID, err := strconv.Atoi(schedulerReq.ClusterID)
-	if err != nil {
-		api.BadWithMsg(c, err.Error())
-		return
-	}
-
 	schedulerInfo := model.Scheduler{
 		Name:           schedulerReq.Name,
 		CronExpression: schedulerReq.Cron,
 		Creator:        se.User.UserName,
-		ClusterID:      uint(clusterID),
+		ClusterID:      uint(schedulerReq.ClusterID),
 		IsEnabled:      isEnabled,
 		CreateTime:     time.Now().Local(),
 		RunCount:       0,
@@ -755,6 +773,8 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 
 	err = schedulerInfo.AddScheduler()
 	if err != nil {
+		logutil.Logger.Warn("failed to add scheduler to the cluster",
+			zap.String("cluster id", strconv.Itoa(schedulerReq.ClusterID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -764,6 +784,8 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 	if schedulerInfo.IsEnabled == 1 {
 		err = service.CronService.AddTask(schedulerInfo)
 		if err != nil {
+			logutil.Logger.Warn("failed to add scheduler task to the cron service",
+				zap.String("scheduler id", strconv.Itoa(int(schedulerInfo.ID))))
 			api.ErrorWithMsg(c, "Failed to run scheduled task")
 			return
 		}
@@ -777,7 +799,7 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
 	_, err := ch.AccessToken(c)
 	if err != nil {
-		logutil.Logger.Debug("the token is invalid.", zap.Error(err))
+		logutil.Logger.Warn("the token is invalid.", zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -785,6 +807,8 @@ func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
 	schedulerReq := &ClusterSchedulerReq{}
 	err = c.BindJSON(schedulerReq)
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -803,6 +827,8 @@ func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
 
 	err = schedulerInfo.UpdateScheduler()
 	if err != nil {
+		logutil.Logger.Warn("failed to update scheduler information",
+			zap.String("scheduler id", strconv.Itoa(schedulerReq.ID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -830,13 +856,15 @@ func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
 func (ch *ClusterHandler) DeleteScheduler(c *gin.Context) {
 	_, err := ch.AccessToken(c)
 	if err != nil {
-		logutil.Logger.Debug(err.Error())
+		logutil.Logger.Warn("the token is invalid.", zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -846,7 +874,7 @@ func (ch *ClusterHandler) DeleteScheduler(c *gin.Context) {
 	}
 	err = s.DeleteScheduler()
 	if err != nil {
-		logutil.Logger.Error("Delete scheduler failed",
+		logutil.Logger.Error("failed to delete the scheduler",
 			zap.String("scheduler id", strconv.Itoa(id)))
 		api.ErrorWithMsg(c, err.Error())
 		return
@@ -858,8 +886,6 @@ func (ch *ClusterHandler) DeleteScheduler(c *gin.Context) {
 		}
 	}
 
-	logutil.Logger.Info("Delete scheduler successfully",
-		zap.String("scheduler id", strconv.Itoa(id)))
 	api.S(c)
 	return
 }
