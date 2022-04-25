@@ -5,9 +5,11 @@ import (
 	"TiCheck/executor"
 	"TiCheck/internal/model"
 	"TiCheck/internal/service"
+	"TiCheck/util/logutil"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"io/ioutil"
 	"net/http"
 	"os/exec"
@@ -137,24 +139,21 @@ type ClusterSchedulerReq struct {
 	Cron      string `json:"cron"`
 	Status    bool   `json:"status"`
 	Creator   string `json:"creator"`
-	ClusterID string `json:"cluster_id"`
+	ClusterID int    `json:"cluster_id"`
 }
 
 // GetClusterList get all clusters of currently log in user
 func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
-	token, ok := c.Request.Header["Access-Token"]
-	if !ok || len(token) < 1 {
-		api.BadWithMsg(c, "the token is invalid")
-		return
-	}
-	se := SessionHelper.getSessionByToken(token[0])
-	if se == nil {
-		api.BadWithMsg(c, "the token is invalid")
+	se, err := ch.AccessToken(c)
+	if err != nil {
+		logutil.Logger.Debug(err.Error())
+		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	clusterList, err := ch.ClusterInfo.QueryClusterList(se.User.UserName)
 	if err != nil {
+		logutil.Logger.Error("Can't get cluster list for this user.", zap.String("user", se.User.UserName))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -176,6 +175,8 @@ func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 		url := cluster.PrometheusURL + "/api/v1/query"
 		nodesInfo, e := GetClusterNodesInfo(url, nodeType)
 		if e != nil {
+			logutil.Logger.Warn("Can't connect to the prometheus server.",
+				zap.String("prometheus url", cluster.PrometheusURL))
 			reps.Normal = false
 		}
 		reps.NodesInfo = nodesInfo
@@ -188,63 +189,87 @@ func (ch *ClusterHandler) GetClusterList(c *gin.Context) {
 
 // GetClusterInfo get cluster info for cluster info view
 func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
+	_, err := ch.AccessToken(c)
+	if err != nil {
+		logutil.Logger.Debug(err.Error())
+		api.BadWithMsg(c, err.Error())
+		return
+	}
+
 	id := c.Param("id")
 	clusterID, err := strconv.Atoi(id)
 	if err != nil {
+		logutil.Logger.Error("the request body can't be parsed correctly", zap.Error(err))
 		api.BadWithMsg(c, "cluster id is invalid")
 		return
 	}
 
 	if !model.IsClusterExist(clusterID) {
+		logutil.Logger.Debug("cluster does not exist", zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.BadWithMsg(c, "cluster does not exist")
 		return
 	}
 
 	clusterInfo, err := ch.ClusterInfo.QueryClusterInfoByID(clusterID)
 	if err != nil {
+		logutil.Logger.Error("get cluster information error")
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
 	checkHistoryInfo, err := ch.ClusterInfo.QueryHistoryInfoByID(clusterID)
 	if err != nil {
+		logutil.Logger.Error("get cluster information error")
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
 	todayHistoryInfo, err := ch.ClusterInfo.QueryTodayHistoryInfoByID(clusterID)
 	if err != nil {
+		logutil.Logger.Error("Error in getting information about today's inspection items of the cluster.",
+			zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
-	var lastCheck = &model.CheckHistory{}
-	lc, err := lastCheck.QueryLastHistoryByID(clusterID)
-	if err == nil {
-		lastCheck = lc
+	var checkHistory model.CheckHistory
+	lastCheck, err := checkHistory.QueryLastHistoryByID(clusterID)
+	if err != nil {
+		logutil.Logger.Error("Error in getting information about last check of the cluster.",
+			zap.String("cluster id", strconv.Itoa(clusterID)))
+		api.ErrorWithMsg(c, err.Error())
+		return
 	}
 
 	var recentWarnings []model.RecentWarnings
 	recentWarnings, err = ch.ClusterInfo.QueryRecentWarningsByID(clusterID)
 	if err != nil {
+		logutil.Logger.Error("Error in getting information about recent warnings of the cluster.",
+			zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
 	weekly, err := ch.ClusterInfo.QueryHistoryWarningByID(clusterID, -7)
 	if err != nil {
+		logutil.Logger.Error("Error in getting history warnings of the cluster for the past week.",
+			zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
 	monthly, err := ch.ClusterInfo.QueryHistoryWarningByID(clusterID, -30)
 	if err != nil {
+		logutil.Logger.Error("Error in getting history warnings of the cluster for the past month.",
+			zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
 
 	yearly, err := ch.ClusterInfo.QueryHistoryWarningByID(clusterID, -365)
 	if err != nil {
+		logutil.Logger.Error("Error in getting history warnings of the cluster for the past year.",
+			zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -277,20 +302,31 @@ func (ch *ClusterHandler) GetClusterInfo(c *gin.Context) {
 
 // GetInitialClusterInfo get initial cluster information before cluster updated
 func (ch *ClusterHandler) GetInitialClusterInfo(c *gin.Context) {
+	_, err := ch.AccessToken(c)
+	if err != nil {
+		logutil.Logger.Debug(err.Error())
+		api.BadWithMsg(c, err.Error())
+		return
+	}
+
 	id := c.Param("id")
 	clusterID, err := strconv.Atoi(id)
 	if err != nil {
+		logutil.Logger.Error("the request body can't be parsed correctly", zap.Error(err))
 		api.BadWithMsg(c, "cluster id is invalid")
 		return
 	}
 
 	if !model.IsClusterExist(clusterID) {
+		logutil.Logger.Debug("cluster does not exist", zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.BadWithMsg(c, "cluster does not exist")
 		return
 	}
 
 	clusterInfo, err := ch.ClusterInfo.QueryClusterInfoByID(clusterID)
 	if err != nil {
+		logutil.Logger.Error("Error in getting cluster information.",
+			zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -310,49 +346,61 @@ func (ch *ClusterHandler) GetInitialClusterInfo(c *gin.Context) {
 
 // PostClusterInfo add a cluster
 func (ch *ClusterHandler) PostClusterInfo(c *gin.Context) {
-	clusterInfoReq := &ClusterInfoReq{}
-	err := c.BindJSON(clusterInfoReq)
+	se, err := ch.AccessToken(c)
 	if err != nil {
+		logutil.Logger.Debug(err.Error())
 		api.BadWithMsg(c, err.Error())
 		return
 	}
-	token, ok := c.Request.Header["Access-Token"]
-	if !ok || len(token) < 1 {
-		api.BadWithMsg(c, "the token is invalid")
+
+	clusterInfoReq := &ClusterInfoReq{}
+	err = c.BindJSON(clusterInfoReq)
+	if err != nil {
+		logutil.Logger.Error("the request body can't be parsed correctly", zap.Error(err))
+		api.BadWithMsg(c, err.Error())
 		return
 	}
-	se := SessionHelper.getSessionByToken(token[0])
-	if se == nil {
-		api.BadWithMsg(c, "the token is invalid")
-		return
-	}
+
 	clusterInfoReq.Owner = se.User.UserName
 
 	cluster, err := ch.BuildClusterInfo(clusterInfoReq)
 	if err != nil {
+		logutil.Logger.Error("Failed to get cluster details from prometheus.",
+			zap.String("prometheus url", clusterInfoReq.PrometheusUrl))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	checkList, err := ch.InitialCheckList(clusterInfoReq)
 	if err != nil {
+		logutil.Logger.Error("Failed to initialize check list.", zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	if err = cluster.CreateClusterInTx(checkList); err != nil {
+		logutil.Logger.Error("Failed to add cluster.", zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
+
 	api.S(c)
 	return
 }
 
 // UpdateClusterInfo update a cluster by cluster id
 func (ch *ClusterHandler) UpdateClusterInfo(c *gin.Context) {
-	clusterInfoReq := &ClusterInfoReq{}
-	err := c.BindJSON(clusterInfoReq)
+	se, err := ch.AccessToken(c)
 	if err != nil {
+		logutil.Logger.Debug(err.Error())
+		api.BadWithMsg(c, err.Error())
+		return
+	}
+
+	clusterInfoReq := &ClusterInfoReq{}
+	err = c.BindJSON(clusterInfoReq)
+	if err != nil {
+		logutil.Logger.Error("the request body can't be parsed correctly", zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -360,37 +408,33 @@ func (ch *ClusterHandler) UpdateClusterInfo(c *gin.Context) {
 	id := c.Param("id")
 	clusterID, err := strconv.Atoi(id)
 	if err != nil {
+		logutil.Logger.Error("the cluster id can't be parsed correctly", zap.Error(err))
 		api.BadWithMsg(c, "cluster id is invalid")
 		return
 	}
 
 	if !model.IsClusterExist(clusterID) {
+		logutil.Logger.Debug("cluster does not exist",
+			zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.BadWithMsg(c, "cluster does not exist")
 		return
 	}
 
 	clusterInfoReq.ID = uint(clusterID)
-
-	token, ok := c.Request.Header["Access-Token"]
-	if !ok || len(token) < 1 {
-		api.BadWithMsg(c, "the token is invalid")
-		return
-	}
-	se := SessionHelper.getSessionByToken(token[0])
-	if se == nil {
-		api.BadWithMsg(c, "the token is invalid")
-		return
-	}
 	clusterInfoReq.Owner = se.User.UserName
 
 	cluster, err := ch.BuildClusterInfo(clusterInfoReq)
 	if err != nil {
+		logutil.Logger.Error("Failed to get cluster details from prometheus.",
+			zap.String("prometheus url", clusterInfoReq.PrometheusUrl))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
 
 	err = cluster.UpdateClusterByID()
 	if err != nil {
+		logutil.Logger.Error("Failed to update  the cluster.",
+			zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -501,11 +545,14 @@ func (ch *ClusterHandler) InitialCheckList(req *ClusterInfoReq) (checkList []mod
 func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		logutil.Logger.Error("the request body can't be parsed correctly", zap.Error(err))
 		api.BadWithMsg(c, "cluster id is invalid")
 		return
 	}
 
 	if !model.IsClusterExist(id) {
+		logutil.Logger.Debug("cluster does not exist",
+			zap.String("cluster id", strconv.Itoa(id)))
 		api.BadWithMsg(c, "cluster does not exist")
 		return
 	}
@@ -513,6 +560,8 @@ func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
 	var cc model.ClusterChecklist
 	cl, err := cc.GetListInfoByClusterID(id)
 	if err != nil {
+		logutil.Logger.Warn("Failed to get this cluster check list information.",
+			zap.String("cluster id", strconv.Itoa(id)))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -524,11 +573,15 @@ func (ch *ClusterHandler) GetProbeList(c *gin.Context) {
 func (ch *ClusterHandler) GetAddProbeList(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, "cluster id is invalid")
 		return
 	}
 
 	if !model.IsClusterExist(id) {
+		logutil.Logger.Warn("this cluster does not exist",
+			zap.String("cluster id", strconv.Itoa(id)))
 		api.BadWithMsg(c, "cluster does not exist")
 		return
 	}
@@ -536,6 +589,8 @@ func (ch *ClusterHandler) GetAddProbeList(c *gin.Context) {
 	var probe model.Probe
 	probes, err := probe.GetNotAddedProveListByClusterID(id)
 	if err != nil {
+		logutil.Logger.Warn("failed to get the probe list that has not been added to the cluster",
+			zap.String("cluster id", strconv.Itoa(id)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -549,6 +604,8 @@ func (ch *ClusterHandler) AddProbeForCluster(c *gin.Context) {
 	err := c.BindJSON(cc)
 
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -556,6 +613,8 @@ func (ch *ClusterHandler) AddProbeForCluster(c *gin.Context) {
 	err = cc.AddCheckProbe()
 
 	if err != nil {
+		logutil.Logger.Warn("failed to add check probe to the cluster",
+			zap.String("cluster id", strconv.Itoa(int(cc.ClusterID))))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -569,6 +628,8 @@ func (ch *ClusterHandler) ChangeProbeStatus(c *gin.Context) {
 	err := c.BindJSON(cc)
 
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -576,6 +637,8 @@ func (ch *ClusterHandler) ChangeProbeStatus(c *gin.Context) {
 	err = cc.ChangeProbeStatus()
 
 	if err != nil {
+		logutil.Logger.Warn("failed to change the probe status",
+			zap.String("probe name", cc.ProbeID))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -589,6 +652,8 @@ func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context) {
 	err := c.BindJSON(cc)
 
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -596,6 +661,8 @@ func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context) {
 	err = cc.UpdateProbeConfig()
 
 	if err != nil {
+		logutil.Logger.Warn("failed to update probe config",
+			zap.String("probe name", cc.ProbeID))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -607,6 +674,8 @@ func (ch *ClusterHandler) UpdateProbeConfig(c *gin.Context) {
 func (ch *ClusterHandler) DeleteProbeForCluster(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -617,6 +686,8 @@ func (ch *ClusterHandler) DeleteProbeForCluster(c *gin.Context) {
 	err = cc.DeleteCheckProbe()
 
 	if err != nil {
+		logutil.Logger.Warn("failed to delete the cluster probe item",
+			zap.String("cluster id", strconv.Itoa(id)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -627,14 +698,24 @@ func (ch *ClusterHandler) DeleteProbeForCluster(c *gin.Context) {
 
 // GetClusterSchedulerList get cluster scheduler list of this cluster
 func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
+	_, err := ch.AccessToken(c)
+	if err != nil {
+		logutil.Logger.Debug("the token is invalid.", zap.Error(err))
+		api.BadWithMsg(c, err.Error())
+		return
+	}
 	id := c.Param("id")
 	clusterID, err := strconv.Atoi(id)
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
 	schedulerList, err := ch.Scheduler.QuerySchedulersByClusterID(clusterID)
 	if err != nil {
+		logutil.Logger.Warn("failed to get the cluster scheduler list",
+			zap.String("cluster id", strconv.Itoa(clusterID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -659,9 +740,18 @@ func (ch *ClusterHandler) GetClusterSchedulerList(c *gin.Context) {
 
 // PostClusterScheduler add a scheduler for a cluster by cluster id
 func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
-	schedulerReq := &ClusterSchedulerReq{}
-	err := c.BindJSON(schedulerReq)
+	se, err := ch.AccessToken(c)
 	if err != nil {
+		logutil.Logger.Warn("the token is invalid.", zap.Error(err))
+		api.BadWithMsg(c, err.Error())
+		return
+	}
+
+	schedulerReq := &ClusterSchedulerReq{}
+	err = c.BindJSON(schedulerReq)
+	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -671,28 +761,11 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 		isEnabled = 1
 	}
 
-	clusterID, err := strconv.Atoi(schedulerReq.ClusterID)
-	if err != nil {
-		api.BadWithMsg(c, err.Error())
-		return
-	}
-
-	token, ok := c.Request.Header["Access-Token"]
-	if !ok || len(token) < 1 {
-		api.BadWithMsg(c, "the token is invalid")
-		return
-	}
-	se := SessionHelper.getSessionByToken(token[0])
-	if se == nil {
-		api.BadWithMsg(c, "the token is invalid")
-		return
-	}
-
 	schedulerInfo := model.Scheduler{
 		Name:           schedulerReq.Name,
 		CronExpression: schedulerReq.Cron,
 		Creator:        se.User.UserName,
-		ClusterID:      uint(clusterID),
+		ClusterID:      uint(schedulerReq.ClusterID),
 		IsEnabled:      isEnabled,
 		CreateTime:     time.Now().Local(),
 		RunCount:       0,
@@ -700,6 +773,8 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 
 	err = schedulerInfo.AddScheduler()
 	if err != nil {
+		logutil.Logger.Warn("failed to add scheduler to the cluster",
+			zap.String("cluster id", strconv.Itoa(schedulerReq.ClusterID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -709,6 +784,8 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 	if schedulerInfo.IsEnabled == 1 {
 		err = service.CronService.AddTask(schedulerInfo)
 		if err != nil {
+			logutil.Logger.Warn("failed to add scheduler task to the cron service",
+				zap.String("scheduler id", strconv.Itoa(int(schedulerInfo.ID))))
 			api.ErrorWithMsg(c, "Failed to run scheduled task")
 			return
 		}
@@ -720,9 +797,18 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 
 // UpdateScheduler update a scheduler information by its id
 func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
-	schedulerReq := &ClusterSchedulerReq{}
-	err := c.BindJSON(schedulerReq)
+	_, err := ch.AccessToken(c)
 	if err != nil {
+		logutil.Logger.Warn("the token is invalid.", zap.Error(err))
+		api.BadWithMsg(c, err.Error())
+		return
+	}
+
+	schedulerReq := &ClusterSchedulerReq{}
+	err = c.BindJSON(schedulerReq)
+	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -741,6 +827,8 @@ func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
 
 	err = schedulerInfo.UpdateScheduler()
 	if err != nil {
+		logutil.Logger.Warn("failed to update scheduler information",
+			zap.String("scheduler id", strconv.Itoa(schedulerReq.ID)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -766,8 +854,17 @@ func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
 
 // DeleteScheduler delete a scheduler by scheduler id
 func (ch *ClusterHandler) DeleteScheduler(c *gin.Context) {
+	_, err := ch.AccessToken(c)
+	if err != nil {
+		logutil.Logger.Warn("the token is invalid.", zap.Error(err))
+		api.BadWithMsg(c, err.Error())
+		return
+	}
+
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		logutil.Logger.Warn("the request body can't be parsed correctly",
+			zap.Error(err))
 		api.BadWithMsg(c, err.Error())
 		return
 	}
@@ -777,6 +874,8 @@ func (ch *ClusterHandler) DeleteScheduler(c *gin.Context) {
 	}
 	err = s.DeleteScheduler()
 	if err != nil {
+		logutil.Logger.Error("failed to delete the scheduler",
+			zap.String("scheduler id", strconv.Itoa(id)))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -976,4 +1075,16 @@ func (ch *ClusterHandler) GetExecuteInfo(c *gin.Context) {
 		"check_items":     itemInfo,
 	})
 	return
+}
+
+func (ch *ClusterHandler) AccessToken(c *gin.Context) (se *Session, err error) {
+	token, ok := c.Request.Header["Access-Token"]
+	if !ok || len(token) < 1 {
+		return se, errors.New("the token is invalid")
+	}
+	se = SessionHelper.getSessionByToken(token[0])
+	if se == nil {
+		return se, errors.New("can't get session user by this token")
+	}
+	return se, nil
 }
