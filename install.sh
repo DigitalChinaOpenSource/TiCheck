@@ -35,7 +35,7 @@ main(){
     fi
     export GIN_MODE=release
     nohup ./bin/ticheck-server --work-dir=$(pwd)'/' --port=8066 &
-    echo -e "${GREEN}TiCheck Successfuly installed. Now to enjoy it by visit http://localhost:8066 ${NC}"
+    echo -e "${GREEN}TiCheck Successfuly installed. Now visit http://localhost:8066 to enjoy it ${NC}"
 }
 
 main;

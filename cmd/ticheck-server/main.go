@@ -95,13 +95,13 @@ func initAppConfig() {
 	}
 
 	var p string
-	flag.StringVar(&p, "port", "8081", "the ticheck listen port.")
+	flag.StringVar(&p, "port", "8066", "the ticheck listen port.")
 
 	flag.Parse()
 
 	port, err := strconv.Atoi(p)
 	if err != nil {
-		port = 8081
+		port = 8066
 	}
 
 	config.GlobalConfig = &config.AppConfig{

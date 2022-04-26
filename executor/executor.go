@@ -3,6 +3,7 @@ package executor
 import (
 	"TiCheck/config"
 	"TiCheck/internal/model"
+	"TiCheck/util/logutil"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type CheckResult struct {
@@ -53,14 +56,17 @@ type ExecutorCounter struct {
 
 // Execute the cluster exexute once check, rc is check result
 func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
+	logutil.Logger.Info("cluster check start.", zap.String("cluster id", strconv.Itoa(int(ce.ClusterID))))
 	// check if historiy in running
 	history, err := (&model.CheckHistory{}).IsExistRunningByClusterID(int(ce.ClusterID))
 	if err == nil && history.ID > 0 {
+		msg := fmt.Sprintf("Execute confict, There is a running check task with a start time of %s", history.CheckTime)
 		rc <- CheckResult{
 			IsConfict:  true,
 			IsFinished: true,
-			Err:        fmt.Sprintf("Execute Error, There is a running check task with a start time of %s", history.CheckTime),
+			Err:        msg,
 		}
+		logutil.Logger.Error(msg, zap.String("cluster id", strconv.Itoa(int(ce.ClusterID))))
 		return
 	}
 
@@ -76,6 +82,7 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 		result := CheckResult{IsFinished: true}
 		result.Err = fmt.Sprintf("create check history error: %s", err.Error())
 		rc <- result
+		logutil.Logger.Error(result.Err, zap.String("cluster id", strconv.Itoa(int(ce.ClusterID))))
 		return
 	}
 
@@ -95,7 +102,7 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 		}
 		executor := createExecutor(ctx)
 		if executor == nil {
-			fmt.Printf("create executor error, invalide source: %s", task.Source)
+			logutil.Logger.Error(fmt.Sprintf("create executor error, invalide source: %s", task.Source), zap.String("cluster id", strconv.Itoa(int(ce.ClusterID))))
 			continue
 		} else {
 			wg.Add(1)
@@ -111,6 +118,7 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 	his.State = "finished"
 	model.DbConn.Save(&his)
 	model.DbConn.Model(&model.Cluster{}).Where("id = ?", ce.ClusterID).Update("last_check_time", begin)
+	logutil.Logger.Info("cluster check finished.", zap.String("cluster id", strconv.Itoa(int(ce.ClusterID))), zap.Any("result", his))
 	// send finish signal
 	result := CheckResult{IsFinished: true, CheckID: his.ID}
 	rc <- result
@@ -126,7 +134,7 @@ func (ce *ClusterExecutor) Execute(rc chan CheckResult) {
 func CreateClusterExecutor(clusterID, schedulerID uint) Executor {
 	c, err := (&model.Cluster{}).QueryClusterInfoByID(int(clusterID))
 	if err != nil {
-		fmt.Println("CreateClusterExecutor Error:", err.Error())
+		logutil.Logger.Error(fmt.Sprintf("CreateClusterExecutor Error: %s", err.Error()), zap.String("cluster id", strconv.Itoa(int(clusterID))))
 		return nil
 	}
 	ce := &ClusterExecutor{
@@ -138,7 +146,7 @@ func CreateClusterExecutor(clusterID, schedulerID uint) Executor {
 
 	tasks, err := (&model.ClusterChecklist{}).GetEnabledCheckListByClusterID(int(clusterID))
 	if err != nil {
-		fmt.Println("CreateClusterExecutor Error:", err.Error())
+		logutil.Logger.Error(fmt.Sprintf("GetClusterChecklist Error: %s", err.Error()), zap.String("cluster id", strconv.Itoa(int(clusterID))))
 		return nil
 	}
 
@@ -153,7 +161,7 @@ func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
 	file := fmt.Sprintf("%s/%s/%s/%s", config.GlobalConfig.GetProbePrefix(), ctx.checkInfo.Source, ctx.checkInfo.ProbeID, ctx.checkInfo.FileName)
 	_, e := os.Stat(file)
 	if os.IsNotExist(e) {
-		fmt.Println("applyProbe Error, file not found:", e.Error())
+		logutil.Logger.Error(fmt.Sprintf("applyProbe Error, file not found: %s", e.Error()), zap.String("cluster id", strconv.Itoa(int(ctx.cluster.ClusterID))))
 		result.Err = e.Error()
 		rc <- result
 		return
@@ -161,7 +169,7 @@ func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
 
 	f, e := filepath.Abs(file)
 	if e != nil {
-		fmt.Println("applyProbe Error, file abs not found:", e.Error())
+		logutil.Logger.Error(fmt.Sprintf("applyProbe Error, file not found: %s", e.Error()), zap.String("cluster id", strconv.Itoa(int(ctx.cluster.ClusterID))))
 		result.Err = e.Error()
 		rc <- result
 		return
@@ -182,7 +190,7 @@ func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
 	case ".py":
 		output, err = applyPythonProbe(args)
 	default:
-		fmt.Println("applyProbe Error, invalid file extension:", file)
+		logutil.Logger.Error(fmt.Sprintf("applyProbe Error, invalid file extension: %s", file), zap.String("cluster id", strconv.Itoa(int(ctx.cluster.ClusterID))))
 		result.Err = fmt.Sprintf("invalid file extension: %s", path.Ext(file))
 		return
 	}
@@ -267,7 +275,7 @@ func compareThreshold(
 		if strings.HasPrefix(op, "[tck_result:]") {
 			row := strings.Split(strings.TrimPrefix(op, "[tck_result:]"), "=")
 			if len(row) < 2 {
-				fmt.Printf("error to skipped: invald probe %s", op)
+				logutil.Logger.Warn(fmt.Sprintf("error to skipped: invald prob: %s", op), zap.String("cluster id", strconv.Itoa(int(ctx.cluster.ClusterID))))
 				continue
 			}
 			cd.CheckItem = row[0]
@@ -305,14 +313,15 @@ func compareThreshold(
 				}
 			default:
 				{
-					fmt.Printf("error to skipped: comparator: %v not supported", ctx.checkInfo.Operator)
+					logutil.Logger.Warn(fmt.Sprintf("error to skipped: comparator %v not supported", ctx.checkInfo.Operator), zap.String("cluster id", strconv.Itoa(int(ctx.cluster.ClusterID))))
 					continue
 				}
 			}
 
 		} else if strings.HasPrefix(op, "[tck_log:]") {
 			// TODO: save check log of a script in furtuer
-			fmt.Printf("probe %s", op)
+			logutil.Logger.Info(op, zap.String("cluster id", strconv.Itoa(int(ctx.cluster.ClusterID))))
+
 			continue
 		} else {
 			// the others output as script error to save
