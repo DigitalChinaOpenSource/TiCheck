@@ -2,6 +2,7 @@ package handler
 
 import (
 	"TiCheck/cmd/ticheck-server/api"
+	"TiCheck/config"
 	"TiCheck/executor"
 	"TiCheck/internal/model"
 	"TiCheck/internal/service"
@@ -9,13 +10,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
 	"io/ioutil"
 	"net/http"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
 )
@@ -494,7 +496,7 @@ func (ch *ClusterHandler) BuildClusterInfo(req *ClusterInfoReq) (cluster model.C
 	req.ID = lastID + 1
 	loginPath := fmt.Sprintf("ticheck_%d", req.ID)
 
-	if _, err = exec.Command("sh", "../../logpath.sh", loginPath, req.LogUser, host, portStr, req.LogPasswd).Output(); err != nil {
+	if _, err = exec.Command("sh", config.GlobalConfig.WorkDir+"logpath.sh", loginPath, req.LogUser, host, portStr, req.LogPasswd).Output(); err != nil {
 		return cluster, errors.New("failed to add login-path for mysql")
 	}
 

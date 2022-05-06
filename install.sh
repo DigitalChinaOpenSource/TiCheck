@@ -22,6 +22,7 @@ main(){
     check_dependency pip
     check_dependency mysql
     check_dependency mysql_config_editor
+    check_dependency expect
     echo "+--------------------------------+-------------+"
     echo -e "${YELLOW}Warning: ${NC}If the above items fail to be detected, it may affect the normal operation of the inspection function. \n"
 

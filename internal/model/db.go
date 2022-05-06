@@ -117,9 +117,9 @@ func setupSeedData() {
 				UpdateTime:  time.Time(pm.UpdateTime).Local(),
 			}
 			if len(pm.Tags) > 0 {
-				t, ok := Dict_ProbeTags[pm.Tags[0]]
+				_, ok := Dict_ProbeTags[pm.Tags[0]]
 				if ok {
-					p.Tag = t
+					p.Tag = pm.Tags[0]
 				} else {
 					p.Tag = "others"
 				}

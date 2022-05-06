@@ -144,3 +144,4 @@ config/load_variables.sh
 # log file
 log
 bin/ticheck-server
+nohup.out

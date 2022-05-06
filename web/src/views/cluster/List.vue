@@ -237,11 +237,14 @@ export default {
         }
         console.log('values =>', values)
         addCluster(values)
-        .then(res => this.ifSuccess())
-        .catch(res => this.failed(res))
-        .finally(() => {
+        .then(res => {
+          this.ifSuccess()
           this.modalVisible = false
           this.clusterForm = this.$form.createForm(this)
+          }
+        )
+        .catch(res => this.failed(res))
+        .finally(() => {
         })
       })
     },
