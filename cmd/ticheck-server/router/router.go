@@ -41,11 +41,6 @@ func Register(engine *gin.Engine) {
 	}
 
 	sessionGroup := engine.Group("/session")
-	//session := &handler.SessionHandler{
-	//	Users:    map[string]string{},
-	//	Sessions: make(map[string]*handler.Session, 0),
-	//}
-
 	{
 		// 用户认证
 		sessionGroup.POST("", handler.SessionHelper.AuthenticatedUser)

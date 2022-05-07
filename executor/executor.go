@@ -4,6 +4,7 @@ import (
 	"TiCheck/config"
 	"TiCheck/internal/model"
 	"TiCheck/util/logutil"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -183,12 +184,16 @@ func applyProbe(ctx ExecutorContext, rc chan CheckResult) {
 
 	var output []string
 	var err error
+
+	timeout, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
 	begin := time.Now()
 	switch path.Ext(file) {
 	case ".sh":
-		output, err = applyShellProbe(args)
+		output, err = applyShellProbe(timeout, args)
 	case ".py":
-		output, err = applyPythonProbe(args)
+		output, err = applyPythonProbe(timeout, args)
 	default:
 		logutil.Logger.Error(fmt.Sprintf("applyProbe Error, invalid file extension: %s", file), zap.String("cluster id", strconv.Itoa(int(ctx.cluster.ClusterID))))
 		result.Err = fmt.Sprintf("invalid file extension: %s", path.Ext(file))
@@ -342,32 +347,30 @@ func compareThreshold(
 }
 
 // applyShellProbe run a .sh file
-func applyShellProbe(args []string) (output []string, err error) {
-	cmd := exec.Command("sh", args...)
+func applyShellProbe(ctx context.Context, args []string) (output []string, err error) {
+	cmd := exec.CommandContext(ctx, "sh", args...)
 	op, e := cmd.CombinedOutput()
 	if e != nil {
-		fmt.Println(e.Error())
+		logutil.Logger.Error(fmt.Sprintf("applyProbe Error: %s", e.Error()), zap.String("script", args[0]))
 		err = e
 	} else {
 		if s := string(op); len(s) > 0 {
 			output = strings.Split(strings.Trim(s, "\n"), "\n")
-			//fmt.Println(output)
 		}
 	}
 	return
 }
 
 // applyPythonProbe run s python file
-func applyPythonProbe(args []string) (output []string, err error) {
-	cmd := exec.Command("python3", args...)
+func applyPythonProbe(ctx context.Context, args []string) (output []string, err error) {
+	cmd := exec.CommandContext(ctx, "python3", args...)
 	op, e := cmd.CombinedOutput()
 	if e != nil {
-		fmt.Println(e.Error())
+		logutil.Logger.Error(fmt.Sprintf("applyProbe Error: %s", e.Error()), zap.String("script", args[0]))
 		err = e
 	} else {
 		if s := string(op); len(s) > 0 {
 			output = strings.Split(strings.Trim(s, "\n"), "\n")
-			//fmt.Println(output)
 		}
 	}
 	return
