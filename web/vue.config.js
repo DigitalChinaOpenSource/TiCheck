@@ -5,6 +5,8 @@ const GitRevision = new GitRevisionPlugin()
 const buildDate = JSON.stringify(new Date().toLocaleString())
 const createThemeColorReplacerPlugin = require('./config/plugin.config')
 
+process.env.VUE_APP_SERVER_PORT = 8066
+
 function resolve (dir) {
   return path.join(__dirname, dir)
 }
@@ -115,7 +117,7 @@ const vueConfig = {
     // If you want to turn on the proxy, please remove the mockjs /src/main.jsL11
     proxy: {
       '/api': {
-        target: 'http://localhost:8081',
+        target: 'http://localhost:' + process.env.VUE_APP_SERVER_PORT,
         pathRewrite: { '/api': '' },
         ws: false,
         changeOrigin: true

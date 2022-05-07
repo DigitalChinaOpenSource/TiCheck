@@ -76,7 +76,7 @@ export function getExecuteInfo(clusterID) {
 }
 
 export function runExecute(clusterID) {
-    return new WebSocket("ws://localhost:8066" + checkApi.runExecute + clusterID)
+    return new WebSocket("ws://localhost:" + process.env.VUE_APP_SERVER_PORT + checkApi.runExecute + clusterID)
 }
 
 export function updateProbeConfig(params) {
