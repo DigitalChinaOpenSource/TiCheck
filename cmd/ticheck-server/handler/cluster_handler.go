@@ -141,7 +141,7 @@ type ClusterSchedulerReq struct {
 	Cron      string `json:"cron"`
 	Status    bool   `json:"status"`
 	Creator   string `json:"creator"`
-	ClusterID int    `json:"cluster_id"`
+	ClusterID string `json:"cluster_id"`
 }
 
 // GetClusterList get all clusters of currently log in user
@@ -758,6 +758,13 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 		return
 	}
 
+	clusterID, err := strconv.Atoi(schedulerReq.ClusterID)
+	if err != nil {
+		logutil.Logger.Warn("the cluster id can't be parsed correctly",
+			zap.Error(err))
+		api.BadWithMsg(c, err.Error())
+	}
+
 	isEnabled := 0
 	if schedulerReq.Status {
 		isEnabled = 1
@@ -767,7 +774,7 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 		Name:           schedulerReq.Name,
 		CronExpression: schedulerReq.Cron,
 		Creator:        se.User.UserName,
-		ClusterID:      uint(schedulerReq.ClusterID),
+		ClusterID:      uint(clusterID),
 		IsEnabled:      isEnabled,
 		CreateTime:     time.Now().Local(),
 		RunCount:       0,
@@ -776,7 +783,7 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 	err = schedulerInfo.AddScheduler()
 	if err != nil {
 		logutil.Logger.Warn("failed to add scheduler to the cluster",
-			zap.String("cluster id", strconv.Itoa(schedulerReq.ClusterID)))
+			zap.String("cluster id", schedulerReq.ClusterID))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
@@ -787,7 +794,7 @@ func (ch *ClusterHandler) PostClusterScheduler(c *gin.Context) {
 		err = service.CronService.AddTask(schedulerInfo)
 		if err != nil {
 			logutil.Logger.Warn("failed to add scheduler task to the cron service",
-				zap.String("scheduler id", strconv.Itoa(int(schedulerInfo.ID))))
+				zap.Uint("scheduler id", schedulerInfo.ID))
 			api.ErrorWithMsg(c, "Failed to run scheduled task")
 			return
 		}
@@ -830,7 +837,7 @@ func (ch *ClusterHandler) UpdateScheduler(c *gin.Context) {
 	err = schedulerInfo.UpdateScheduler()
 	if err != nil {
 		logutil.Logger.Warn("failed to update scheduler information",
-			zap.String("scheduler id", strconv.Itoa(schedulerReq.ID)))
+			zap.Int("scheduler id", schedulerReq.ID))
 		api.ErrorWithMsg(c, err.Error())
 		return
 	}
