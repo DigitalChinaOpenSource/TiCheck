@@ -30,7 +30,7 @@
               </router-link>
             </a-menu-item>
             <a-menu-item key="/cluster/check/execute/:id">
-              <router-link :to="{ name: 'ExecuteCheck' }">
+              <router-link :to="{ name: 'ExecuteCheck', params: {id: clusrerID}}">
                 <a-icon type="rocket" />
                 {{ $t('menu.cluster.check.execute') }}
               </router-link>
