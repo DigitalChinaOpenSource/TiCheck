@@ -18,6 +18,7 @@ main(){
     # dependency install check
     echo "+--------------------------------+-------------+"
     printf "+ %-30s | %-10s  +\n" "Dependency detection"  "State";
+    check_dependency npm
     check_dependency python3
     check_dependency pip
     check_dependency mysql

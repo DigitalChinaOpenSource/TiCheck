@@ -16,7 +16,7 @@ install:
 build:
 	@echo "Building ${PROJECT}..."
 	@cd ./cmd/ticheck-server && go build -o ../../bin/ticheck-server
-	@cd -
+	@cd ../../
 	@cd ./web && npm install && npm run build
 	@echo "Build Done."
 
