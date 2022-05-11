@@ -1,0 +1,27 @@
+{
+    "_id": "no_primary_key",
+    "name": "表没有主键",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "no_primary_key.sh"
+    ],
+    "main": "no_primary_key.sh",
+    "tags": [
+      "running_state"
+    ],
+    "rules": [
+        {
+            "operator": 0,
+            "threshold": "NA",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }

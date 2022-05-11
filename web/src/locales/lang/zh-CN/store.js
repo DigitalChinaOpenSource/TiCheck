@@ -1,0 +1,17 @@
+export default {
+    'store.page.update-time': '发布时间',
+    'store.page.local.title': '本地商店',
+    'store.page.local.modal.title': '说明文档',
+    'store.page.remote.title': '远程商店',
+    'store.page.custom.title': '自定义商店',
+    'store.page.custom.delete-tip': '确认要删除这个巡检项吗?',
+    'store.page.custom.upload': '上传',
+    'store.page.custom.upload.modal-title': '上传巡检指标',
+    'store.page.custom.upload.select-file': '选择文件',
+    'store.page.custom.upload.tips-title': '上传提示',
+    'store.page.custom.upload.tips-text1': `The name of the package must be named by the probe's id.`,
+    'store.page.custom.upload.tips-text2': 'Tips2',
+    'store.page.custom.upload.tips-text3': 'Tips3',
+    'store.page.custom.upload.tips-more': '了解更多',
+    'store.page.custom.readme.title': '说明文档',
+}

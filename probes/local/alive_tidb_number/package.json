@@ -1,0 +1,27 @@
+{
+    "_id": "alive_tidb_number",
+    "name": "存活的TiDB节点数量",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "alive_tidb_number.py"
+    ],
+    "main": "alive_tidb_number.py",
+    "tags": [
+      "cluster"
+    ],
+    "rules": [
+        {
+            "operator": 1,
+            "threshold": "2",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }

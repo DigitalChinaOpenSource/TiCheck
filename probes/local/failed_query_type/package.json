@@ -1,0 +1,27 @@
+{
+    "_id": "failed_query_type",
+    "name": "今天失败Query的类型",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "failed_query_type.py"
+    ],
+    "main": "failed_query_type.py",
+    "tags": [
+      "running_state"
+    ],
+    "rules": [
+        {
+            "operator": 0,
+            "threshold": "NA",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }

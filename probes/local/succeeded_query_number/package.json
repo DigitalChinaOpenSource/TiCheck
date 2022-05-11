@@ -1,0 +1,27 @@
+{
+    "_id": "succeeded_query_number",
+    "name": "今天成功的Query数",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "succeeded_query_number.py"
+    ],
+    "main": "succeeded_query_number.py",
+    "tags": [
+      "running_state"
+    ],
+    "rules": [
+        {
+            "operator": 3,
+            "threshold": "0",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }

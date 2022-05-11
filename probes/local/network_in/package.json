@@ -1,0 +1,27 @@
+{
+    "_id": "network_in",
+    "name": "今天网卡流入流量(MB)",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "network_in.py"
+    ],
+    "main": "network_in.py",
+    "tags": [
+      "network"
+    ],
+    "rules": [
+        {
+            "operator": 5,
+            "threshold": "4096",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }

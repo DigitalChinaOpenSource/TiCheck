@@ -1,0 +1,27 @@
+{
+    "_id": "long_ddl_job",
+    "name": "执行超过1h的DDL",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "long_ddl_job.sh"
+    ],
+    "main": "long_ddl_job.sh",
+    "tags": [
+      "running_state"
+    ],
+    "rules": [
+        {
+            "operator": 0,
+            "threshold": "NA",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }

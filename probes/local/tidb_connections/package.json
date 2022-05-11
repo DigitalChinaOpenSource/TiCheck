@@ -1,0 +1,27 @@
+{
+    "_id": "tidb_connections",
+    "name": "每个tidb的连接数",
+    "author": {
+      "name": "DigitalChina",
+      "email": ""
+    },
+    "description": "this script description.",
+    "files": [
+      "tidb_connections.py"
+    ],
+    "main": "tidb_connections.py",
+    "tags": [
+      "running_state"
+    ],
+    "rules": [
+        {
+            "operator": 5,
+            "threshold": "800",
+            "args": []
+        }
+    ],
+    "homepage": "",
+    "version": "1.0.1",
+    "createTime": "2022-03-07 15:28:30",
+    "updateTime": "2022-03-07 15:28:30"
+  }

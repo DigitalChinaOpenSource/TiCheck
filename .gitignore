@@ -26,6 +26,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+node_modules
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -139,3 +140,8 @@ dmypy.json
 
 # config file that may contain sensitive information
 config/load_variables.sh
+
+# log file
+log
+bin/ticheck-server
+nohup.out
