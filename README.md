@@ -71,7 +71,19 @@ cd TiCheck
 docker build -t ticheck:latest .
 
 # use docker to run this image 
-cker run --name ticheck -p 8081:8081 -d ticheck:latest
+cker run --name ticheck -p 8066:8066 -d ticheck:latest
 
-# and you can access ticheck through port 801
+# and you can access ticheck through port 8066
+```
+
+### Local Install
+
+```bash
+# clone repo
+git clone -b dev https://github.com/DigitalChinaOpenSource/TiCheck.git
+cd TiCheck
+
+make install
+
+# and you can access ticheck through port 8066
 ```
