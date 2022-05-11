@@ -161,7 +161,7 @@ func (s *StoreHandler) GetLocalReadme(c *gin.Context) {
 }
 
 func (s *StoreHandler) getreadme(c *gin.Context, path, name string) {
-	filePath := fmt.Sprintf("%s/%s/readme.md", config.GlobalConfig.GetProbePrefix()+path, name)
+	filePath := fmt.Sprintf("%s/%s/%s/readme.md", config.GlobalConfig.GetProbePrefix(), path, name)
 	_, err := os.Stat(filePath)
 	if err != nil || os.IsNotExist(err) {
 		api.BadWithMsg(c, "failed to get readme: "+err.Error())
